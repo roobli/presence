@@ -45,6 +45,9 @@ configuration:
         highlight: rgba(224, 160, 122, 0.11)
         textHighlight: "#5a4a0088"
 plugins:
+  - source: "./quartz/plugins/local/i18n-slug"
+    enabled: true
+    order: 5
   - source: "@quartz-community/created-modified-date"
     enabled: true
     options:
