@@ -343,10 +343,14 @@ export function renderPage(
     componentData.ctx.argv.serve || !cfg.baseUrl
       ? ""
       : new URL(`https://${cfg.baseUrl}`).pathname.replace(/\/$/, "")
+  // Pass A essay frame: frontmatter essayFrame: true → body[data-essay-frame]
+  const essayFrame = Boolean(
+    (componentData.fileData.frontmatter as Record<string, unknown> | undefined)?.essayFrame,
+  )
   const doc = (
     <html lang={lang} dir={direction}>
       <Head {...componentData} />
-      <body data-slug={slug} data-basepath={basePath}>
+      <body data-slug={slug} data-basepath={basePath} {...(essayFrame ? { "data-essay-frame": "true" } : {})}>
         {frame.css && <style dangerouslySetInnerHTML={{ __html: frame.css }} />}
         <div id="quartz-root" class="page" data-frame={frame.name}>
           <Body {...componentData}>

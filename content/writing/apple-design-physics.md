@@ -4,6 +4,7 @@ lang: en
 # omit alt until zh exists
 description: "Rubber-band bounce, continuous corners, and one-handed MacBook open are not taste. They are damping ratios, G2 curvature, and rigid-body torque inequalities you can model."
 date: 2026-09-11
+essayFrame: true
 tags:
   - design
   - hci
@@ -11,42 +12,21 @@ tags:
   - motion
 ---
 
-Pull a scroll view past its end and watch it overshoot, then settle. Trace an iPhone icon corner with your eye and notice there is no hard kink where line meets arc. Lift a MacBook lid with one hand and feel the base stay planted. Those moments get filed under "taste." They are closer to calibrated physics: a spring-mass-damper with a chosen damping ratio, a curvature-continuous corner instead of a G1 fillet, and a hinge torque kept inside a base restoring moment.
+Pull a scroll view past its end. The list overshoots, hangs for a beat, then settles back like rubber. Trace an iPhone icon corner with your eye: no hard kink where the straight edge meets the curve. Lift a MacBook lid with one hand — the base stays planted. Those three moments get filed under "taste." They are closer to calibrated physics: a spring with a chosen damping ratio, a curvature-continuous corner instead of a G1 fillet, and a hinge torque kept inside a base restoring moment.
 
-This essay argues two linked claims. First, Apple's "natural" aesthetics are often physical calibration made invisible. Second, the calm of the ecosystem is cognitive restraint with a product policy attached. The point is not mythology. It is a working map for people who ship motion, geometry, and hardware, and who keep mistaking timeline easings and `border-radius` for the whole job.
-
-The through-line is the same in every section: what people feel, what model explains it, why that tradeoff won inside Apple's constraints, where copycats usually break, and what the cost of getting it right actually is.
-
+This essay maps what people feel, what model explains it, and where copycats usually break. Not mythology — a working toolkit for motion, geometry, and hardware.
 
 ## Fluid interfaces: stop timing animations, start modeling behavior
 
-Most UI animation still begins with a duration and a curve. Linear, ease-in-out, or a cubic Bézier parked on a fixed timeline. Those curves invent acceleration breakpoints that matter to the timeline and not to the object. They can look polished in a screen recording and still feel mechanical under a finger.
+Most UI animation still begins with a duration and a curve. Linear, ease-in-out, or a cubic Bézier parked on a fixed timeline. Those curves invent acceleration breakpoints that matter to the clock and not to the object. They can look polished in a screen recording and still feel mechanical under a finger.
 
 What people feel, when motion is wrong, is a tiny lie about mass. The card eases in, then suddenly becomes "done." The sheet finishes its tween while your thumb is still moving. The rubber band at the scroll edge either never arrives or arrives like a cartoon. The complaint sounds aesthetic. The failure is behavioral: the interface refused to act like something with inertia.
 
-Apple's public framing for this problem is older than most of the copycat spring libraries that followed it. The 2018 WWDC session *Designing Fluid Interfaces* (Chan Karunamuni and team) pushes designers away from "pick a duration" and toward continuous, interruptible response: motion as what a physical object would do if it had mass, a spring pulling toward a target, and friction draining energy. Duration becomes an emergent property of the ODE, not a slider you set first.
-
-Karunamuni's design-facing language is deliberately friendlier than control-theory textbooks. Instead of leading with mass, stiffness, and damping coefficients, the session presents two knobs: **response** (how quickly the spring settles toward the target — related to frequency response) and **dampingFraction** (how much overshoot you allow, as a fraction of critical damping). Rubber-banding is taught as the same spring metaphor applied at a soft boundary: the interface gradually resists past the edge, tracks the finger throughout, then uses elasticity to pull content back when you let go. That is not a special "bounce effect." It is a spring with a moving equilibrium and a hard-ish wall expressed as progressive resistance.
-
-System APIs grew up around that family of models. `CASpringAnimation` and `UISpringTimingParameters` are the UIKit / Core Animation surface. SwiftUI's documented persistent spring — `Animation.spring(response:dampingFraction:blendDuration:)` — makes the contract explicit: when one spring replaces another on the same property, **velocity is preserved from one animation to the next**. Retargeting is not a reboot. It is a parameter change on a living ODE. That single sentence in Apple's docs is the engineering reason interruptible UI prefers springs over timeline tweens.
-
-### Spring-mass-damper as the shared engine
-
-Under the hood, much of that behavior collapses to the classic second-order linear spring-mass-damper:
-
-$$
-m \frac{d^2x}{dt^2} + c \frac{dx}{dt} + kx = 0
-$$
-
-Mass $m$ sets inertia. Damping $c$ is energy loss. Stiffness $k$ sets how hard the spring pulls toward equilibrium. Displacement $x$ is distance from the animation's rest position. None of this is mystical. It is the same second-order model control engineers have used for decades. Apple's contribution was to treat it as a first-class interaction primitive rather than a special effect — and to expose design-friendly remappings (`response`, `dampingFraction`) so product people can tune feel without rearranging $m$, $c$, and $k$ by hand.
-
-The dimensionless knob is:
-
-$$
-\zeta = \frac{c}{2\sqrt{km}}
-$$
+Feel it once more without equations. Drag a list past its end and keep your finger down — the interface resists progressively, still tracking. Lift, and elasticity pulls content home. Mid-flight, grab again: a good system does not teleport or pause; it retargets. That interruptible overscroll is the sensory claim. Everything below is how you get there.
 
 <!-- interactive:spring-zeta -->
+
+The dimensionless knob that separates those feels is the damping ratio $\zeta$. Three regimes cover most of what product UI needs:
 
 | Damping ratio | Physical regime | Visual behavior | Typical HCI use |
 | --- | --- | --- | --- |
@@ -56,50 +36,77 @@ $$
 
 <!-- interactive:zeta-triptych -->
 
-### Why critical damping is the default for navigation
+Why $\zeta = 1$ for most navigation? Critical damping is the **fastest settle that still refuses to oscillate**. Any $\zeta < 1$ spends energy on overshoot; any $\zeta > 1$ spends time crawling. Navigation is a trust surface: push a sheet up, open an app, pop a stack. The user's motor system expects the destination to arrive and stay arrived. Oscillation there is not "delight." It is a lie about whether the transition finished.
 
-Why $\zeta = 1$ for most navigation? Because critical damping is the **fastest settle that still refuses to oscillate**. In classical second-order response, any $\zeta < 1$ spends energy on overshoot; any $\zeta > 1$ spends time crawling. Navigation is a trust surface: push a sheet up, open an app, pop a stack. The user's motor system expects the destination to arrive and stay arrived. Oscillation there is not "delight." It is a lie about whether the transition finished.
+Underdamping is honest when bounce **is** the message. The edge of a scroll view should tell you there is a boundary. A playful lock-screen hint that overshoots once can teach affordance. Those are communicative underdamping. Decorative underdamping — bounce on every sheet, every button scale, every page turn because it photographs well — trains the opposite lesson: nothing in this product can sit still.
 
-Underdamping is honest when bounce **is** the message. The edge of a scroll view should tell you there is a boundary. Rubber-band overscroll, as framed in *Designing Fluid Interfaces*, is a spring metaphor for soft limits: you feel resistance, you keep tracking, then elasticity restores content. A playful lock-screen hint that overshoots once can teach affordance. Those are communicative underdamping. Decorative underdamping — bounce on every sheet, every button scale, every page turn because it photographs well — trains the opposite lesson: nothing in this product can sit still.
+Overdamping is almost never what you want in high-frequency UI. Teams sometimes dial $\zeta$ past 1 to "remove bounce" and accidentally invent molasses. If you want no overshoot, aim at critical, not past it.
 
-Overdamping is almost never what you want in high-frequency UI. The math can be "correct" and the feel still reads as lag. Teams sometimes dial $\zeta$ past 1 to "remove bounce" and accidentally invent molasses. If you want no overshoot, aim at critical, not past it.
+### The shared engine (after you have felt the regimes)
 
-In a true physical spring, rest is asymptotic. Production code therefore declares "done" with thresholds, often something like remaining displacement and remaining velocity both below a small epsilon, then snaps to the exact target. Thinking in duration fights that model. Thinking in $\zeta$ (or `dampingFraction`), response / stiffness, and rest thresholds matches it. SwiftUI's default `dampingFraction` of $0.825$ is slightly underdamped — a platform taste for a hint of life on generic springs — while navigation-class transitions on Apple platforms still behave closer to the critically damped ideal. The lesson is not "copy the default literal." It is "know which regime you are in and why."
+Apple's public framing for this problem is older than most of the copycat spring libraries that followed it. The 2018 WWDC session *Designing Fluid Interfaces* (Chan Karunamuni and team) pushes designers away from "pick a duration" and toward continuous, interruptible response: motion as what a physical object would do if it had mass, a spring pulling toward a target, and friction draining energy. Duration becomes an emergent property of the ODE, not a slider you set first.
+
+Karunamuni's design-facing language uses two knobs: **response** (how quickly the spring settles toward the target — related to frequency response) and **dampingFraction** (how much overshoot you allow, as a fraction of critical damping). Rubber-banding is the same spring metaphor at a soft boundary: progressive resistance past the edge, finger tracking throughout, elasticity when you let go. Not a special "bounce effect" — a spring with a moving equilibrium and progressive resistance at the wall.
+
+System APIs grew up around that family. `CASpringAnimation` and `UISpringTimingParameters` are the UIKit / Core Animation surface. SwiftUI's documented persistent spring — `Animation.spring(response:dampingFraction:blendDuration:)` — makes the contract explicit: when one spring replaces another on the same property, **velocity is preserved from one animation to the next**. Retargeting is not a reboot. It is a parameter change on a living ODE.
+
+Under the hood, that behavior collapses to the classic second-order linear spring-mass-damper:
+
+$$
+m \frac{d^2x}{dt^2} + c \frac{dx}{dt} + kx = 0
+$$
+
+Mass $m$ sets inertia. Damping $c$ is energy loss. Stiffness $k$ sets how hard the spring pulls toward equilibrium. Displacement $x$ is distance from rest. Apple's contribution was to treat this as a first-class interaction primitive — and to expose `response` / `dampingFraction` so product people can tune feel without rearranging $m$, $c$, and $k$ by hand.
+
+The damping ratio above is exactly:
+
+$$
+\zeta = \frac{c}{2\sqrt{km}}
+$$
+
+In a true physical spring, rest is asymptotic. Production code therefore declares "done" with thresholds — remaining displacement and velocity both below a small epsilon — then snaps to the exact target. Thinking in duration fights that model. Thinking in $\zeta$ (or `dampingFraction`), response / stiffness, and rest thresholds matches it. SwiftUI's default `dampingFraction` of $0.825$ is slightly underdamped — a platform taste for a hint of life on generic springs — while navigation-class transitions still behave closer to critical. The lesson is not "copy the default literal." It is "know which regime you are in and why."
 
 ### What copycats get wrong about springs
 
-Industry chatter around spring animation usually converges on the same failure modes, and they are all tradeoff mistakes rather than "forgot the formula" mistakes.
+Industry chatter around spring animation converges on the same tradeoff mistakes.
 
-First, teams ship underdamped bounce everywhere because bounce photographs well in marketing GIFs. Critical damping looks boring in a recording. It feels correct in the hand. If every sheet, every button press, and every page turn oscillates, the product starts to feel like a toy that cannot sit still.
+First, teams ship underdamped bounce everywhere because bounce photographs well in marketing GIFs. Critical damping looks boring in a recording. It feels correct in the hand.
 
-Second, they keep fixed-duration easings for the "serious" transitions and reserve springs for decoration. Classic Material-duration stacks (standard / emphasized easing paired with 200–500 ms tokens) are a coherent **timeline** language — and a poor interruptibility language. Interrupt a tween mid-flight and you get a teleport, a pause, or a blended restart that threw away velocity. Interrupt a spring and you retarget: keep velocity, change the equilibrium, let the same ODE absorb the new intent. Copycats that port "Material standard decelerate, 250 ms" onto gesture-driven sheets import the costume of polish and discard the physics that makes interruption safe. (Material's own newer motion guidance has been moving toward springs for related reasons; the anti-pattern is the duration-easing cargo cult, not any one design system forever.)
+Second, they keep fixed-duration easings for the "serious" transitions and reserve springs for decoration. Classic Material-duration stacks (standard / emphasized easing paired with 200–500 ms tokens) are a coherent **timeline** language — and a poor interruptibility language. Interrupt a tween mid-flight and you get a teleport, a pause, or a blended restart that threw away velocity. Interrupt a spring and you retarget. Copycats that port "Material standard decelerate, 250 ms" onto gesture-driven sheets import the costume of polish and discard the physics that makes interruption safe. (Material's own newer motion guidance has been moving toward springs for related reasons; the anti-pattern is the duration-easing cargo cult, not any one design system forever.)
 
-Third, they zero velocity on release. A flick is kinetic energy the finger already paid for. Capture release velocity $v_0$, project momentum, and blend into a damped settle. Picture-in-picture repositioning after a flick is the clean public example of this pattern on Apple platforms. Dropping $v_0$ to zero is how you get animations that look smooth and feel dead.
+Third, they zero velocity on release. A flick is kinetic energy the finger already paid for. Capture release velocity $v_0$, project momentum, and blend into a damped settle. Picture-in-picture repositioning after a flick is the clean public example on Apple platforms. Dropping $v_0$ to zero is how you get animations that look smooth and feel dead.
 
 ### Three traits that make motion feel fluid under the finger
 
-Physical curves are necessary but not sufficient. Fluid touch interaction also depends on how input energy enters and leaves the simulation — points Karunamuni's session treats as first-class, not polish.
+Physical curves are necessary but not sufficient. Fluid touch also depends on how input energy enters and leaves the simulation — points Karunamuni's session treats as first-class.
 
-**Hysteresis, then 1:1 tracking.** On contact, the interface should respond immediately. To separate tremor from intentional drag, systems often use a small hysteresis band. Common engineering descriptions of iOS gesture plumbing put that band on the order of roughly ten points. Treat the exact figure as reported plumbing, not scripture. Once the finger clears the band, tracking should be one-to-one, and the grab point should stay glued to the original touch offset rather than recentering the view under the finger.
+**Hysteresis, then 1:1 tracking.** On contact, respond immediately. To separate tremor from intentional drag, systems often use a small hysteresis band — commonly described on the order of roughly ten points in iOS gesture plumbing. Treat the exact figure as reported plumbing, not scripture. Once the finger clears the band, tracking should be one-to-one, grab point glued to the original touch offset.
 
-**Instant interruptibility.** Any nonlinear animation must be killable mid-flight. If an app is animating back to the home screen and the user touches it again, the exit animation should stop and hand control to the drag without a frame of teleport or pause. Interruptibility is a first-class requirement. It is also why spring solvers beat timeline tweens for interactive UI: retargeting a spring is a parameter change, not a reboot of a storyboard. SwiftUI's spring documentation stating that successor springs preserve velocity is the platform spelling of that requirement.
+**Instant interruptibility.** Any nonlinear animation must be killable mid-flight. If an app is animating back to the home screen and the user touches it again, the exit should stop and hand control to the drag without a frame of teleport or pause. SwiftUI's spring docs stating that successor springs preserve velocity is the platform spelling of that requirement.
 
-**Velocity transfer and projection.** On flick release, do not treat the release coordinate as the whole story. Seed the solver with measured $v_0$ and let damping do the rest.
+**Velocity transfer and projection.** On flick release, seed the solver with measured $v_0$ and let damping do the rest.
 
 Together: eliminate dead zones after intent is clear, never trap the user inside an uninterruptible tween, and conserve the kinetic energy the finger already put in.
 
-The cost of this model is real. You give up the comfort of "animation finishes in 280 ms." Designers who live in duration-based tools have to learn a new vocabulary — response and damping fraction instead of Bézier handles on a fixed clock. Engineers have to care about integrator stability when stiffness climbs. QA has to test interruption paths, not only happy-path playthroughs. That cost is why so many products stop at "we added a spring library" and never reach fluid. The library was never the hard part. The hard part is making every interactive surface speak the same physics.
+The cost is real. You give up "animation finishes in 280 ms." Designers who live in duration-based tools learn response and damping fraction instead of Bézier handles on a fixed clock. Engineers care about integrator stability when stiffness climbs. QA tests interruption paths, not only happy-path playthroughs. That cost is why so many products stop at "we added a spring library" and never reach fluid. The library was never the hard part. The hard part is making every interactive surface speak the same physics.
 
 A critically damped interruptible spring is a short idea in code: integrate $a = (-k(x - target) - c v) / m$ each display tick, keep $v$ when you retarget, and snap when both position and velocity fall under rest thresholds. Semi-implicit Euler is usually fine at display rates if stiffness stays moderate. Stiffer springs need a more stable integrator. The implementation is not the essay. The argument is: once interruptibility and velocity transfer are non-negotiable, the spring ODE stops being an effect and becomes the interaction substrate.
 
-
 ## Geometry that does not fight the eye: G-continuity and squircles
 
-Hardware bezels and software icon masks are praised for "refinement." A large part of that refinement is removing the optical kink of a classical rounded rectangle. People feel it as softness, quiet, or expensive calm. The model underneath is continuity of curvature.
+Open a home-screen grid dense with icons. At every classical rounded-rect join — where a straight edge meets a circular arc — the eye catches a faint hard fold, a subtle optical kink. Pack dozens of those joins into one glance and the grid feels faintly noisy even when every radius token matches. Specular hardware bezels make the same jump louder under grazing light. People call the better silhouette "soft" or "expensive calm." The claim underneath is narrower: remove the curvature discontinuity, and the kink goes away.
 
-### Continuity grades G0–G3
+<!-- interactive:squircle-compare -->
 
-In CAD and differential geometry, how two curve pieces meet at a join decides how smooth the join looks:
+<!-- interactive:curvature-comb -->
+
+A continuous corner replaces the jump with a gradual curvature ramp: $\kappa$ rises from $0$, peaks, then falls back. Gaze can slide along the silhouette without hitting a geometric discontinuity. PaintCode's public writeup on iOS 7 rounded rectangles called out exactly the pre-iOS-7 artifact — a subtle but noticeable optical kink at the G1 joins. Zebra-stripe and curvature-comb diagnostics in CAD exist because the eye is sensitive to curvature discontinuities even when position and tangent look fine.
+
+Claims that this reliably drives measurable micro-saccade load and cortical fatigue are a **plausible perceptual engineering story**, not a settled clinical finding. Treat them as motivation for continuous corners, not as a published dosage effect. The operational claim is firmer: dense G1 grids *look* noisier than continuous-corner grids at the same nominal radius, and product teams that live in icon grids notice the difference long before anyone runs an eye tracker.
+
+### Continuity grades as receipts (G0–G3)
+
+Once you have seen the kink and the comb, the CAD vocabulary is just naming what you already saw:
 
 ```
 G0 (positional continuity):
@@ -121,23 +128,11 @@ G2 (curvature continuity):
     peak      ⌒⌒   (κ_max)
 ```
 
-G3 adds continuity of the derivative of curvature. For UI icons and many industrial fillets, G2 is the threshold that removes the most obvious optical breakpoint.
-
-<!-- interactive:squircle-compare -->
-
-<!-- interactive:curvature-comb -->
-
-### Why G1 grids fatigue (without inventing a lab percentage)
-
-On a G1 rounded rect, curvature jumps discontinuously at the tangent points. The visual system registers a faint hard fold — the classic "hump" where a circular arc meets a straight edge. PaintCode's public writeup on iOS 7 rounded rectangles called out exactly that pre-iOS-7 artifact: a subtle but noticeable optical kink at the joins. Pack a home-screen grid with dozens of those joins and you invite repeated micro-corrections as the gaze travels the outlines. Specular hardware bezels make the same jump louder under grazing light; zebra-stripe and curvature-comb diagnostics in CAD exist because the eye is sensitive to curvature discontinuities even when position and tangent look fine.
-
-Claims that this reliably drives measurable micro-saccade load and cortical fatigue are a **plausible perceptual engineering story**, not a settled clinical finding. Treat them as motivation for G2, not as a published dosage effect you can put on a dashboard. The operational claim is narrower and firmer: dense G1 grids *look* noisier than continuous-corner grids at the same nominal radius, and product teams that live in icon grids notice the difference long before anyone runs an eye tracker.
-
-A G2 continuous corner (the family often called a **squircle** in product talk) replaces the jump with a gradual curvature ramp: $\kappa$ rises from $0$, peaks, then falls back. Gaze can slide along the silhouette without hitting a geometric discontinuity.
+G3 adds continuity of the derivative of curvature. For UI icons and many industrial fillets, G2 is the threshold that removes the most obvious optical breakpoint. The family often called a **squircle** in product talk is the G2 continuous corner in everyday language.
 
 ### What the continuous-corner API actually gives you
 
-Apple's public software surface for this is explicit. Since iOS 13, `CALayerCornerCurve.continuous` (and UIKit's `UICornerCurve.continuous`) tell developers that circular corner curves are not the product default for primary silhouettes. Human Interface Guidelines language around continuous corners reinforces the same point. That is a rare case of a differential-geometry choice leaking into a shipping API name.
+Apple's public software surface is explicit. Since iOS 13, `CALayerCornerCurve.continuous` (and UIKit's `UICornerCurve.continuous`) tell developers that circular corner curves are not the product default for primary silhouettes. Human Interface Guidelines language around continuous corners reinforces the same point. That is a rare case of a differential-geometry choice leaking into a shipping API name.
 
 What the API **actually** gives developers is a system-rasterized continuous corner path — not a Lamé superellipse parameter $n$ you dial to 4. Marketing and community talk often collapses "squircle," "superellipse $n \approx 4$," and "continuous corner" into one aesthetic noun. They are related but not identical. A Lamé curve
 
@@ -167,16 +162,26 @@ Twelve control points (counting shared anchors once per join) give a reproducibl
 
 The failure mode is almost always "we rounded it." Teams take `border-radius: 22px` on a CSS icon grid, ship a marketing site full of soft rectangles, and wonder why the product still feels cheap next to an iPhone home screen. Soft is not the same as continuous. A large G1 radius is still a curvature jump. On a single card the jump can hide. In a dense grid — or on a specular metal bevel after anodize — it does not. CSS `border-radius` is circular-arc geometry. It cannot become a continuous corner by wishing harder at the radius token.
 
-The other failure mode is over-squircle. Not every rectangle in an interface deserves a continuous corner. Secondary chrome, hairline dividers, and tiny controls can look mushy if every join is G2. Apple's restraint is selective: primary silhouettes and hardware outlines get the expensive continuity. Everything else stays boring on purpose. Community Medium / engineering writeups that celebrate "how to draw Apple's squircle" are useful as reconstruction guides; they become harmful when read as a mandate to continuous-corner the entire design system.
+The other failure mode is over-squircle. Not every rectangle deserves a continuous corner. Secondary chrome, hairline dividers, and tiny controls can look mushy if every join is G2. Apple's restraint is selective: primary silhouettes and hardware outlines get the expensive continuity. Everything else stays boring on purpose. Community writeups that celebrate "how to draw Apple's squircle" are useful as reconstruction guides; they become harmful when read as a mandate to continuous-corner the entire design system.
 
 ### True Tone, briefly: matching white point to the room
 
-True Tone leans on **color constancy**: the visual system adapts to the illuminant's chromaticity. A display locked at a cool white (often discussed around $6500\text{K}$ D65-class white) in a warm room can look harshly blue after your eyes have adapted to the room. Multi-channel ambient sensors estimate scene illuminance and chromaticity. The display pipeline shifts white point so the panel feels closer to a reflective surface than to a glowing brick. That is the sensory claim. Keep Night Shift and accessibility contrast as separate knobs. True Tone is specifically about ambient-matched white point. The cost is another sensor, another calibration pipeline, and another place where "accurate" and "comfortable" disagree. Apple chose comfort that tracks the room. Photographers who need locked white point turn it off. That is the tradeoff working as designed.
-
+True Tone leans on **color constancy**: the visual system adapts to the illuminant's chromaticity. A display locked at a cool white (often discussed around $6500\text{K}$ D65-class white) in a warm room can look harshly blue after your eyes have adapted to the room. Multi-channel ambient sensors estimate scene illuminance and chromaticity. The display pipeline shifts white point so the panel feels closer to a reflective surface than to a glowing brick. Keep Night Shift and accessibility contrast as separate knobs. True Tone is specifically about ambient-matched white point. The cost is another sensor, another calibration pipeline, and another place where "accurate" and "comfortable" disagree. Apple chose comfort that tracks the room. Photographers who need locked white point turn it off. That is the tradeoff working as designed.
 
 ## One-handed open: hinge torque inside a rigid-body budget
 
-A MacBook that opens cleanly with one hand is not magic. It is an **inequality budget** under gravity, friction, and base mass distribution. What people feel is trust: the machine stays put while the lid rises. What they are evaluating, without knowing the vocabulary, is whether hinge torque plus lid gravity stayed inside the base's restoring moment. One-handed open is the tactile last mile of that budget — not a hinge SKU, not a demo trick, and not industrial-design mystique.
+Lift the MacBook lid with one hand. The base stays put. That trust is not a hinge SKU and not industrial-design mystique. It is whether hinge torque plus lid gravity stayed inside the base's restoring moment — an inequality under gravity, friction, and base mass distribution. One-handed open is the tactile last mile of that budget.
+
+Two conditions must hold through the open:
+
+1. **Open condition (user can lift):** $\tau_{lift} \ge \tau_{hinge} + \tau_{gravity}(\theta)$.
+2. **Base stays down:** if $d_{CG\_base}$ is the horizontal lever arm from hinge to base CG, the restoring moment is $\tau_{base\_restore} = M_{base} \cdot g \cdot d_{CG\_base}$. For the chassis not to lift:
+
+$$
+\tau_{hinge} + \tau_{gravity}(\theta) < M_{base} \cdot g \cdot d_{CG\_base}
+$$
+
+That second line **is** the product. Violate it and the whole notebook pivots up with the lid. "Make the hinge stiffer so the lid holds angle" is not free inside this budget. Stiffer hinge helps hold. Too stiff, and you steal margin from the base. Lighter base, heavier lid, shorter $d_{CG\_base}$, greasier footpads — every one punches the same inequality from a different side.
 
 <!-- interactive:hinge-diagram -->
 
@@ -191,38 +196,17 @@ A MacBook that opens cleanly with one hand is not magic. It is an **inequality b
   [base]  mass M_base, CG at CG_base
 ```
 
-### Torque equations
-
 Let $d_{CG\_lid}$ be the distance from hinge axis to the lid center of mass (for a roughly uniform lid, on the order of half the lid length $L_{lid}$). With $\theta = 0$ fully closed, the gravity torque on the lid is commonly modeled as:
 
 $$
 \tau_{gravity}(\theta) = M_{lid} \cdot g \cdot d_{CG\_lid} \cdot \cos(\theta)
 $$
 
-Exact trig form depends on how you measure $\theta$ and CG location. The important structure is a gravity term that varies with angle.
-
-Hinge damping torque $\tau_{hinge}$ comes from friction packs (spring washers and friction plates under controlled preload). A vertical lift force $F_{lift}$ at the front of the lid produces:
-
-$$
-\tau_{lift} = F_{lift} \cdot L_{lid} \cdot \cos(\theta)
-$$
-
-again geometry-dependent. The design inequalities matter more than any one trig convention.
-
-Two conditions must hold through the open:
-
-1. **Open condition (user can lift):** $\tau_{lift} \ge \tau_{hinge} + \tau_{gravity}(\theta)$.
-2. **Base stays down:** if $d_{CG\_base}$ is the horizontal lever arm from hinge to base CG, the restoring moment is $\tau_{base\_restore} = M_{base} \cdot g \cdot d_{CG\_base}$. For the chassis not to lift:
-
-$$
-\tau_{hinge} + \tau_{gravity}(\theta) < M_{base} \cdot g \cdot d_{CG\_base}
-$$
-
-That second line **is** the product. Violate it and the whole notebook pivots up with the lid. One-handed open fails. "Make the hinge stiffer so the lid holds angle" is not a free parameter inside this budget. Stiffer hinge helps hold. Too stiff, and you steal margin from the base. Lighter base, heavier lid, shorter $d_{CG\_base}$, greasier footpads — every one of those punches the same inequality from a different side.
+Exact trig form depends on how you measure $\theta$ and CG location. The important structure is a gravity term that varies with angle. Hinge damping torque $\tau_{hinge}$ comes from friction packs (spring washers and friction plates under controlled preload). A vertical lift force $F_{lift}$ at the front of the lid produces $\tau_{lift} = F_{lift} \cdot L_{lid} \cdot \cos(\theta)$, again geometry-dependent. The inequalities matter more than any one trig convention.
 
 ### Structural choices that protect the inequality
 
-**Keep the lid light.** A touch digitizer (cover glass, ITO stack) raises $M_{lid}$, which raises $\tau_{gravity}$ and forces a stronger $\tau_{hinge}$ to stop lid wobble. That combination can punch through $\tau_{base\_restore}$. Refusing a touchscreen on MacBook-class lids is, among other reasons, a mass-budget decision. Public discourse loves the software and market explanations. The rigid-body explanation is quieter and still binding.
+**Keep the lid light.** A touch digitizer raises $M_{lid}$, which raises $\tau_{gravity}$ and forces a stronger $\tau_{hinge}$ to stop lid wobble. That combination can punch through $\tau_{base\_restore}$. Refusing a touchscreen on MacBook-class lids is, among other reasons, a mass-budget decision. Public discourse loves the software and market explanations. The rigid-body explanation is quieter and still binding.
 
 **Bias base mass forward.** Dense battery packs stacked away from the hinge (under the palm-rest / trackpad region) lengthen $d_{CG\_base}$ and raise restoring moment. Lighter logic board and I/O sit nearer the hinge. The machine looks symmetric. The mass budget is not.
 
@@ -230,9 +214,9 @@ That second line **is** the product. Violate it and the whole notebook pivots up
 
 ### Magnets, sensing, and the quiet parts of the feel
 
-Rare-earth magnets near the front edge provide a closing bias and fight long-term hinge looseness. Field shaping is often described so peak pull is concentrated in the first millimeter or so of separation, after which lift force drops quickly into the friction-dominated regime. Exact "anti-double-well" language in internal notes is a model of that decay, not a universal physics law.
+Rare-earth magnets near the front edge provide a closing bias and fight long-term hinge looseness. Field shaping is often described so peak pull is concentrated in the first millimeter or so of separation, after which lift force drops quickly into the friction-dominated regime.
 
-A lid-angle sensor near the hinge feeds firmware. Below a small closed threshold, microphone lines can be hardware-gated. Wake-on-open and sleep-on-close typically use asymmetric thresholds so micro-vibration does not chatter the machine awake. Treat specific degree cutoffs as **commonly cited engineering figures**, not guarantees across every generation. Verify per product.
+A lid-angle sensor near the hinge feeds firmware. Below a small closed threshold, microphone lines can be hardware-gated. Wake-on-open and sleep-on-close typically use asymmetric thresholds so micro-vibration does not chatter the machine awake. Treat specific degree cutoffs as **commonly cited engineering figures**, not guarantees across every generation.
 
 Footpads matter too. Static friction must beat the horizontal component of lift:
 
@@ -246,12 +230,11 @@ Microcellular polyurethane pads are a common material choice for contact area an
 
 They optimize for the demo. Lid holds at any angle in a boardroom video. Base lifts on a real desk with a light chassis. Or they add a touch panel to a notebook lid for competitive parity and discover, late, that the mass budget was the product. Or they copy magnet placement without the pull curve, so the lid either slams or feels dead through the last centimeter. Or they read a patent figure's angle band as a recipe and ship the costume of "torsion assist" without protecting $\tau_{base\_restore}$.
 
-The cost of getting this right is interdisciplinary. Industrial design, hinge suppliers, battery packaging, and firmware hysteresis all share one inequality. That is harder than shipping a "premium hinge" SKU. It is also why one-handed open reads as taste when it is really systems engineering with a tactile last mile — an inequality budget someone refused to violate for a feature demo.
-
+The cost of getting this right is interdisciplinary. Industrial design, hinge suppliers, battery packaging, and firmware hysteresis all share one inequality. That is harder than shipping a "premium hinge" SKU. It is also why one-handed open reads as taste when it is really systems engineering with a tactile last mile.
 
 ## Cognitive load and Dieter Rams as product policy
 
-Aggressive platform consistency and slow, selective feature adoption map cleanly onto John Sweller's **cognitive load theory** (Sweller, 1988, *Cognitive Science*). Working memory is narrow. George Miller's $7 \pm 2$ chunks (1956) remains a **classical rule of thumb**, not a modern measurement standard for interface widgets — treat it as historical intuition about limited capacity, not as a budgeting formula for menu items. The qualitative claim still holds: UI chaos burns the budget before the user reaches the task.
+Aggressive platform consistency and slow, selective feature adoption map cleanly onto John Sweller's **cognitive load theory** (Sweller, 1988, *Cognitive Science*). Working memory is narrow. George Miller's $7 \pm 2$ chunks (1956) remains a **classical rule of thumb**, not a modern measurement standard for interface widgets — historical intuition about limited capacity, not a budgeting formula for menu items. The qualitative claim still holds: UI chaos burns the budget before the user reaches the task.
 
 Total load is often decomposed as:
 
@@ -271,18 +254,17 @@ This is where "ecosystem" stops being a marketing noun. An ecosystem that shares
 
 ### Four Rams principles that actually bind
 
-Jony Ive's industrial language and much of Apple's UI rhetoric sit downstream of Dieter Rams' "less, but better." The full ten-principle list is easy to reprint as a brochure. Four of them do real argumentative work here.
+Jony Ive's industrial language and much of Apple's UI rhetoric sit downstream of Dieter Rams' "less, but better." Four principles do real argumentative work here; the rest of the ten-principle list is pressure, not a scorecard.
 
-**Useful** includes trust, not only throughput. A spring that settles without lying about mass is usefulness. A hinge that keeps the base planted is usefulness. Warmth in the hand is not decoration on top of function. It is part of whether the tool disappears.
+**Useful** includes trust, not only throughput. A spring that settles without lying about mass is usefulness. A hinge that keeps the base planted is usefulness. Warmth in the hand is not decoration on top of function — it is part of whether the tool disappears.
 
 **Honest** means do not costume latency as delight. Haptics that fire because something finished are reporting state. Haptics that fire because a marketing deck asked for "premium feedback" are costume. Users may not articulate the difference. They feel it as noise.
 
 **Thorough to the last detail** is where continuous corners and critically damped sheets stop being polish and become policy. Detail as care only works if the same standard reaches firmware hysteresis, footpad compound, and icon mask curvature. Selective thoroughness reads as inconsistency.
 
-**As little design as possible** is subtraction until the essential interaction remains. It is not barren fake-minimalism. Restraint still leaves room for color temperature, micro-damping, and finish. The test is whether removing one more thing would break comprehension or trust. If yes, stop. If no, keep cutting.
+**As little design as possible** is subtraction until the essential interaction remains — not barren fake-minimalism. Restraint still leaves room for color temperature, micro-damping, and finish. The test is whether removing one more thing would break comprehension or trust. If yes, stop. If no, keep cutting.
 
-The other Rams principles (innovative, aesthetic, understandable, unobtrusive, long-lasting, environmentally friendly) still matter. They matter less as a scorecard and more as pressure against feature theater, fashion skins, and forced churn. Long-lasting, in this framing, prefers stable perceptual principles (Gestalt grouping, spatial memory, physical metaphor) over cycles of flat versus skeuomorphic costume.
-
+The other Rams principles (innovative, aesthetic, understandable, unobtrusive, long-lasting, environmentally friendly) still matter as pressure against feature theater, fashion skins, and forced churn. Long-lasting, in this framing, prefers stable perceptual principles (Gestalt grouping, spatial memory, physical metaphor) over cycles of flat versus skeuomorphic costume.
 
 ## What to steal (and what not to)
 
@@ -305,10 +287,9 @@ Steal cognitive restraint: shared grammar, progressive disclosure, honesty about
 | Torque budget shared across ID, hinge, battery, firmware | "Premium hinge" as a single SKU claim |
 | HIG-level shared grammar to cut extraneous load | Unique chrome that forces relearning each screen |
 
-Failure modes cluster. Motion teams overfit to screen recordings — bounce reads better on Twitter than critical damping does. Visual teams overfit to single-card mockups where a G1 join never has to live beside twenty siblings. Hardware teams overfit to lid-hold demos that never weigh the base. Cognitive claims get made without task-level measures (time to first correct action, error rate on Back/Confirm). Eye tracking, if you have it, is exploratory. Do not treat a round "fewer micro-saccades" number as a universal gate unless you replicate it under your own conditions.
+Failure modes cluster. Motion teams overfit to screen recordings — bounce reads better on Twitter than critical damping does. Visual teams overfit to single-card mockups where a G1 join never has to live beside twenty siblings. Hardware teams overfit to lid-hold demos that never weigh the base. Cognitive claims get made without task-level measures (time to first correct action, error rate on Back/Confirm). Eye tracking, if you have it, is exploratory — not a universal gate unless you replicate it under your own conditions.
 
 The limit of stealing Apple's physics is that Apple also steals time. These calibrations assume long platform tenure, supplier relationships, and the willingness to refuse features that punch through a budget. If your org cannot refuse, you will get the costume. The models above still help you see which refusal you skipped.
-
 
 ## Closing
 
