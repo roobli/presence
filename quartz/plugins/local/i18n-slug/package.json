@@ -1,0 +1,23 @@
+{
+  "name": "i18n-slug",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Map sibling *.zh.md files to /zh/<path> URLs and mark them unlisted for explorer",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./index.js",
+  "quartz": {
+    "name": "i18n-slug",
+    "displayName": "i18n slug map",
+    "category": "transformer",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 5,
+    "defaultEnabled": true,
+    "defaultOptions": {}
+  }
+}
