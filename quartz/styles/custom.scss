@@ -2544,15 +2544,21 @@ article code.mermaid svg * {
 /* essay interactives */
 .essay-interactive {
   margin: 1.25rem 0 1.5rem;
+  max-width: 100%;
+  // Kill the ~5px page-level horizontal overflow from bordered 100% canvases.
+  overflow-x: clip;
 }
 
 .essay-interactive__card {
+  box-sizing: border-box;
+  max-width: 100%;
   border: 1px solid var(--line-color);
   border-radius: 8px;
   background: var(--surface-color);
   padding: 0.9rem 1rem 1rem;
   font-family: var(--font-ui);
   color: var(--ink-color);
+  overflow-x: clip;
 }
 
 .essay-interactive__title {
@@ -2576,6 +2582,8 @@ article code.mermaid svg * {
   flex-wrap: wrap;
   gap: 0.55rem 0.75rem;
   font-size: 0.85rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .essay-interactive__row--actions {
@@ -2628,7 +2636,9 @@ article code.mermaid svg * {
 
 .essay-interactive__canvas {
   display: block;
+  box-sizing: border-box;
   width: 100%;
+  max-width: 100%;
   height: auto;
   border: 1px solid var(--line-color);
   border-radius: 6px;
@@ -2638,9 +2648,12 @@ article code.mermaid svg * {
 .essay-interactive__svg,
 .essay-interactive__kappa {
   display: block;
+  box-sizing: border-box;
   width: 100%;
+  max-width: 100%;
   height: auto;
   margin-top: 0.35rem;
+  overflow: hidden;
 }
 
 .essay-interactive__shape {
