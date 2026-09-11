@@ -2542,10 +2542,35 @@ article code.mermaid svg * {
 }
 
 /* Essay page: center display math, interactives, and standalone figures. */
+/* Display math: one size up from body, centered like a figure. */
 article .katex-display {
   text-align: center;
+  margin: 1.15em auto;
   margin-left: auto;
   margin-right: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  font-size: 1.12em; // ~one step above body prose
+}
+
+article .katex-display > .katex {
+  font-size: 1.06em;
+  text-align: center;
+}
+
+/* Inline math: keep optical size with prose; slight baseline polish. */
+article .katex:not(.katex-display .katex) {
+  font-size: 1.02em;
+  font-weight: 450;
+  line-height: 0;
+  vertical-align: -0.08em;
+}
+
+article p .katex,
+article li .katex,
+article td .katex {
+  // Avoid fattening; just sit cleaner in Songti/PingFang lines.
+  text-rendering: geometricPrecision;
 }
 
 article mjx-container[display="true"],
@@ -2553,8 +2578,10 @@ article .math.math-display {
   display: flex;
   justify-content: center;
   text-align: center;
+  margin: 1.15em auto;
   margin-left: auto;
   margin-right: auto;
+  font-size: 1.12em;
 }
 
 article figure {
