@@ -35,3 +35,11 @@ Secrets (repo Actions): `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`. Never c
 ## History
 
 Former experiment: `roobli/roob-note-site` at `note.roobli.org` (notes export pipeline). Decision: notes stay private; this repo keeps the **framework and craft**, hosts curated public pages, domain is `www.roobli.org`.
+
+## Brand assets
+
+- `quartz/static/icon.png` — favicon / mark (not Quartz default)
+- `quartz/static/og-image.png` — default Open Graph / Twitter `summary_large_image`
+- `quartz/static/apple-touch-icon.png` — home-screen icon
+
+After changing these, push `main` so CF Pages redeploys; then re-scrape cards (X Card Validator / opengraph.xyz) if a URL was cached.
