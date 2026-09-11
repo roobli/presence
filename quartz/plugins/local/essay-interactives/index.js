@@ -6,6 +6,8 @@
 const WIDGET_MARKERS = {
   "spring-zeta": true,
   "squircle-compare": true,
+  "zeta-triptych": true,
+  "curvature-comb": true,
 }
 
 const STRIP_MARKERS = {
