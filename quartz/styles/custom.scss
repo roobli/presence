@@ -1895,9 +1895,7 @@ article pre {
     color: inherit;
   }
 
-  &:has(> code.mermaid) {
-    border: 1px solid var(--code-border-color);
-  }
+  /* mermaid frame styled in paper theme block below */
 }
 
 // code, tt
@@ -2426,4 +2424,108 @@ li.section-li > .section {
       grid-column: 1 / -1;
     }
   }
+}
+
+
+/* === mermaid paper theme (presence) === */
+/* Editorial diagrams: warm paper, hairline strokes, scarce fill — not SaaS neon. */
+article pre:has(> code.mermaid) {
+  background-color: var(--canvas-color);
+  border: 1px solid var(--line-color);
+  border-radius: var(--radius-block);
+  padding: 1.15rem 1rem 1rem;
+  box-shadow: none;
+}
+
+article pre:has(> code.mermaid) > .clipboard-button,
+article pre:has(> code.mermaid) > .expand-button {
+  border-color: var(--line-color);
+  background-color: var(--surface-subtle-color);
+  color: var(--ink-muted-color);
+}
+
+article code.mermaid {
+  display: flex;
+  justify-content: center;
+  background: transparent !important;
+  color: var(--ink-color);
+}
+
+article code.mermaid svg {
+  max-width: 100%;
+  height: auto;
+  font-family: var(--font-ui) !important;
+}
+
+article code.mermaid svg .node rect,
+article code.mermaid svg .node circle,
+article code.mermaid svg .node ellipse,
+article code.mermaid svg .node polygon,
+article code.mermaid svg .basic.label-container,
+article code.mermaid svg .actor,
+article code.mermaid svg .actor-man > circle,
+article code.mermaid svg .actor-man > line {
+  fill: var(--surface-color) !important;
+  stroke: var(--line-strong-color) !important;
+  stroke-width: 1.15px !important;
+  filter: none !important;
+}
+
+article code.mermaid svg .cluster rect {
+  fill: var(--surface-subtle-color) !important;
+  stroke: var(--line-color) !important;
+  stroke-width: 1px !important;
+  filter: none !important;
+}
+
+article code.mermaid svg .edgePath .path,
+article code.mermaid svg .flowchart-link,
+article code.mermaid svg path.transition,
+article code.mermaid svg .messageLine0,
+article code.mermaid svg .messageLine1 {
+  stroke: var(--ink-muted-color) !important;
+  stroke-width: 1.15px !important;
+  fill: none !important;
+}
+
+article code.mermaid svg .arrowheadPath,
+article code.mermaid svg marker path {
+  fill: var(--ink-muted-color) !important;
+  stroke: var(--ink-muted-color) !important;
+}
+
+article code.mermaid svg .label,
+article code.mermaid svg .nodeLabel,
+article code.mermaid svg .edgeLabel,
+article code.mermaid svg .cluster-label,
+article code.mermaid svg .actor,
+article code.mermaid svg foreignObject,
+article code.mermaid svg foreignObject div,
+article code.mermaid svg foreignObject span {
+  color: var(--ink-color) !important;
+  font-family: var(--font-ui) !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+  line-height: 1.35 !important;
+}
+
+article code.mermaid svg .cluster-label,
+article code.mermaid svg .cluster span {
+  color: var(--ink-muted-color) !important;
+  font-weight: 600 !important;
+  font-size: 0.78rem !important;
+}
+
+article code.mermaid svg .edgeLabel rect,
+article code.mermaid svg .labelBkg,
+article code.mermaid svg .edgeLabel .labelBkg {
+  fill: var(--canvas-color) !important;
+  opacity: 1 !important;
+  stroke: none !important;
+}
+
+/* No motion chrome on diagrams — keep them still like print figures. */
+article code.mermaid svg * {
+  animation: none !important;
+  transition: none !important;
 }

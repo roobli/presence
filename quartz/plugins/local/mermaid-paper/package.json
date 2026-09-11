@@ -1,0 +1,31 @@
+{
+  "name": "mermaid-paper",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Restyle Mermaid to Claude-like paper tokens (thin lines, soft fills, UI font)",
+  "exports": {
+    ".": "./index.js",
+    "./components": "./components/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./index.js",
+  "quartz": {
+    "name": "mermaid-paper",
+    "displayName": "Mermaid paper theme",
+    "category": "component",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 97,
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "MermaidPaper": {
+        "displayName": "Mermaid paper theme",
+        "defaultPosition": "footer",
+        "defaultPriority": 2
+      }
+    }
+  }
+}
