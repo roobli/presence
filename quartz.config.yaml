@@ -228,6 +228,11 @@ plugins:
     layout:
       position: footer
       priority: 1
+  - source: "./quartz/plugins/local/mermaid-paper"
+    enabled: true
+    layout:
+      position: footer
+      priority: 2
   - source: "@quartz-community/graph"
     enabled: true
     layout:
