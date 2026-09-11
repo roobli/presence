@@ -37,7 +37,7 @@ jobs:
 
       - name: Verify roob-ui mounted
         run: |
-          if ! rg -q "function roobUI|tpl-width-button" public/static/scripts/*.js; then
+          if ! grep -Rql "tpl-width-button" public/static/scripts; then
             echo "roob-ui client script missing from build output" >&2
             ls -la .quartz/plugins || true
             ls public/static/scripts || true
