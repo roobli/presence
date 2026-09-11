@@ -11,6 +11,7 @@ Public surface for selected **works** and deep **writing**. Private notes stay p
 ## Writing
 
 - [[writing/cuda-course-without-a-gpu|You can finish a CUDA course without a GPU — if the course is designed for it]]
+- [[writing/keyboard-shortcut-systems|Keyboard shortcut systems — design, history, and a shared grammar]]
 
 ## Works
 
