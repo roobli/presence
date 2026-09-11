@@ -1,5 +1,7 @@
 ---
 title: Keyboard shortcut systems — design, history, and a shared grammar
+lang: en
+alt: /zh/writing/keyboard-shortcut-systems
 description: "From Emacs prefixes and vi modes to Spotlight, command palettes, and Cmd+K: why power users treat keybindings as a namespace, and how KeyCombiner turns that into a practice system."
 date: 2026-09-11
 tags:
@@ -200,7 +202,7 @@ If you already live in tmux + vim/Emacs + i3, Cursor/Claude/Lark command boxes a
 - Keep high-density work in modal/prefix systems; use GUI palettes for discovery and occasional cross-app jumps.
 - Make “what I am currently practicing” explicit (KeyCombiner-style collections) so you do not stall forever on copy/paste only.
 
-Private Chinese long-form of this essay lives in my notes vault; this page is the public, self-contained English cut for RoobLi Presence.
+A Chinese version of this essay is available via the language switch above.
 
 ## Short source list
 
