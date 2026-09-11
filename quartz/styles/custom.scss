@@ -690,11 +690,17 @@ body {
   .tree-item-self {
     position: relative;
     z-index: 1; // above the guide overlay
-    min-height: 24px;
-    padding: 1px 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    box-sizing: border-box;
+    min-height: 26px;
+    // Even vertical padding so icon+label sit on the midline (Typora rail).
+    padding: 4px 8px 4px 7px;
     border-radius: var(--radius-block);
     color: var(--ink-color);
     background-image: none;
+    line-height: 1.3;
 
     &:hover {
       background-color: var(--item-hover-bg-color);
@@ -717,7 +723,8 @@ body {
 
   a.nav-file-title,
   a.folder-button {
-    display: block;
+    display: flex;
+    align-items: center;
     min-width: 0;
     color: inherit;
     background-image: none;
@@ -727,9 +734,11 @@ body {
 
   .folder-title,
   a.nav-file-title {
-    display: block;
+    display: flex;
+    align-items: center;
+    min-width: 0;
     font-size: 13.5px;
-    line-height: 1.5;
+    line-height: 1.3;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -748,11 +757,11 @@ body {
   .folder-title::before,
   a.nav-file-title::before {
     content: "";
-    display: inline-block;
+    flex: none;
+    display: block;
     width: 14px;
     height: 14px;
-    margin-right: 5px;
-    vertical-align: -2.5px;
+    margin-right: 0; // gap on the flex row handles spacing
     background-color: var(--ink-muted-color);
     mask-repeat: no-repeat;
     mask-position: center;
@@ -891,6 +900,8 @@ body {
     background-color: var(--surface-active-color);
     color: var(--ink-strong-color);
     font-weight: 500;
+    // Typora-style left spine: accent hairline, not a thicker pill alone.
+    box-shadow: inset 2px 0 0 0 var(--active-file-border-color);
   }
 
 }
