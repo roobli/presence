@@ -1,34 +1,37 @@
 # presence
 
-RoobLi public homepage (`www.roobli.org`): curated **works** + deep **writing**.
+RoobLi public site — **www.roobli.org**.
 
-Not a notes mirror. Private RooB notes stay private. Visual language inherits the Claude-like Typora tokens from the former `roob-note-site` experiment.
+Quartz 5 fork with the Typora Claude-Like visual system (ported from `roob-note-site`). This is the org homepage and writing/works surface — **not** a RooB notes mirror.
 
-## Dev
-
-Node `>= 22.12`.
+## Run
 
 ```bash
 npm ci
-npm run dev
-npm run build
+npx quartz build --serve --port 8080
 ```
 
-Content: `src/content/writing`, `src/content/works`.
+Content lives in `content/` inside this repo (curated, public). Do not symlink RooB here.
 
-## Deploy (Cloudflare Pages via Actions)
+## Deploy
 
-Push `main` → [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) builds and deploys `dist` to Pages project **`presence`**.
+Cloudflare Pages project **`presence`**, via GitHub Actions on `main`:
 
-Repo secrets (never commit):
+1. `npm ci`
+2. `npx quartz build` → output `public/`
+3. `wrangler pages deploy public --project-name=presence --branch=main`
 
-| Secret | Purpose |
+Secrets (repo Actions): `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`. Never commit tokens.
+
+## Customize
+
+| What | Where |
 | --- | --- |
-| `CLOUDFLARE_API_TOKEN` | Pages Edit (+ DNS if binding domains) |
-| `CLOUDFLARE_ACCOUNT_ID` | Account id |
+| Fonts, colors, plugins | `quartz.config.yaml` |
+| Layout / chrome CSS | `quartz/styles/custom.scss` |
+| Sidebar, TOC disk, width shortcuts | `quartz/plugins/local/roob-ui/` |
+| Theme tokens (generated) | `quartz/styles/claude-like-tokens.scss` + `node tools/sync-theme-tokens.mjs` |
 
-Custom domains: `www.roobli.org` (and apex redirect). Do **not** keep `note.roobli.org` as a second public site.
+## History
 
-## Related demos
-
-Standalone project pages may stay on `*.github.io` (e.g. CUDA course). Link them from Works.
+Former experiment: `roobli/roob-note-site` at `note.roobli.org` (notes export pipeline). Decision: notes stay private; this repo keeps the **framework and craft**, hosts curated public pages, domain is `www.roobli.org`.

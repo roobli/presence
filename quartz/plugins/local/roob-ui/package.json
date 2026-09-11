@@ -1,0 +1,31 @@
+{
+  "name": "roob-ui",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Typora-parity chrome for the RooB site: quick open, editor width, code copy, sidenotes",
+  "exports": {
+    ".": "./index.js",
+    "./components": "./components/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./index.js",
+  "quartz": {
+    "name": "roob-ui",
+    "displayName": "RooB UI",
+    "category": "component",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 95,
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "RoobUI": {
+        "displayName": "RooB UI",
+        "defaultPosition": "footer",
+        "defaultPriority": 99
+      }
+    }
+  }
+}

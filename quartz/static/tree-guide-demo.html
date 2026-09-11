@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>侧栏树引导线 · 方案对比</title>
+<style>
+:root{
+  --canvas-color:#faf9f6; --sidebar-color:#f3f1ec; --surface-color:#f2f1ee;
+  --surface-active-color:#ebe8e2; --ink-color:#34312e; --ink-strong-color:#201e1c;
+  --ink-muted-color:#6f6b66; --line-color:#ddd9d2; --line-strong-color:#c9c3bb;
+  --accent-color:#a85d3b; --item-hover:rgba(168,93,59,.08);
+  --tree-line:rgba(32,30,28,.14); --tree-line-soft:rgba(32,30,28,.07);
+  --font-ui:"PingFang SC","Hiragino Sans GB","Noto Sans CJK SC","Segoe UI",sans-serif;
+  --font-body:"Songti SC","Noto Serif CJK SC",serif;
+}
+html[data-theme="dark"]{
+  --canvas-color:#1f1e1c; --sidebar-color:#181715; --surface-color:#292826;
+  --surface-active-color:#32302d; --ink-color:#d7d4cf; --ink-strong-color:#f1eee8;
+  --ink-muted-color:#9b9790; --line-color:#3b3935; --line-strong-color:#4b4842;
+  --accent-color:#e0a07a; --item-hover:rgba(224,160,122,.11);
+  --tree-line:rgba(241,238,232,.16); --tree-line-soft:rgba(241,238,232,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--canvas-color);color:var(--ink-color);font-family:var(--font-ui);
+  -webkit-font-smoothing:antialiased}
+header{padding:28px 32px 8px;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+h1{font-family:var(--font-body);font-size:20px;font-weight:600;margin:0;color:var(--ink-strong-color)}
+header p{margin:0;font-size:13px;color:var(--ink-muted-color)}
+button.theme{margin-left:auto;border:1px solid var(--line-color);background:transparent;
+  color:var(--ink-muted-color);border-radius:6px;padding:5px 10px;font:inherit;font-size:12px;cursor:pointer}
+.rack{display:flex;gap:24px;padding:20px 32px 48px;align-items:flex-start;flex-wrap:wrap}
+.card{flex:0 0 300px;background:var(--sidebar-color);border:1px solid var(--line-color);
+  border-radius:10px;overflow:hidden}
+.card h2{margin:0;padding:12px 14px 4px;font-size:13px;font-weight:600;color:var(--ink-strong-color)}
+.card p.note{margin:0;padding:0 14px 10px;font-size:11.5px;line-height:1.5;color:var(--ink-muted-color)}
+.tree{position:relative;padding:6px 8px 12px 10px}
+
+/* one row, shared by every variant */
+.row{position:relative;display:flex;align-items:center;gap:4px;height:26px;padding:0 8px;
+  border-radius:6px;font-size:12.5px;line-height:1.4;color:var(--ink-color);cursor:default;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row:hover{background:var(--item-hover)}
+.row.is-dir{font-weight:500;color:var(--ink-strong-color)}
+.row.is-active{background:var(--surface-active-color);color:var(--ink-strong-color);font-weight:500}
+.row .caret{flex:none;width:12px;height:12px;color:var(--ink-muted-color);transition:transform .15s}
+.row .caret svg{display:block;width:12px;height:12px}
+.row .label{overflow:hidden;text-overflow:ellipsis}
+ul{list-style:none;margin:0;padding:0}
+li{position:relative;margin:0}
+.kids{position:relative;margin-left:0;padding-left:15px}
+
+/* the guide layer: one SVG per group, drawn as a single stroke */
+.guide{position:absolute;left:0;top:0;width:15px;height:100%;overflow:visible;pointer-events:none}
+.guide path{fill:none;stroke:var(--tree-line);stroke-width:1;stroke-linecap:round;
+  vector-effect:non-scaling-stroke}
+.guide path.lit{stroke:var(--accent-color);stroke-width:1.25;opacity:0}
+
+/* V3: indent guides only */
+.v3 .kids{padding-left:14px}
+.v3 .kids::before{content:"";position:absolute;left:0;top:0;bottom:0;width:1px;background:var(--tree-line)}
+.v3 .kids.on-path::before{background:var(--accent-color);opacity:.75}
+
+/* V4: no lines at all */
+.v4 .kids{padding-left:16px}
+.v4 .row .dot{flex:none;width:4px;height:4px;border-radius:50%;background:var(--tree-line-soft);margin-right:2px}
+.v4 .row.is-dir .dot{background:var(--ink-muted-color)}
+.v4 .row.is-active .dot{background:var(--accent-color)}
+</style>
+</head>
+<body>
+<header>
+  <h1>侧栏树引导线 · 方案对比</h1>
+  <p>同一棵树，四种画法。鼠标移到任意一行看高亮行为。</p>
+  <button class="theme" type="button">切换深色</button>
+</header>
+<div class="rack" id="rack"></div>
+
+<script>
+const TREE = [
+  {n:"A000_Theoretical_Knowledge", d:true, c:[
+    {n:"A300_AI", d:true, c:[
+      {n:"Stanford_CS229_Spring2026", d:true, c:[
+        {n:"Lecture 01 · Introduction"},
+        {n:"Lecture 02 · Supervised Learning", active:true},
+        {n:"Lecture 03 · Maximum Likelihood"},
+        {n:"课程总览与学习路线"},
+      ]},
+    ]},
+    {n:"A404_Linux", d:true, c:[
+      {n:"01_kernel_process", d:true, c:[
+        {n:"cgroups"},
+        {n:"zero copy"},
+        {n:"进程与信号速查"},
+      ]},
+      {n:"03_networking", d:true, c:[
+        {n:"tcpdump"},
+        {n:"网络命令速查"},
+      ]},
+      {n:"Linux 总览"},
+    ]},
+    {n:"A409_Git", d:true, c:[{n:"git worktree"},{n:"Git 单点技巧合集"}]},
+  ]},
+  {n:"mocs", d:true, c:[{n:"Git"},{n:"代理与隧道"},{n:"终端与编辑器"}]},
+];
+
+const CARET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"'
+  + ' stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+
+const VARIANTS = [
+  {id:"v1", title:"V1 一笔画",
+   note:"每一组的引导线是一条连续路径：竖干、每行的横臂、末项的圆角，一次画完。没有拼接，没有接缝，末项只有一个真正的 90 度圆角。"},
+  {id:"v2", title:"V2 一笔画 + 当前分支点亮",
+   note:"同 V1，但当前文件所在的整条祖先链用强调色画出来，其余保持极淡。长目录里一眼知道自己在哪一支。"},
+  {id:"v3", title:"V3 只留缩进线",
+   note:"每层一条竖线，不画横臂。最安静，深层嵌套完全不吵；层级靠缩进读，当前分支的那条线点亮。"},
+  {id:"v4", title:"V4 不画线",
+   note:"完全靠缩进与字色分层，目录前一个小点。最干净，代价是很深的时候要靠缩进数格子。"},
+];
+
+function build(node, depth, variantId){
+  const li = document.createElement("li");
+  const row = document.createElement("div");
+  row.className = "row" + (node.d ? " is-dir" : "") + (node.active ? " is-active" : "");
+  if (variantId === "v4") {
+    const dot = document.createElement("span"); dot.className = "dot"; row.appendChild(dot);
+  } else if (node.d) {
+    const caret = document.createElement("span"); caret.className = "caret";
+    caret.innerHTML = CARET; row.appendChild(caret);
+  } else {
+    const pad = document.createElement("span"); pad.className = "caret"; row.appendChild(pad);
+  }
+  const label = document.createElement("span");
+  label.className = "label"; label.textContent = node.n; row.appendChild(label);
+  li.appendChild(row);
+  if (node.c && node.c.length) {
+    const kids = document.createElement("div"); kids.className = "kids";
+    const ul = document.createElement("ul");
+    node.c.forEach(child => ul.appendChild(build(child, depth + 1, variantId)));
+    kids.appendChild(ul);
+    li.appendChild(kids);
+  }
+  return li;
+}
+
+/**
+ * One SVG per group, one path. The vertical runs to the last row's arm and
+ * turns with a real radius; every arm is a subpath of the same stroke, so the
+ * joins are exact and nothing is stitched together from box borders.
+ */
+function drawGuides(scope, lit){
+  scope.querySelectorAll(".guide").forEach(g => g.remove());
+  scope.querySelectorAll(".kids").forEach(kids => {
+    const ul = kids.querySelector(":scope > ul");
+    if (!ul) return;
+    const rows = [...ul.children].map(li => li.querySelector(":scope > .row"));
+    if (!rows.length) return;
+    const base = kids.getBoundingClientRect();
+    const X = 0.5, ARM = 11, R = 7;
+    const arms = rows.map(r => {
+      const b = r.getBoundingClientRect();
+      return Math.round(b.top - base.top + b.height / 2) + 0.5;
+    });
+    const lastArm = arms[arms.length - 1];
+    let d = `M${X},0 L${X},${lastArm - R} Q${X},${lastArm} ${X + R},${lastArm} L${X + ARM},${lastArm}`;
+    for (let i = 0; i < arms.length - 1; i += 1) d += ` M${X},${arms[i]} L${X + ARM},${arms[i]}`;
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "guide");
+    svg.setAttribute("preserveAspectRatio", "none");
+    const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    p.setAttribute("d", d);
+    svg.appendChild(p);
+    if (lit) {
+      const onPath = kids.contains(scope.querySelector(".is-active"));
+      if (onPath) {
+        const hi = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        hi.setAttribute("class", "lit"); hi.setAttribute("d", d);
+        hi.style.opacity = "1";
+        svg.appendChild(hi);
+      }
+    }
+    kids.insertBefore(svg, kids.firstChild);
+  });
+}
+
+const rack = document.getElementById("rack");
+VARIANTS.forEach(v => {
+  const card = document.createElement("div");
+  card.className = "card " + v.id;
+  card.innerHTML = `<h2>${v.title}</h2><p class="note">${v.note}</p>`;
+  const tree = document.createElement("div");
+  tree.className = "tree";
+  const ul = document.createElement("ul");
+  TREE.forEach(n => ul.appendChild(build(n, 0, v.id)));
+  tree.appendChild(ul);
+  card.appendChild(tree);
+  rack.appendChild(card);
+  if (v.id === "v1" || v.id === "v2") {
+    requestAnimationFrame(() => drawGuides(tree, v.id === "v2"));
+  }
+  if (v.id === "v3") {
+    const active = tree.querySelector(".is-active");
+    let node = active;
+    while (node && node !== tree) {
+      if (node.classList && node.classList.contains("kids")) node.classList.add("on-path");
+      node = node.parentElement;
+    }
+  }
+});
+
+document.querySelector("button.theme").addEventListener("click", () => {
+  const dark = document.documentElement.getAttribute("data-theme") === "dark";
+  document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+  document.querySelector("button.theme").textContent = dark ? "切换深色" : "切换浅色";
+});
+
+addEventListener("resize", () => {
+  document.querySelectorAll(".card.v1 .tree").forEach(t => drawGuides(t, false));
+  document.querySelectorAll(".card.v2 .tree").forEach(t => drawGuides(t, true));
+});
+</script>
+</body>
+</html>

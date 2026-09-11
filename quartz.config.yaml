@@ -1,0 +1,365 @@
+# yaml-language-server: $schema=./quartz/plugins/quartz-plugins.schema.json
+configuration:
+  pageTitle: RoobLi
+  pageTitleSuffix: ""
+  enableSPA: true
+  enablePopovers: true
+  analytics: null
+  locale: en-US
+  baseUrl: www.roobli.org
+  ignorePatterns:
+    - private
+    - templates
+    - .obsidian
+  theme:
+    # Fonts resolve from the machine so the page uses the same faces Typora does.
+    # The full stacks (with cross-platform fallbacks) live in claude-like-tokens.scss.
+    fontOrigin: local
+    cdnCaching: true
+    typography:
+      title: PingFang SC
+      header: Songti SC
+      body: Songti SC
+      code: Menlo
+    # Kept in step with Typora_Claude-Like_Theme. custom.scss re-points these at
+    # the generated theme tokens, so these values only matter to the OG image.
+    colors:
+      lightMode:
+        light: "#faf9f6"
+        lightgray: "#ddd9d2"
+        gray: "#6f6b66"
+        darkgray: "#34312e"
+        dark: "#201e1c"
+        secondary: "#a85d3b"
+        tertiary: "#8d4b31"
+        highlight: rgba(168, 93, 59, 0.08)
+        textHighlight: "#ffe9a8"
+      darkMode:
+        light: "#1f1e1c"
+        lightgray: "#3b3935"
+        gray: "#9b9790"
+        darkgray: "#d7d4cf"
+        dark: "#f1eee8"
+        secondary: "#e0a07a"
+        tertiary: "#efb390"
+        highlight: rgba(224, 160, 122, 0.11)
+        textHighlight: "#5a4a0088"
+plugins:
+  - source: "@quartz-community/created-modified-date"
+    enabled: true
+    options:
+      defaultDateType: modified
+      priority:
+        - frontmatter
+        - git
+        - filesystem
+    order: 10
+  - source: "@quartz-community/syntax-highlighting"
+    enabled: true
+    options:
+      # Token colours taken from Typora_Claude-Like_Theme's --code-*-color set,
+      # so a fence reads the same in the browser as it does in the editor.
+      theme:
+        light:
+          name: claude-like
+          type: light
+          fg: "#2b2926"
+          bg: "#f2f1ee"
+          settings:
+            - settings:
+                foreground: "#2b2926"
+            - scope: [comment, punctuation.definition.comment, meta.diff.header, string.comment]
+              settings:
+                foreground: "#77716a"
+            - scope: [string, string.quoted, string.template, constant.other.symbol, markup.inline.raw]
+              settings:
+                foreground: "#4f7352"
+            - scope: [constant.numeric, constant.language, constant.character, keyword.other.unit]
+              settings:
+                foreground: "#a35e35"
+            - scope: [keyword, storage, storage.type, storage.modifier, keyword.control, support.class, support.type, support.function, entity.name.type, entity.name.function, entity.name.class, variable.parameter, variable.language]
+              settings:
+                foreground: "#6f4e83"
+            - scope: [entity.name.tag, entity.other.attribute-name, variable.other.property, variable.other.object.property, support.type.property-name, meta.object-literal.key, markup.underline.link, markup.heading]
+              settings:
+                foreground: "#3f6386"
+        dark:
+          name: claude-like-dark
+          type: dark
+          fg: "#e1ddd7"
+          bg: "#292826"
+          settings:
+            - settings:
+                foreground: "#e1ddd7"
+            - scope: [comment, punctuation.definition.comment, meta.diff.header, string.comment]
+              settings:
+                foreground: "#96918a"
+            - scope: [string, string.quoted, string.template, constant.other.symbol, markup.inline.raw]
+              settings:
+                foreground: "#9abd8f"
+            - scope: [constant.numeric, constant.language, constant.character, keyword.other.unit]
+              settings:
+                foreground: "#d8a07d"
+            - scope: [keyword, storage, storage.type, storage.modifier, keyword.control, support.class, support.type, support.function, entity.name.type, entity.name.function, entity.name.class, variable.parameter, variable.language]
+              settings:
+                foreground: "#c1a7d3"
+            - scope: [entity.name.tag, entity.other.attribute-name, variable.other.property, variable.other.object.property, support.type.property-name, meta.object-literal.key, markup.underline.link, markup.heading]
+              settings:
+                foreground: "#8eafd0"
+      keepBackground: false
+    order: 20
+  - source: "@quartz-community/obsidian-flavored-markdown"
+    enabled: true
+    options:
+      enableInHtmlEmbed: false
+      enableCheckbox: true
+    order: 30
+  - source: "@quartz-community/github-flavored-markdown"
+    enabled: true
+    order: 40
+  - source: "@quartz-community/table-of-contents"
+    enabled: true
+    order: 50
+    layout:
+      position: left
+      priority: 40
+  - source: "@quartz-community/crawl-links"
+    enabled: true
+    options:
+      markdownLinkResolution: shortest
+    order: 60
+  - source: "@quartz-community/description"
+    enabled: true
+    order: 70
+  - source: "@quartz-community/latex"
+    enabled: true
+    options:
+      renderEngine: katex
+    order: 80
+  - source: "@quartz-community/citations"
+    enabled: false
+    order: 85
+  - source: "@quartz-community/hard-line-breaks"
+    enabled: false
+    order: 90
+  - source: "@quartz-community/ox-hugo"
+    enabled: false
+    order: 91
+  - source: "@quartz-community/roam"
+    enabled: false
+    order: 92
+  - source: "@quartz-community/quartz-fonts"
+    enabled: false
+    options:
+      useThemeFonts: false
+      fontOrigin: googleFonts
+      title:
+        name: JetBrains Mono
+        weights: [500, 600]
+      header:
+        name: Noto Sans SC
+        weights: [500, 600]
+      body:
+        name: Noto Sans SC
+        weights: [400, 500, 600]
+      interface:
+        name: Noto Sans SC
+        weights: [400, 500]
+      code:
+        name: JetBrains Mono
+        weights: [400, 500]
+  - source: "@quartz-themes/core"
+    enabled: false
+    options:
+      theme: tokyo-night
+      mode: both
+  - source: "@quartz-community/remove-draft"
+    enabled: true
+  - source: "@quartz-community/explicit-publish"
+    enabled: false
+  - source: "@quartz-community/unlisted-pages"
+    enabled: true
+    options: {}
+    order: 45
+  - source: "@quartz-community/encrypted-pages"
+    enabled: true
+    options:
+      iterations: 600000
+      passwordField: password
+      unlistWhenEncrypted: false
+      outputPath: static/encryptedContentIndex.json
+  - source: "@quartz-community/stacked-pages"
+    enabled: false
+    layout:
+      position: afterBody
+      priority: 50
+      display: all
+  - source: "@quartz-community/alias-redirects"
+    enabled: true
+  - source: "@quartz-community/content-index"
+    enabled: true
+    options:
+      enableSiteMap: true
+      enableRSS: true
+  - source: "@quartz-community/favicon"
+    enabled: true
+  - source: "@quartz-community/og-image"
+    enabled: false
+  - source: "@quartz-community/cname"
+    enabled: true
+  - source: "@quartz-community/canvas-page"
+    enabled: true
+  - source: "@quartz-community/content-page"
+    enabled: true
+  - source: "@quartz-community/folder-page"
+    enabled: true
+  - source: "@quartz-community/tag-page"
+    enabled: true
+  - source: "@quartz-community/explorer"
+    enabled: true
+    layout:
+      position: left
+      priority: 50
+  - source: "@quartz-community/graph"
+    enabled: true
+    layout:
+      position: afterBody
+      priority: 20
+  - source: "@quartz-community/search"
+    enabled: true
+    options:
+      # No preview pane: the editor's quick open is a single column of
+      # name-plus-path rows, and a split panel reads nothing like it.
+      enablePreview: false
+    layout:
+      position: left
+      priority: 20
+      group: toolbar
+      groupOptions:
+        grow: true
+  - source: "@quartz-community/backlinks"
+    enabled: true
+    layout:
+      position: afterBody
+      priority: 10
+  - source: "@quartz-community/article-title"
+    enabled: true
+    layout:
+      position: beforeBody
+      priority: 10
+  - source: "@quartz-community/content-meta"
+    enabled: true
+    layout:
+      position: beforeBody
+      priority: 20
+  - source: "@quartz-community/tag-list"
+    enabled: true
+    layout:
+      position: beforeBody
+      priority: 30
+  - source: "@quartz-community/page-title"
+    enabled: true
+    layout:
+      position: left
+      priority: 10
+  - source: "@quartz-community/darkmode"
+    enabled: true
+    layout:
+      position: left
+      priority: 30
+      group: toolbar
+  - source: "@quartz-community/reader-mode"
+    enabled: true
+    layout:
+      position: left
+      priority: 35
+      group: toolbar
+  - source: "@quartz-community/breadcrumbs"
+    enabled: true
+    layout:
+      position: beforeBody
+      priority: 5
+      condition: not-index
+  - source: "@quartz-community/comments"
+    enabled: false
+    options:
+      provider: giscus
+      options: {}
+    layout:
+      position: afterBody
+      priority: 10
+  - source: "./quartz/plugins/local/roob-ui"
+    enabled: true
+    order: 95
+    layout:
+      position: footer
+      priority: 99
+  - source: "@quartz-community/footer"
+    enabled: true
+    options:
+      links:
+        RooB: https://github.com/lr00rl
+    layout:
+      position: footer
+      priority: 50
+  - source: "@quartz-community/recent-notes"
+    enabled: false
+  - source: "@quartz-community/spacer"
+    enabled: true
+    options: {}
+    order: 25
+    layout:
+      position: left
+      priority: 25
+      display: mobile-only
+  - source: "@quartz-community/bases-page"
+    enabled: true
+    options: {}
+    order: 50
+  - source: "@quartz-community/note-properties"
+    enabled: true
+    options:
+      includeAll: false
+      includedProperties:
+        - description
+        - tags
+        - aliases
+      excludedProperties: []
+      hidePropertiesView: true
+      delimiters: ---
+      language: yaml
+    order: 5
+    layout:
+      position: beforeBody
+      priority: 15
+      display: all
+layout:
+  groups:
+    toolbar:
+      priority: 35
+      direction: row
+      gap: 0.5rem
+  byPageType:
+    "404":
+      # The 404 page type asks for the minimal frame, which has no sidebars.
+      # A page that says the note is missing is exactly where the tree and the
+      # search bar are most useful, so it gets the ordinary frame instead.
+      template: default
+      positions:
+        beforeBody: []
+        right: []
+    content:
+      positions:
+        right: []
+    folder:
+      exclude:
+        - reader-mode
+      positions:
+        right: []
+    tag:
+      exclude:
+        - reader-mode
+      positions:
+        right: []
+    canvas: {}
+    bases: {}
