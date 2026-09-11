@@ -7,39 +7,41 @@ const posts = (await getCollection('writing', ({ data }) => !data.draft))
   .slice(0, 3);
 const works = (await getCollection('works'))
   .sort((a, b) => a.data.order - b.data.order)
-  .slice(0, 2);
+  .slice(0, 3);
 ---
-<Base title="Home" description="Restrained public presence for RoobLi — works and deep writing.">
-  <section class="space-y-4">
-    <p class="text-sm uppercase tracking-[0.2em] text-[var(--muted)]">presence</p>
-    <h1 class="text-3xl font-semibold tracking-tight">Fewer pages. Harder claims.</h1>
-    <p class="text-[var(--muted)]">
-      Software and systems, shown only when there is something concrete to show.
-      The site is the source of truth; X and Reddit get excerpts, not copies.
-    </p>
-  </section>
+<Base title="Home" description="RoobLi — restrained public presence for works and deep writing.">
+  <p class="eyebrow">www.roobli.org</p>
+  <h1 style="font-size:2.1rem;margin:0.6rem 0 0.8rem;color:var(--heading-color);letter-spacing:-0.02em;">
+    Fewer pages. Harder claims.
+  </h1>
+  <p class="muted" style="font-size:1.05rem;max-width:36em;">
+    RoobLi’s public surface: selected works and deep writing.
+    Internal notes stay internal. Channels get excerpts, not mirrors.
+  </p>
 
-  <section class="mt-12">
-    <h2 class="mb-4 text-sm uppercase tracking-[0.15em] text-[var(--muted)]">Featured work</h2>
-    <ul class="space-y-4">
+  <section style="margin-top:2.5rem;">
+    <h2 class="eyebrow" style="margin-bottom:0.9rem;">Featured work</h2>
+    <ul style="list-style:none;padding:0;margin:0;display:grid;gap:0.75rem;">
       {works.map((w) => (
-        <li class="border border-[var(--border)] rounded-lg p-4">
-          <a href={w.data.url} class="text-[var(--fg)] font-medium no-underline hover:underline">{w.data.title}</a>
-          <p class="mt-1 text-sm text-[var(--muted)]">{w.data.description}</p>
+        <li class="card">
+          <a href={w.data.url} style="color:var(--ink-strong-color);font-weight:600;text-decoration:none;">{w.data.title}</a>
+          <p class="muted" style="margin:0.35rem 0 0;font-size:0.92rem;">{w.data.description}</p>
+          {w.data.repo && <p style="margin:0.5rem 0 0;font-size:0.8rem;font-family:var(--font-ui);"><a href={w.data.repo}>repository</a></p>}
         </li>
       ))}
     </ul>
   </section>
 
-  <section class="mt-12">
-    <h2 class="mb-4 text-sm uppercase tracking-[0.15em] text-[var(--muted)]">Writing</h2>
-    <ul class="space-y-3">
+  <section style="margin-top:2.5rem;">
+    <h2 class="eyebrow" style="margin-bottom:0.9rem;">Writing</h2>
+    <ul style="list-style:none;padding:0;margin:0;display:grid;gap:1rem;">
       {posts.map((p) => (
         <li>
-          <a href={`/writing/${p.id}`} class="text-[var(--fg)] no-underline hover:underline">{p.data.title}</a>
-          <p class="text-sm text-[var(--muted)]">{p.data.description}</p>
+          <a href={`/writing/${p.id}`} style="color:var(--ink-strong-color);font-size:1.05rem;font-weight:600;text-decoration:none;">{p.data.title}</a>
+          <p class="muted" style="margin:0.3rem 0 0;font-size:0.92rem;">{p.data.description}</p>
         </li>
       ))}
     </ul>
+    <p style="margin-top:1rem;font-family:var(--font-ui);font-size:0.85rem;"><a href="/writing">All writing →</a></p>
   </section>
 </Base>

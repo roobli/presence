@@ -1,5 +1,3 @@
 # presence
 
-Public RoobLi presence site. Cloudflare Pages is the authoritative deploy target.
-
-Do not publish from RooB into this tree as a mirror. Deep, desensitized writing only.
+Public RoobLi site only. No RooB publish mirror. Secrets stay in GitHub Actions / Cloudflare — never in git.

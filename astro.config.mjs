@@ -4,7 +4,7 @@ import mdx from '@astrojs/mdx';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  site: 'https://presence.roobli.org',
+  site: 'https://www.roobli.org',
   integrations: [mdx()],
   vite: {
     plugins: [tailwindcss()],

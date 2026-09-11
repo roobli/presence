@@ -1,0 +1,468 @@
+/* GENERATED FILE - do not edit by hand. */
+/*  */
+/* Design tokens lifted verbatim from the Typora theme so the website and the */
+/* editor cannot drift apart. Regenerate with: */
+/*  */
+/* node tools/sync-theme-tokens.mjs */
+/*  */
+/* Source: ../Typora_Claude-Like_Theme/claude-like{,-dark}.css */
+
+:root {
+/* Claude Editorial foundations: warm paper, neutral structure, scarce accent. */
+  --canvas-color: #faf9f6;
+  --sidebar-color: #f3f1ec;
+  --surface-color: #f2f1ee;
+  --surface-subtle-color: #f7f6f3;
+  --surface-active-color: #ebe8e2;
+  --ink-color: #34312e;
+  --ink-strong-color: #201e1c;
+  --ink-muted-color: #6f6b66;
+  --line-color: #ddd9d2;
+  --line-strong-color: #c9c3bb;
+  --accent-color: #a85d3b;
+  --accent-hover-color: #8d4b31;
+  --selection-soft-color: rgba(168, 93, 59, 0.18);
+  --selection-strong-color: rgba(168, 93, 59, 0.34);
+  --radius-inline: 3px;
+  --radius-block: 6px;
+/* Typora-facing aliases. */
+  --side-bar-bg-color: var(--sidebar-color);
+  --control-text-color: var(--ink-muted-color);
+  --text-color: var(--ink-color);
+  --bg-color: var(--canvas-color);
+  --window-bg-color: #efede8;
+  --select-text-bg-color: var(--selection-soft-color);
+  --item-hover-bg-color: rgba(168, 93, 59, 0.08);
+  --active-file-bg-color: var(--surface-active-color);
+  --active-file-border-color: var(--accent-color);
+  --code-bg-color: var(--surface-color);
+  --code-text-color: #2b2926;
+  --code-border-color: var(--line-color);
+  --border-color: var(--line-color);
+  --heading-color: var(--ink-strong-color);
+  --quote-bg-color: var(--surface-color);
+  --quote-border-color: #c7c5bf;
+  --quote-text-color: #575754;
+  --link-color: var(--accent-color);
+  --link-hover-color: var(--accent-hover-color);
+  --link-underline-color: rgba(168, 93, 59, 0.34);
+  --table-alt-color: var(--surface-subtle-color);
+  --font-body: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", "PingFang SC", "Hiragino Sans GB", serif;
+  --font-ui: "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  --font-mono: Menlo, Monaco, "SF Mono", Consolas, "Sarasa Mono SC", "Cascadia Code", monospace;
+  --table-border-strong-color: var(--line-strong-color);
+  --table-row-border-color: rgba(111, 107, 102, 0.24);
+  --table-hover-color: rgba(52, 49, 46, 0.035);
+  --code-muted-color: #77716a;
+  --code-keyword-color: #6f4e83;
+  --code-string-color: #4f7352;
+  --code-number-color: #a35e35;
+  --code-symbol-color: #3f6386;
+  --inline-code-color: #8e4f37;
+  --inline-code-bg-color: #eeece8;
+  --inline-code-border-color: var(--line-color);
+  --task-done-color: #797169;
+  --image-outline-color: rgba(32, 30, 28, 0.1);
+  --tree-line-color: rgba(32, 30, 28, 0.12);
+  --overlay-shadow-color: rgba(32, 30, 28, 0.07);
+  --focus-muted-border-color: rgba(111, 107, 102, 0.2);
+/* Semantic status colors stay subordinate to the single theme accent. */
+  --alert-note-color: #2f6f9f;
+  --alert-note-surface: rgba(47, 111, 159, 0.07);
+  --alert-tip-color: #3f7652;
+  --alert-tip-surface: rgba(63, 118, 82, 0.07);
+  --alert-important-color: #70559c;
+  --alert-important-surface: rgba(112, 85, 156, 0.07);
+  --alert-warning-color: #85620f;
+  --alert-warning-surface: rgba(133, 98, 15, 0.07);
+  --alert-caution-color: #a4473f;
+  --alert-caution-surface: rgba(164, 71, 63, 0.07);
+  --alert-inline-surface: rgba(32, 30, 28, 0.04);
+  --alert-inline-border: rgba(32, 30, 28, 0.07);
+/* Plugin fallbacks; runtime plugins remain authoritative when present. */
+  --tpl-sidenote-width: 250px;
+  --tpl-sidenote-reserve: 300px;
+  --tpl-sidenote-offset: 280px;
+/* Runtime plugin chrome bridge: themes provide tone, plugins own behavior. */
+  --tpl-ui-surface: var(--surface-subtle-color);
+  --tpl-ui-surface-subtle: var(--surface-color);
+  --tpl-ui-text: var(--ink-color);
+  --tpl-ui-muted: var(--ink-muted-color);
+  --tpl-ui-border: var(--line-color);
+  --tpl-ui-accent: var(--accent-color);
+  --tpl-ui-accent-hover: var(--accent-hover-color);
+  --tpl-ui-selection: var(--selection-soft-color);
+  --tpl-ui-success: var(--alert-tip-color);
+  --tpl-ui-danger: var(--alert-caution-color);
+  --tpl-ui-font: var(--font-ui);
+  --tpl-ui-mono: var(--font-mono);
+  --tpl-ui-radius: var(--radius-block);
+
+/* Quartz's built-in palette, re-pointed at the theme tokens above. */
+  --light: var(--canvas-color);
+  --lightgray: var(--line-color);
+  --gray: var(--ink-muted-color);
+  --darkgray: var(--ink-color);
+  --dark: var(--ink-strong-color);
+  --secondary: var(--accent-color);
+  --tertiary: var(--accent-hover-color);
+  --highlight: var(--item-hover-bg-color);
+
+/* Quartz's font slots, re-pointed at the theme's stacks. */
+  --bodyFont: var(--font-body);
+  --headerFont: var(--font-body);
+  --titleFont: var(--font-ui);
+  --codeFont: var(--font-mono);
+
+/* Site-only: no Typora equivalent, since Typora has no <mark> of its own. */
+  --text-highlight-color: #ffe9a8;
+}
+
+[saved-theme="dark"] {
+/* Claude Editorial foundations: warm charcoal, neutral structure, soft accent. */
+  --canvas-color: #1f1e1c;
+  --sidebar-color: #181715;
+  --surface-color: #292826;
+  --surface-subtle-color: #242321;
+  --surface-active-color: #32302d;
+  --ink-color: #d7d4cf;
+  --ink-strong-color: #f1eee8;
+  --ink-muted-color: #9b9790;
+  --line-color: #3b3935;
+  --line-strong-color: #4b4842;
+  --accent-color: #e0a07a;
+  --accent-hover-color: #efb390;
+  --selection-soft-color: rgba(224, 160, 122, 0.22);
+  --selection-strong-color: rgba(224, 160, 122, 0.38);
+  --radius-inline: 3px;
+  --radius-block: 6px;
+/* Typora-facing aliases. */
+  --side-bar-bg-color: var(--sidebar-color);
+  --control-text-color: var(--ink-muted-color);
+  --text-color: var(--ink-color);
+  --bg-color: var(--canvas-color);
+  --window-bg-color: #151412;
+  --select-text-bg-color: var(--selection-soft-color);
+  --item-hover-bg-color: rgba(224, 160, 122, 0.11);
+  --active-file-bg-color: var(--surface-active-color);
+  --active-file-border-color: var(--accent-color);
+  --code-bg-color: var(--surface-color);
+  --code-text-color: #e1ddd7;
+  --code-border-color: var(--line-color);
+  --border-color: var(--line-color);
+  --heading-color: var(--ink-strong-color);
+  --quote-bg-color: var(--surface-color);
+  --quote-border-color: #4d4b47;
+  --quote-text-color: #c9c6c0;
+  --link-color: var(--accent-color);
+  --link-hover-color: var(--accent-hover-color);
+  --link-underline-color: rgba(224, 160, 122, 0.42);
+  --table-alt-color: var(--surface-subtle-color);
+  --font-body: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", "PingFang SC", "Hiragino Sans GB", serif;
+  --font-ui: "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  --font-mono: Menlo, Monaco, "SF Mono", Consolas, "Sarasa Mono SC", "Cascadia Code", monospace;
+  --table-border-strong-color: var(--line-strong-color);
+  --table-row-border-color: rgba(215, 212, 207, 0.1);
+  --table-hover-color: rgba(215, 212, 207, 0.045);
+  --code-muted-color: #96918a;
+  --code-keyword-color: #c1a7d3;
+  --code-string-color: #9abd8f;
+  --code-number-color: #d8a07d;
+  --code-symbol-color: #8eafd0;
+  --inline-code-color: #e3a08f;
+  --inline-code-bg-color: #2d2b29;
+  --inline-code-border-color: var(--line-strong-color);
+  --task-done-color: #9b9790;
+  --image-outline-color: rgba(241, 238, 232, 0.1);
+  --tree-line-color: rgba(241, 238, 232, 0.14);
+  --overlay-shadow-color: rgba(0, 0, 0, 0.24);
+  --focus-muted-border-color: rgba(215, 212, 207, 0.2);
+/* Semantic status colors stay subordinate to the single theme accent. */
+  --alert-note-color: #74add5;
+  --alert-note-surface: rgba(116, 173, 213, 0.1);
+  --alert-tip-color: #6db58a;
+  --alert-tip-surface: rgba(109, 181, 138, 0.1);
+  --alert-important-color: #af95d6;
+  --alert-important-surface: rgba(175, 149, 214, 0.1);
+  --alert-warning-color: #d0a85a;
+  --alert-warning-surface: rgba(208, 168, 90, 0.1);
+  --alert-caution-color: #dc837a;
+  --alert-caution-surface: rgba(220, 131, 122, 0.1);
+  --alert-inline-surface: rgba(241, 238, 232, 0.05);
+  --alert-inline-border: rgba(241, 238, 232, 0.08);
+/* Plugin fallbacks; runtime plugins remain authoritative when present. */
+  --tpl-sidenote-width: 250px;
+  --tpl-sidenote-reserve: 300px;
+  --tpl-sidenote-offset: 280px;
+/* Runtime plugin chrome bridge: themes provide tone, plugins own behavior. */
+  --tpl-ui-surface: var(--surface-subtle-color);
+  --tpl-ui-surface-subtle: var(--surface-color);
+  --tpl-ui-text: var(--ink-color);
+  --tpl-ui-muted: var(--ink-muted-color);
+  --tpl-ui-border: var(--line-color);
+  --tpl-ui-accent: var(--accent-color);
+  --tpl-ui-accent-hover: var(--accent-hover-color);
+  --tpl-ui-selection: var(--selection-soft-color);
+  --tpl-ui-success: var(--alert-tip-color);
+  --tpl-ui-danger: var(--alert-caution-color);
+  --tpl-ui-font: var(--font-ui);
+  --tpl-ui-mono: var(--font-mono);
+  --tpl-ui-radius: var(--radius-block);
+
+/* Quartz's built-in palette, re-pointed at the theme tokens above. */
+  --light: var(--canvas-color);
+  --lightgray: var(--line-color);
+  --gray: var(--ink-muted-color);
+  --darkgray: var(--ink-color);
+  --dark: var(--ink-strong-color);
+  --secondary: var(--accent-color);
+  --tertiary: var(--accent-hover-color);
+  --highlight: var(--item-hover-bg-color);
+
+/* Quartz's font slots, re-pointed at the theme's stacks. */
+  --bodyFont: var(--font-body);
+  --headerFont: var(--font-body);
+  --titleFont: var(--font-ui);
+  --codeFont: var(--font-mono);
+
+  --text-highlight-color: #5a4a0088;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+  :root,
+  [saved-theme="dark"] {
+    /* dark block already defined under [saved-theme="dark"] — promote to system dark */
+  }
+}
+
+html.theme-dark,
+html[data-theme="dark"] {
+  /* activate dark token block */
+}
+
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) {
+/* Claude Editorial foundations: warm charcoal, neutral structure, soft accent. */
+  --canvas-color: #1f1e1c;
+  --sidebar-color: #181715;
+  --surface-color: #292826;
+  --surface-subtle-color: #242321;
+  --surface-active-color: #32302d;
+  --ink-color: #d7d4cf;
+  --ink-strong-color: #f1eee8;
+  --ink-muted-color: #9b9790;
+  --line-color: #3b3935;
+  --line-strong-color: #4b4842;
+  --accent-color: #e0a07a;
+  --accent-hover-color: #efb390;
+  --selection-soft-color: rgba(224, 160, 122, 0.22);
+  --selection-strong-color: rgba(224, 160, 122, 0.38);
+  --radius-inline: 3px;
+  --radius-block: 6px;
+/* Typora-facing aliases. */
+  --side-bar-bg-color: var(--sidebar-color);
+  --control-text-color: var(--ink-muted-color);
+  --text-color: var(--ink-color);
+  --bg-color: var(--canvas-color);
+  --window-bg-color: #151412;
+  --select-text-bg-color: var(--selection-soft-color);
+  --item-hover-bg-color: rgba(224, 160, 122, 0.11);
+  --active-file-bg-color: var(--surface-active-color);
+  --active-file-border-color: var(--accent-color);
+  --code-bg-color: var(--surface-color);
+  --code-text-color: #e1ddd7;
+  --code-border-color: var(--line-color);
+  --border-color: var(--line-color);
+  --heading-color: var(--ink-strong-color);
+  --quote-bg-color: var(--surface-color);
+  --quote-border-color: #4d4b47;
+  --quote-text-color: #c9c6c0;
+  --link-color: var(--accent-color);
+  --link-hover-color: var(--accent-hover-color);
+  --link-underline-color: rgba(224, 160, 122, 0.42);
+  --table-alt-color: var(--surface-subtle-color);
+  --font-body: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", "PingFang SC", "Hiragino Sans GB", serif;
+  --font-ui: "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  --font-mono: Menlo, Monaco, "SF Mono", Consolas, "Sarasa Mono SC", "Cascadia Code", monospace;
+  --table-border-strong-color: var(--line-strong-color);
+  --table-row-border-color: rgba(215, 212, 207, 0.1);
+  --table-hover-color: rgba(215, 212, 207, 0.045);
+  --code-muted-color: #96918a;
+  --code-keyword-color: #c1a7d3;
+  --code-string-color: #9abd8f;
+  --code-number-color: #d8a07d;
+  --code-symbol-color: #8eafd0;
+  --inline-code-color: #e3a08f;
+  --inline-code-bg-color: #2d2b29;
+  --inline-code-border-color: var(--line-strong-color);
+  --task-done-color: #9b9790;
+  --image-outline-color: rgba(241, 238, 232, 0.1);
+  --tree-line-color: rgba(241, 238, 232, 0.14);
+  --overlay-shadow-color: rgba(0, 0, 0, 0.24);
+  --focus-muted-border-color: rgba(215, 212, 207, 0.2);
+/* Semantic status colors stay subordinate to the single theme accent. */
+  --alert-note-color: #74add5;
+  --alert-note-surface: rgba(116, 173, 213, 0.1);
+  --alert-tip-color: #6db58a;
+  --alert-tip-surface: rgba(109, 181, 138, 0.1);
+  --alert-important-color: #af95d6;
+  --alert-important-surface: rgba(175, 149, 214, 0.1);
+  --alert-warning-color: #d0a85a;
+  --alert-warning-surface: rgba(208, 168, 90, 0.1);
+  --alert-caution-color: #dc837a;
+  --alert-caution-surface: rgba(220, 131, 122, 0.1);
+  --alert-inline-surface: rgba(241, 238, 232, 0.05);
+  --alert-inline-border: rgba(241, 238, 232, 0.08);
+/* Plugin fallbacks; runtime plugins remain authoritative when present. */
+  --tpl-sidenote-width: 250px;
+  --tpl-sidenote-reserve: 300px;
+  --tpl-sidenote-offset: 280px;
+/* Runtime plugin chrome bridge: themes provide tone, plugins own behavior. */
+  --tpl-ui-surface: var(--surface-subtle-color);
+  --tpl-ui-surface-subtle: var(--surface-color);
+  --tpl-ui-text: var(--ink-color);
+  --tpl-ui-muted: var(--ink-muted-color);
+  --tpl-ui-border: var(--line-color);
+  --tpl-ui-accent: var(--accent-color);
+  --tpl-ui-accent-hover: var(--accent-hover-color);
+  --tpl-ui-selection: var(--selection-soft-color);
+  --tpl-ui-success: var(--alert-tip-color);
+  --tpl-ui-danger: var(--alert-caution-color);
+  --tpl-ui-font: var(--font-ui);
+  --tpl-ui-mono: var(--font-mono);
+  --tpl-ui-radius: var(--radius-block);
+
+/* Quartz's built-in palette, re-pointed at the theme tokens above. */
+  --light: var(--canvas-color);
+  --lightgray: var(--line-color);
+  --gray: var(--ink-muted-color);
+  --darkgray: var(--ink-color);
+  --dark: var(--ink-strong-color);
+  --secondary: var(--accent-color);
+  --tertiary: var(--accent-hover-color);
+  --highlight: var(--item-hover-bg-color);
+
+/* Quartz's font slots, re-pointed at the theme's stacks. */
+  --bodyFont: var(--font-body);
+  --headerFont: var(--font-body);
+  --titleFont: var(--font-ui);
+  --codeFont: var(--font-mono);
+
+  --text-highlight-color: #5a4a0088;
+
+  }
+}
+html[data-theme="dark"] {
+/* Claude Editorial foundations: warm charcoal, neutral structure, soft accent. */
+  --canvas-color: #1f1e1c;
+  --sidebar-color: #181715;
+  --surface-color: #292826;
+  --surface-subtle-color: #242321;
+  --surface-active-color: #32302d;
+  --ink-color: #d7d4cf;
+  --ink-strong-color: #f1eee8;
+  --ink-muted-color: #9b9790;
+  --line-color: #3b3935;
+  --line-strong-color: #4b4842;
+  --accent-color: #e0a07a;
+  --accent-hover-color: #efb390;
+  --selection-soft-color: rgba(224, 160, 122, 0.22);
+  --selection-strong-color: rgba(224, 160, 122, 0.38);
+  --radius-inline: 3px;
+  --radius-block: 6px;
+/* Typora-facing aliases. */
+  --side-bar-bg-color: var(--sidebar-color);
+  --control-text-color: var(--ink-muted-color);
+  --text-color: var(--ink-color);
+  --bg-color: var(--canvas-color);
+  --window-bg-color: #151412;
+  --select-text-bg-color: var(--selection-soft-color);
+  --item-hover-bg-color: rgba(224, 160, 122, 0.11);
+  --active-file-bg-color: var(--surface-active-color);
+  --active-file-border-color: var(--accent-color);
+  --code-bg-color: var(--surface-color);
+  --code-text-color: #e1ddd7;
+  --code-border-color: var(--line-color);
+  --border-color: var(--line-color);
+  --heading-color: var(--ink-strong-color);
+  --quote-bg-color: var(--surface-color);
+  --quote-border-color: #4d4b47;
+  --quote-text-color: #c9c6c0;
+  --link-color: var(--accent-color);
+  --link-hover-color: var(--accent-hover-color);
+  --link-underline-color: rgba(224, 160, 122, 0.42);
+  --table-alt-color: var(--surface-subtle-color);
+  --font-body: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", "PingFang SC", "Hiragino Sans GB", serif;
+  --font-ui: "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  --font-mono: Menlo, Monaco, "SF Mono", Consolas, "Sarasa Mono SC", "Cascadia Code", monospace;
+  --table-border-strong-color: var(--line-strong-color);
+  --table-row-border-color: rgba(215, 212, 207, 0.1);
+  --table-hover-color: rgba(215, 212, 207, 0.045);
+  --code-muted-color: #96918a;
+  --code-keyword-color: #c1a7d3;
+  --code-string-color: #9abd8f;
+  --code-number-color: #d8a07d;
+  --code-symbol-color: #8eafd0;
+  --inline-code-color: #e3a08f;
+  --inline-code-bg-color: #2d2b29;
+  --inline-code-border-color: var(--line-strong-color);
+  --task-done-color: #9b9790;
+  --image-outline-color: rgba(241, 238, 232, 0.1);
+  --tree-line-color: rgba(241, 238, 232, 0.14);
+  --overlay-shadow-color: rgba(0, 0, 0, 0.24);
+  --focus-muted-border-color: rgba(215, 212, 207, 0.2);
+/* Semantic status colors stay subordinate to the single theme accent. */
+  --alert-note-color: #74add5;
+  --alert-note-surface: rgba(116, 173, 213, 0.1);
+  --alert-tip-color: #6db58a;
+  --alert-tip-surface: rgba(109, 181, 138, 0.1);
+  --alert-important-color: #af95d6;
+  --alert-important-surface: rgba(175, 149, 214, 0.1);
+  --alert-warning-color: #d0a85a;
+  --alert-warning-surface: rgba(208, 168, 90, 0.1);
+  --alert-caution-color: #dc837a;
+  --alert-caution-surface: rgba(220, 131, 122, 0.1);
+  --alert-inline-surface: rgba(241, 238, 232, 0.05);
+  --alert-inline-border: rgba(241, 238, 232, 0.08);
+/* Plugin fallbacks; runtime plugins remain authoritative when present. */
+  --tpl-sidenote-width: 250px;
+  --tpl-sidenote-reserve: 300px;
+  --tpl-sidenote-offset: 280px;
+/* Runtime plugin chrome bridge: themes provide tone, plugins own behavior. */
+  --tpl-ui-surface: var(--surface-subtle-color);
+  --tpl-ui-surface-subtle: var(--surface-color);
+  --tpl-ui-text: var(--ink-color);
+  --tpl-ui-muted: var(--ink-muted-color);
+  --tpl-ui-border: var(--line-color);
+  --tpl-ui-accent: var(--accent-color);
+  --tpl-ui-accent-hover: var(--accent-hover-color);
+  --tpl-ui-selection: var(--selection-soft-color);
+  --tpl-ui-success: var(--alert-tip-color);
+  --tpl-ui-danger: var(--alert-caution-color);
+  --tpl-ui-font: var(--font-ui);
+  --tpl-ui-mono: var(--font-mono);
+  --tpl-ui-radius: var(--radius-block);
+
+/* Quartz's built-in palette, re-pointed at the theme tokens above. */
+  --light: var(--canvas-color);
+  --lightgray: var(--line-color);
+  --gray: var(--ink-muted-color);
+  --darkgray: var(--ink-color);
+  --dark: var(--ink-strong-color);
+  --secondary: var(--accent-color);
+  --tertiary: var(--accent-hover-color);
+  --highlight: var(--item-hover-bg-color);
+
+/* Quartz's font slots, re-pointed at the theme's stacks. */
+  --bodyFont: var(--font-body);
+  --headerFont: var(--font-body);
+  --titleFont: var(--font-ui);
+  --codeFont: var(--font-mono);
+
+  --text-highlight-color: #5a4a0088;
+
+}

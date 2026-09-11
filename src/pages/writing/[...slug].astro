@@ -15,8 +15,14 @@ const { Content } = await render(post);
 ---
 <Base title={post.data.title} description={post.data.description}>
   <article class="prose">
-    <p class="text-sm text-[var(--muted)] !mt-0">{post.data.date.toISOString().slice(0, 10)}</p>
-    <h1 class="!mt-2">{post.data.title}</h1>
+    <p class="eyebrow">{post.data.date.toISOString().slice(0, 10)}</p>
+    <h1>{post.data.title}</h1>
     <Content />
+    <hr style="border:0;border-top:1px solid var(--line-color);margin:2.5rem 0 1.25rem;" />
+    <p style="font-family:var(--font-ui);font-size:0.9rem;">
+      Related work: <a href="/works">Works</a>
+      · CUDA course demo:
+      <a href="https://lr00rl.github.io/cuda-cpp-course/">lr00rl.github.io/cuda-cpp-course</a>
+    </p>
   </article>
 </Base>

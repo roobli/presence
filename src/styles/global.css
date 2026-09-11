@@ -1,61 +1,172 @@
+@import "./claude-like-tokens.css";
 @import "tailwindcss";
 
-:root {
-  color-scheme: dark;
-  --bg: #0b0d10;
-  --fg: #e8eaed;
-  --muted: #9aa3af;
-  --border: #1f2933;
-  --accent: #7dd3fc;
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  background: var(--canvas-color);
+  color: var(--ink-color);
 }
 
-html {
-  background: var(--bg);
-  color: var(--fg);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  line-height: 1.65;
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) {
+    /* pull dark tokens by setting attribute via tiny script; fallback set below */
+  }
 }
 
 body {
+  margin: 0;
   min-height: 100vh;
+  font-family: var(--font-body);
+  line-height: 1.58;
+  background: var(--canvas-color);
+  color: var(--ink-color);
 }
 
 a {
-  color: var(--accent);
-  text-decoration: none;
+  color: var(--link-color);
+  text-decoration-color: var(--link-underline-color);
+  text-underline-offset: 0.15em;
 }
 a:hover {
-  text-decoration: underline;
+  color: var(--link-hover-color);
+}
+
+.shell {
+  display: grid;
+  min-height: 100vh;
+  grid-template-columns: 240px minmax(0, 1fr);
+}
+
+@media (max-width: 860px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+  .shell-nav {
+    border-right: none !important;
+    border-bottom: 1px solid var(--line-color);
+    height: auto !important;
+    position: static !important;
+  }
+}
+
+.shell-nav {
+  background: var(--sidebar-color);
+  border-right: 1px solid var(--line-color);
+  padding: 1.75rem 1.25rem;
+  font-family: var(--font-ui);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.shell-nav a {
+  color: var(--ink-muted-color);
+  text-decoration: none;
+  display: block;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-inline);
+  font-size: 0.92rem;
+}
+.shell-nav a:hover,
+.shell-nav a[aria-current="page"] {
+  color: var(--ink-strong-color);
+  background: var(--item-hover-bg-color);
+}
+
+.shell-brand {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--ink-strong-color) !important;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.02em;
+}
+
+.shell-main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 4rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.muted { color: var(--ink-muted-color); }
+.eyebrow {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-muted-color);
+}
+
+.card {
+  border: 1px solid var(--line-color);
+  background: var(--surface-subtle-color);
+  border-radius: var(--radius-block);
+  padding: 1rem 1.1rem;
 }
 
 .prose h1, .prose h2, .prose h3 {
+  font-family: var(--font-body);
+  color: var(--heading-color);
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   margin-top: 2rem;
   margin-bottom: 0.75rem;
+  line-height: 1.3;
 }
-.prose h1 { font-size: 1.85rem; }
+.prose h1 { font-size: 1.85rem; margin-top: 0.5rem; }
 .prose h2 { font-size: 1.35rem; }
 .prose h3 { font-size: 1.1rem; }
-.prose p, .prose ul, .prose ol { margin: 0.9rem 0; color: #d1d5db; }
+.prose p, .prose ul, .prose ol { margin: 0.9rem 0; color: var(--ink-color); }
 .prose li { margin: 0.35rem 0; }
 .prose code {
-  font-size: 0.9em;
-  background: #151a21;
-  padding: 0.1rem 0.35rem;
-  border-radius: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  color: var(--inline-code-color);
+  background: var(--inline-code-bg-color);
+  border: 1px solid var(--inline-code-border-color);
+  padding: 0.05rem 0.3rem;
+  border-radius: var(--radius-inline);
 }
 .prose pre {
-  background: #11161d;
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
+  font-family: var(--font-mono);
+  background: var(--code-bg-color);
+  border: 1px solid var(--code-border-color);
+  border-radius: var(--radius-block);
   padding: 1rem;
   overflow-x: auto;
   font-size: 0.85rem;
 }
+.prose pre code {
+  border: 0;
+  background: transparent;
+  color: var(--code-text-color);
+  padding: 0;
+}
 .prose blockquote {
-  border-left: 3px solid #334155;
-  padding-left: 1rem;
-  color: var(--muted);
+  border-left: 3px solid var(--quote-border-color);
+  background: var(--quote-bg-color);
+  color: var(--quote-text-color);
+  padding: 0.75rem 1rem;
   margin: 1.25rem 0;
+  border-radius: 0 var(--radius-block) var(--radius-block) 0;
+}
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  margin: 1.25rem 0;
+}
+.prose th, .prose td {
+  border-bottom: 1px solid var(--table-row-border-color);
+  padding: 0.5rem 0.4rem;
+  text-align: left;
+  vertical-align: top;
+}
+.prose th {
+  border-bottom: 1px solid var(--table-border-strong-color);
+  font-family: var(--font-ui);
+  font-weight: 600;
 }

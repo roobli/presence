@@ -4,8 +4,15 @@ interface Props {
   title: string;
   description?: string;
 }
-const { title, description = 'RoobLi presence — curated works and deep writing.' } = Astro.props;
+const { title, description = 'RoobLi — public works and deep writing.' } = Astro.props;
 const pageTitle = title === 'Home' ? 'RoobLi' : `${title} · RoobLi`;
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const links = [
+  { href: '/', label: 'Home' },
+  { href: '/writing', label: 'Writing' },
+  { href: '/works', label: 'Works' },
+  { href: '/about', label: 'About' },
+];
 ---
 <!doctype html>
 <html lang="en">
@@ -13,25 +20,38 @@ const pageTitle = title === 'Home' ? 'RoobLi' : `${title} · RoobLi`;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />
+    <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{pageTitle}</title>
+    <script is:inline>
+      (function () {
+        try {
+          var t = localStorage.getItem('roobli-theme');
+          if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
   </head>
-  <body class="antialiased">
-    <div class="mx-auto max-w-2xl px-5 py-10">
-      <header class="mb-12 flex items-baseline justify-between gap-4 border-b border-[var(--border)] pb-4">
-        <a href="/" class="text-[var(--fg)] no-underline font-medium tracking-tight">RoobLi</a>
-        <nav class="flex gap-4 text-sm text-[var(--muted)]">
-          <a href="/writing" class="text-[var(--muted)] hover:text-[var(--fg)] no-underline">Writing</a>
-          <a href="/works" class="text-[var(--muted)] hover:text-[var(--fg)] no-underline">Works</a>
-          <a href="/about" class="text-[var(--muted)] hover:text-[var(--fg)] no-underline">About</a>
+  <body>
+    <div class="shell">
+      <aside class="shell-nav">
+        <a class="shell-brand" href="/">RoobLi</a>
+        <nav aria-label="Primary">
+          {links.map((l) => (
+            <a href={l.href} aria-current={path === l.href || (l.href !== '/' && path.startsWith(l.href)) ? 'page' : undefined}>{l.label}</a>
+          ))}
         </nav>
-      </header>
-      <main>
+        <p class="muted" style="margin-top:2rem;font-size:0.78rem;line-height:1.45;">
+          Org homepage. Notes stay private. One public source.
+        </p>
+      </aside>
+      <div class="shell-main">
         <slot />
-      </main>
-      <footer class="mt-16 border-t border-[var(--border)] pt-6 text-sm text-[var(--muted)]">
-        One source. Cloudflare Pages. No noise.
-      </footer>
+        <footer class="muted" style="margin-top:3.5rem;padding-top:1.25rem;border-top:1px solid var(--line-color);font-family:var(--font-ui);font-size:0.82rem;">
+          <a href="https://github.com/roobli">github.com/roobli</a>
+          · www.roobli.org
+        </footer>
+      </div>
     </div>
   </body>
 </html>
