@@ -1,0 +1,31 @@
+{
+  "name": "explorer-locale-active",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Keep explorer active highlight on the primary note when viewing /zh locale pages",
+  "exports": {
+    ".": "./index.js",
+    "./components": "./components/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./index.js",
+  "quartz": {
+    "name": "explorer-locale-active",
+    "displayName": "Explorer locale active",
+    "category": "component",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 96,
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "ExplorerLocaleActive": {
+        "displayName": "Explorer locale active",
+        "defaultPosition": "footer",
+        "defaultPriority": 1
+      }
+    }
+  }
+}
