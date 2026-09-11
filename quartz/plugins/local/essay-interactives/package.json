@@ -1,0 +1,31 @@
+{
+  "name": "essay-interactives",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Build-time markers + client widgets for essay interactives (spring-zeta, squircle-compare)",
+  "exports": {
+    ".": "./index.js",
+    "./components": "./components/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./index.js",
+  "quartz": {
+    "name": "essay-interactives",
+    "displayName": "Essay interactives",
+    "category": ["transformer", "component"],
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 35,
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "EssayInteractives": {
+        "displayName": "Essay interactives",
+        "defaultPosition": "footer",
+        "defaultPriority": 3
+      }
+    }
+  }
+}
