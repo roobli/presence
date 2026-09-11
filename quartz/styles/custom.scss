@@ -2791,6 +2791,14 @@ article figure > img {
   stroke-width: 1.4;
 }
 
+
+.essay-interactive__footnote {
+  margin: 0.45rem 0 0;
+  font-size: 0.78rem;
+  color: var(--ink-muted-color);
+  font-family: var(--font-ui);
+}
+
 .essay-interactive__live {
   position: absolute;
   width: 1px;
