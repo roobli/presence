@@ -247,6 +247,11 @@ plugins:
     layout:
       position: beforeBody
       priority: 10
+  - source: "./quartz/plugins/local/lang-switch"
+    enabled: true
+    layout:
+      position: beforeBody
+      priority: 15
   - source: "@quartz-community/content-meta"
     enabled: true
     layout:

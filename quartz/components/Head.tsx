@@ -92,6 +92,24 @@ export default (() => {
         )}
 
         <link rel="icon" href={iconPath} />
+        {(() => {
+          const altRaw = fileData.frontmatter?.alt
+          if (typeof altRaw !== "string" || !altRaw.trim()) return null
+          const altPath = altRaw.trim().startsWith("/") ? altRaw.trim() : `/${altRaw.trim()}`
+          const lang = String(fileData.frontmatter?.lang ?? "en").toLowerCase()
+          const isZh = lang === "zh" || lang.startsWith("zh")
+          const selfUrl = socialUrl
+          const altUrl = `https://${cfg.baseUrl}${altPath}`
+          const enUrl = isZh ? altUrl : selfUrl
+          const zhUrl = isZh ? selfUrl : altUrl
+          return (
+            <>
+              <link rel="alternate" hrefLang="en" href={enUrl} />
+              <link rel="alternate" hrefLang="zh" href={zhUrl} />
+              <link rel="alternate" hrefLang="x-default" href={enUrl} />
+            </>
+          )
+        })()}
         <meta name="description" content={description} />
         <meta name="generator" content="Quartz" />
 

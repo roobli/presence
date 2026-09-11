@@ -1,0 +1,31 @@
+{
+  "name": "lang-switch",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Per-article EN | 中 language switch when frontmatter.alt is set",
+  "exports": {
+    ".": "./index.js",
+    "./components": "./components/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./index.js",
+  "quartz": {
+    "name": "lang-switch",
+    "displayName": "Language Switch",
+    "category": "component",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 50,
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "LanguageSwitch": {
+        "displayName": "Language Switch",
+        "defaultPosition": "beforeBody",
+        "defaultPriority": 15
+      }
+    }
+  }
+}
