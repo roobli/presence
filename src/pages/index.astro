@@ -1,0 +1,45 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('writing', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+const works = (await getCollection('works'))
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 2);
+---
+<Base title="Home" description="Restrained public presence for RoobLi — works and deep writing.">
+  <section class="space-y-4">
+    <p class="text-sm uppercase tracking-[0.2em] text-[var(--muted)]">presence</p>
+    <h1 class="text-3xl font-semibold tracking-tight">Fewer pages. Harder claims.</h1>
+    <p class="text-[var(--muted)]">
+      Software and systems, shown only when there is something concrete to show.
+      The site is the source of truth; X and Reddit get excerpts, not copies.
+    </p>
+  </section>
+
+  <section class="mt-12">
+    <h2 class="mb-4 text-sm uppercase tracking-[0.15em] text-[var(--muted)]">Featured work</h2>
+    <ul class="space-y-4">
+      {works.map((w) => (
+        <li class="border border-[var(--border)] rounded-lg p-4">
+          <a href={w.data.url} class="text-[var(--fg)] font-medium no-underline hover:underline">{w.data.title}</a>
+          <p class="mt-1 text-sm text-[var(--muted)]">{w.data.description}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="mt-12">
+    <h2 class="mb-4 text-sm uppercase tracking-[0.15em] text-[var(--muted)]">Writing</h2>
+    <ul class="space-y-3">
+      {posts.map((p) => (
+        <li>
+          <a href={`/writing/${p.id}`} class="text-[var(--fg)] no-underline hover:underline">{p.data.title}</a>
+          <p class="text-sm text-[var(--muted)]">{p.data.description}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>

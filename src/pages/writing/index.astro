@@ -1,0 +1,20 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+const posts = (await getCollection('writing', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+<Base title="Writing">
+  <h1 class="text-2xl font-semibold tracking-tight mb-8">Writing</h1>
+  <ul class="space-y-6">
+    {posts.map((p) => (
+      <li>
+        <time class="text-xs text-[var(--muted)]">{p.data.date.toISOString().slice(0, 10)}</time>
+        <div>
+          <a href={`/writing/${p.id}`} class="text-lg text-[var(--fg)] no-underline hover:underline">{p.data.title}</a>
+        </div>
+        <p class="text-sm text-[var(--muted)]">{p.data.description}</p>
+      </li>
+    ))}
+  </ul>
+</Base>

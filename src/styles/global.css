@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --bg: #0b0d10;
+  --fg: #e8eaed;
+  --muted: #9aa3af;
+  --border: #1f2933;
+  --accent: #7dd3fc;
+}
+
+html {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.65;
+}
+
+body {
+  min-height: 100vh;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+.prose h1, .prose h2, .prose h3 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+.prose h1 { font-size: 1.85rem; }
+.prose h2 { font-size: 1.35rem; }
+.prose h3 { font-size: 1.1rem; }
+.prose p, .prose ul, .prose ol { margin: 0.9rem 0; color: #d1d5db; }
+.prose li { margin: 0.35rem 0; }
+.prose code {
+  font-size: 0.9em;
+  background: #151a21;
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+}
+.prose pre {
+  background: #11161d;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+}
+.prose blockquote {
+  border-left: 3px solid #334155;
+  padding-left: 1rem;
+  color: var(--muted);
+  margin: 1.25rem 0;
+}
