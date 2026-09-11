@@ -17,7 +17,6 @@ This essay argues two linked claims. First, Apple's "natural" aesthetics are oft
 
 The through-line is the same in every section: what people feel, what model explains it, why that tradeoff won inside Apple's constraints, where copycats usually break, and what the cost of getting it right actually is.
 
-
 ## Fluid interfaces: stop timing animations, start modeling behavior
 
 Most UI animation still begins with a duration and a curve. Linear, ease-in-out, or a cubic Bézier parked on a fixed timeline. Those curves invent acceleration breakpoints that matter to the timeline and not to the object. They can look polished in a screen recording and still feel mechanical under a finger.
@@ -30,13 +29,19 @@ Apple's public framing for this problem is older than most of the copycat spring
 
 Under the hood, much of that behavior collapses to the classic second-order linear spring-mass-damper:
 
-$$m \frac{d^2x}{dt^2} + c \frac{dx}{dt} + kx = 0$$
+$$
+
+m \frac{d^2x}{dt^2} + c \frac{dx}{dt} + kx = 0
+$$
 
 Mass $m$ sets inertia. Damping $c$ is energy loss. Stiffness $k$ sets how hard the spring pulls toward equilibrium. Displacement $x$ is distance from the animation's rest position. None of this is mystical. It is the same second-order model control engineers have used for decades. Apple's contribution was to treat it as a first-class interaction primitive rather than a special effect.
 
 The dimensionless knob is:
 
-$$\zeta = \frac{c}{2\sqrt{km}}$$
+$$
+
+\zeta = \frac{c}{2\sqrt{km}}
+$$
 
 <!-- interactive:spring-zeta -->
 
@@ -75,7 +80,6 @@ Together: eliminate dead zones after intent is clear, never trap the user inside
 The cost of this model is real. You give up the comfort of "animation finishes in 280 ms." Designers who live in duration-based tools have to learn a new vocabulary. Engineers have to care about integrator stability when stiffness climbs. QA has to test interruption paths, not only happy-path playthroughs. That cost is why so many products stop at "we added a spring library" and never reach fluid. The library was never the hard part. The hard part is making every interactive surface speak the same physics.
 
 A critically damped interruptible spring is a short idea in code: integrate $a = (-k(x - target) - c v) / m$ each display tick, keep $v$ when you retarget, and snap when both position and velocity fall under rest thresholds. Semi-implicit Euler is usually fine at display rates if stiffness stays moderate. Stiffer springs need a more stable integrator. The implementation is not the essay. The argument is: once interruptibility and velocity transfer are non-negotiable, the spring ODE stops being an effect and becomes the interaction substrate.
-
 
 ## Geometry that does not fight the eye: G-continuity and squircles
 
@@ -119,7 +123,10 @@ Apple's public software surface for this is explicit. `CALayerCornerCurve.contin
 
 Icon masks from iOS 7 onward (and related continuous corner APIs) sit in the Lamé / superellipse family:
 
-$$\left|\frac{x}{a}\right|^n + \left|\frac{y}{b}\right|^n = 1$$
+$$
+
+\left|\frac{x}{a}\right|^n + \left|\frac{y}{b}\right|^n = 1
+$$
 
 With $a = b = r$ and $n$ around $4$–$5$, you get a shape between square and circle with a soft, continuous feel. Exact superellipse evaluation is awkward for GPU-accelerated path rasterizers and CNC toolpaths, so engineering practice approximates with **cubic Bézier** segments.
 
@@ -143,7 +150,6 @@ The other failure mode is over-squircle. Not every rectangle in an interface des
 
 True Tone leans on **color constancy**: the visual system adapts to the illuminant's chromaticity. A display locked at a cool white (often discussed around $6500\text{K}$ D65-class white) in a warm room can look harshly blue after your eyes have adapted to the room. Multi-channel ambient sensors estimate scene illuminance and chromaticity. The display pipeline shifts white point so the panel feels closer to a reflective surface than to a glowing brick. That is the sensory claim. Keep Night Shift and accessibility contrast as separate knobs. True Tone is specifically about ambient-matched white point. The cost is another sensor, another calibration pipeline, and another place where "accurate" and "comfortable" disagree. Apple chose comfort that tracks the room. Photographers who need locked white point turn it off. That is the tradeoff working as designed.
 
-
 ## One-handed open: hinge torque inside a rigid-body budget
 
 A MacBook that opens cleanly with one hand is not magic. It is torque balance under gravity, friction, and base mass distribution. What people feel is trust: the machine stays put while the lid rises. What they are evaluating, without knowing the vocabulary, is whether hinge torque plus lid gravity stayed inside the base's restoring moment.
@@ -165,13 +171,19 @@ A MacBook that opens cleanly with one hand is not magic. It is torque balance un
 
 Let $d_{CG\_lid}$ be the distance from hinge axis to the lid center of mass (for a roughly uniform lid, on the order of half the lid length $L_{lid}$). With $\theta = 0$ fully closed, the gravity torque on the lid is commonly modeled as:
 
-$$\tau_{gravity}(\theta) = M_{lid} \cdot g \cdot d_{CG\_lid} \cdot \cos(\theta)$$
+$$
+
+\tau_{gravity}(\theta) = M_{lid} \cdot g \cdot d_{CG\_lid} \cdot \cos(\theta)
+$$
 
 Exact trig form depends on how you measure $\theta$ and CG location. The important structure is a gravity term that varies with angle.
 
 Hinge damping torque $\tau_{hinge}$ comes from friction packs (spring washers and friction plates under controlled preload). A vertical lift force $F_{lift}$ at the front of the lid produces:
 
-$$\tau_{lift} = F_{lift} \cdot L_{lid} \cdot \cos(\theta)$$
+$$
+
+\tau_{lift} = F_{lift} \cdot L_{lid} \cdot \cos(\theta)
+$$
 
 again geometry-dependent. The design inequalities matter more than any one trig convention.
 
@@ -180,7 +192,10 @@ Two conditions must hold through the open:
 1. **Open condition (user can lift):** $\tau_{lift} \ge \tau_{hinge} + \tau_{gravity}(\theta)$.
 2. **Base stays down:** if $d_{CG\_base}$ is the horizontal lever arm from hinge to base CG, the restoring moment is $\tau_{base\_restore} = M_{base} \cdot g \cdot d_{CG\_base}$. For the chassis not to lift:
 
-$$\tau_{hinge} + \tau_{gravity}(\theta) < M_{base} \cdot g \cdot d_{CG\_base}$$
+$$
+
+\tau_{hinge} + \tau_{gravity}(\theta) < M_{base} \cdot g \cdot d_{CG\_base}
+$$
 
 Violate the second inequality and the whole notebook pivots up with the lid. One-handed open fails. That single inequality is why "make the hinge stiffer so the lid holds angle" is not a free parameter. Stiffer hinge helps hold. Too stiff, and you steal margin from the base.
 
@@ -200,7 +215,10 @@ A lid-angle sensor near the hinge feeds firmware. Below a small closed threshold
 
 Footpads matter too. Static friction must beat the horizontal component of lift:
 
-$$\mu_s \cdot M_{base} \cdot g > F_{lift\_horizontal}$$
+$$
+
+\mu_s \cdot M_{base} \cdot g > F_{lift\_horizontal}
+$$
 
 Microcellular polyurethane pads are a common material choice for contact area and grip. Copycats that nail hinge torque and still skate across a desk forgot that the inequality is three-dimensional.
 
@@ -210,14 +228,16 @@ They optimize for the demo. Lid holds at any angle in a boardroom video. Base li
 
 The cost of getting this right is interdisciplinary. Industrial design, hinge suppliers, battery packaging, and firmware hysteresis all share one inequality. That is harder than shipping a "premium hinge" SKU. It is also why one-handed open reads as taste when it is really systems engineering with a tactile last mile.
 
-
 ## Cognitive load and Dieter Rams as product policy
 
 Aggressive platform consistency and slow, selective feature adoption map cleanly onto John Sweller's **cognitive load theory** (1988). Working memory is narrow. Miller's $7 \pm 2$ chunks remains a classical rule of thumb, not a modern measurement standard, but the qualitative claim holds: UI chaos burns the budget before the user reaches the task.
 
 Total load is often decomposed as:
 
-$$\text{working memory load} = \text{intrinsic} + \text{extraneous} + \text{germane}$$
+$$
+
+\text{working memory load} = \text{intrinsic} + \text{extraneous} + \text{germane}
+$$
 
 Apple's Human Interface Guidelines and shared system gestures attack each term.
 
@@ -243,7 +263,6 @@ Jony Ive's industrial language and much of Apple's UI rhetoric sit downstream of
 
 The other Rams principles (innovative, aesthetic, understandable, unobtrusive, long-lasting, environmentally friendly) still matter. They matter less as a checklist to score against and more as pressure against feature theater, fashion skins, and forced churn. Long-lasting, in this framing, prefers stable perceptual principles (Gestalt grouping, spatial memory, physical metaphor) over cycles of flat versus skeuomorphic costume.
 
-
 ## What to steal (and what not to)
 
 If you are shipping a product and trying to learn from this stack, steal the models. Do not steal the costume.
@@ -266,7 +285,6 @@ Steal cognitive restraint: shared grammar, progressive disclosure, honesty about
 Failure modes cluster. Motion teams overfit to screen recordings. Visual teams overfit to single-card mockups. Hardware teams overfit to lid-hold demos. Cognitive claims get made without task-level measures (time to first correct action, error rate on Back/Confirm). Eye tracking, if you have it, is exploratory. Do not treat a round "fewer micro-saccades" number as a universal gate unless you replicate it under your own conditions.
 
 The limit of stealing Apple's physics is that Apple also steals time. These calibrations assume long platform tenure, supplier relationships, and the willingness to refuse features that punch through a budget. If your org cannot refuse, you will get the costume. The models above still help you see which refusal you skipped.
-
 
 ## Closing
 

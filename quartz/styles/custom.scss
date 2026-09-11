@@ -2542,6 +2542,17 @@ article code.mermaid svg * {
 }
 
 /* Essay page: center display math, interactives, and standalone figures. */
+/* Safety: paragraph that is only a KaTeX span (legacy single-line $$). */
+article p:has(> .katex:only-child) {
+  text-align: center;
+  margin: 1.15em auto;
+  font-size: 1.12em;
+}
+
+article p:has(> .katex:only-child) > .katex {
+  font-size: 1.06em;
+}
+
 /* Display math: one size up from body, centered like a figure. */
 article .katex-display {
   text-align: center;
