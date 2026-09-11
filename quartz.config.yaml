@@ -233,6 +233,12 @@ plugins:
     layout:
       position: footer
       priority: 2
+  - source: "./quartz/plugins/local/essay-interactives"
+    enabled: true
+    order: 35
+    layout:
+      position: footer
+      priority: 3
   - source: "@quartz-community/graph"
     enabled: true
     layout:
