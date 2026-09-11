@@ -206,11 +206,11 @@ function essayInteractives() {
       ctx.fillStyle = surface
       ctx.fillRect(0, 0, cssW, cssH)
 
-      var trackY = 56
-      var trackL = 24
-      var trackR = cssW - 24
+      var trackY = 48
+      var trackL = 28
+      var trackR = cssW - 28
       var trackMid = (trackL + trackR) / 2
-      var amp = (trackR - trackL) * 0.38
+      var amp = (trackR - trackL) * 0.36
 
       ctx.strokeStyle = line
       ctx.lineWidth = 1
@@ -219,41 +219,34 @@ function essayInteractives() {
       ctx.lineTo(trackR, trackY)
       ctx.stroke()
 
-      // spring coil from left wall to mass
+      // left wall / anchor (no zigzag coil — plot carries the story)
       var massX = trackMid + x * amp
-      ctx.strokeStyle = muted
-      ctx.lineWidth = 1.2
-      ctx.beginPath()
-      var coils = 10
-      var sx0 = trackL
-      var sx1 = massX - 14
-      for (var i = 0; i <= coils; i++) {
-        var t = i / coils
-        var sx = sx0 + (sx1 - sx0) * t
-        var sy = trackY + (i % 2 === 0 ? -7 : 7)
-        if (i === 0) ctx.moveTo(sx, trackY)
-        else ctx.lineTo(sx, sy)
-      }
-      ctx.lineTo(sx1, trackY)
-      ctx.stroke()
-
-      // target tick
-      ctx.strokeStyle = accent
+      ctx.fillStyle = muted
       ctx.globalAlpha = 0.55
-      ctx.beginPath()
-      ctx.moveTo(trackMid, trackY - 16)
-      ctx.lineTo(trackMid, trackY + 16)
-      ctx.stroke()
+      ctx.fillRect(trackL - 2, trackY - 14, 3, 28)
       ctx.globalAlpha = 1
 
-      // mass
+      // rest marker
+      ctx.strokeStyle = accent
+      ctx.globalAlpha = 0.5
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(trackMid, trackY - 14)
+      ctx.lineTo(trackMid, trackY + 14)
+      ctx.stroke()
+      ctx.globalAlpha = 1
+      ctx.fillStyle = muted
+      ctx.font = "10px " + (cssVar("--font-ui", "sans-serif") || "sans-serif")
+      ctx.fillText("rest", trackMid + 4, trackY - 18)
+
+      // rounded mass on the track
       ctx.fillStyle = ink
       ctx.beginPath()
-      var mx = massX - 12
-      var my = trackY - 12
-      var mw = 24
-      var mh = 24
-      var mr = 4
+      var mw = 22
+      var mh = 22
+      var mr = 11
+      var mx = massX - mw / 2
+      var my = trackY - mh / 2
       ctx.moveTo(mx + mr, my)
       ctx.arcTo(mx + mw, my, mx + mw, my + mh, mr)
       ctx.arcTo(mx + mw, my + mh, mx, my + mh, mr)
@@ -262,9 +255,9 @@ function essayInteractives() {
       ctx.closePath()
       ctx.fill()
 
-      // plot area
-      var plotT = 96
-      var plotB = cssH - 20
+      // plot area (primary visual)
+      var plotT = 84
+      var plotB = cssH - 18
       var plotL = 36
       var plotR = cssW - 16
       ctx.strokeStyle = line
@@ -556,8 +549,8 @@ function essayInteractives() {
 
     var svgNS = "http://www.w3.org/2000/svg"
     var svg = document.createElementNS(svgNS, "svg")
-    svg.setAttribute("class", "essay-interactive__svg")
-    svg.setAttribute("viewBox", "0 0 640 300")
+    svg.setAttribute("class", "essay-interactive__svg essay-interactive__svg--stage")
+    svg.setAttribute("viewBox", "0 0 640 200")
     svg.setAttribute("role", "img")
     svg.setAttribute("aria-label", "G1 versus continuous corner comparison")
 
@@ -570,8 +563,15 @@ function essayInteractives() {
 
     var kappaSvg = document.createElementNS(svgNS, "svg")
     kappaSvg.setAttribute("class", "essay-interactive__kappa")
-    kappaSvg.setAttribute("viewBox", "0 0 640 120")
+    kappaSvg.setAttribute("viewBox", "0 0 640 100")
     kappaSvg.setAttribute("aria-hidden", "true")
+
+    var kappaLabel = el("label", {
+      class: "essay-interactive__check",
+      for: kappaCheck.id,
+    })
+    kappaLabel.appendChild(kappaCheck)
+    kappaLabel.appendChild(document.createTextNode("Show curvature κ(s)"))
 
     root.appendChild(
       el("div", { class: "essay-interactive__card" }, [
@@ -586,10 +586,7 @@ function essayInteractives() {
             rSlider,
             rVal,
           ]),
-          el("div", { class: "essay-interactive__row" }, [
-            kappaCheck,
-            el("label", { class: "essay-interactive__label", text: "Show curvature κ(s)" }),
-          ]),
+          el("div", { class: "essay-interactive__row essay-interactive__row--check" }, [kappaLabel]),
         ]),
         svg,
         kappaSvg,
@@ -621,12 +618,14 @@ function essayInteractives() {
     }
 
     function paint() {
-      var half = 70
-      var y = 120
+      var half = 48
+      var y = 82
       var leftCx = 170
       var rightCx = 470
-      pathG1.setAttribute("d", g1Path(leftCx, y, half, r))
-      pathCont.setAttribute("d", continuousPathFixed(rightCx, y, half, r))
+      // Cap corner radius to diagram scale so shapes stay diagram-sized.
+      var rr = Math.min(r, half * 0.9)
+      pathG1.setAttribute("d", g1Path(leftCx, y, half, rr))
+      pathCont.setAttribute("d", continuousPathFixed(rightCx, y, half, rr))
       pathG1.setAttribute("opacity", String(0.35 + (1 - morph) * 0.65))
       pathCont.setAttribute("opacity", String(0.35 + morph * 0.65))
 
@@ -636,8 +635,8 @@ function essayInteractives() {
         n.remove()
       })
       ;[
-        [leftCx, 220, "G1 · circular"],
-        [rightCx, 220, "Continuous"],
+        [leftCx, 168, "G1 · circular"],
+        [rightCx, 168, "Continuous"],
       ].forEach(function (row) {
         var t = document.createElementNS(svgNS, "text")
         t.setAttribute("class", "essay-interactive__caption")
@@ -648,16 +647,16 @@ function essayInteractives() {
         svg.appendChild(t)
       })
 
-      // kappa plot
+      // kappa plot (compact ~100px viewBox)
       while (kappaSvg.firstChild) kappaSvg.removeChild(kappaSvg.firstChild)
       kappaSvg.style.display = showKappa ? "" : "none"
       if (!showKappa) return
 
       var frame = document.createElementNS(svgNS, "rect")
       frame.setAttribute("x", "40")
-      frame.setAttribute("y", "12")
+      frame.setAttribute("y", "10")
       frame.setAttribute("width", "560")
-      frame.setAttribute("height", "90")
+      frame.setAttribute("height", "72")
       frame.setAttribute("class", "essay-interactive__kappa-frame")
       kappaSvg.appendChild(frame)
 
@@ -673,7 +672,7 @@ function essayInteractives() {
         var d = pts
           .map(function (p, i) {
             var x = 40 + p.s * 560
-            var y = 102 - (p.k / kMax) * 80
+            var y = 82 - (p.k / kMax) * 62
             return (i === 0 ? "M" : "L") + x + " " + y
           })
           .join(" ")
@@ -689,7 +688,7 @@ function essayInteractives() {
 
       var label = document.createElementNS(svgNS, "text")
       label.setAttribute("x", "44")
-      label.setAttribute("y", "26")
+      label.setAttribute("y", "24")
       label.setAttribute("class", "essay-interactive__caption")
       label.textContent = "κ(s) along one corner"
       kappaSvg.appendChild(label)
