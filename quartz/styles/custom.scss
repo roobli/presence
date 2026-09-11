@@ -2541,15 +2541,45 @@ article code.mermaid svg * {
   transition: none !important;
 }
 
+/* Essay page: center display math, interactives, and standalone figures. */
+article .katex-display {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+article mjx-container[display="true"],
+article .math.math-display {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+article figure {
+  margin-inline: auto;
+  text-align: center;
+}
+
+article figure > img {
+  display: block;
+  margin-inline: auto;
+  max-width: 100%;
+  height: auto;
+}
+
 /* essay interactives */
 .essay-interactive {
-  margin: 1.25rem 0 1.5rem;
+  margin: 1.25rem auto 1.5rem;
+  margin-inline: auto;
   max-width: 100%;
   // Kill the ~5px page-level horizontal overflow from bordered 100% canvases.
   overflow-x: clip;
 }
 
 .essay-interactive__card {
+  position: relative;
   box-sizing: border-box;
   max-width: 100%;
   border: 1px solid var(--line-color);
@@ -2574,6 +2604,7 @@ article code.mermaid svg * {
   flex-direction: column;
   gap: 0.55rem;
   margin-bottom: 0.75rem;
+  padding-inline: 0;
 }
 
 .essay-interactive__row {
@@ -2584,10 +2615,30 @@ article code.mermaid svg * {
   font-size: 0.85rem;
   min-width: 0;
   max-width: 100%;
+  padding-inline: 0;
+  margin-inline: 0;
 }
 
 .essay-interactive__row--actions {
   gap: 0.5rem;
+}
+
+.essay-interactive__row--check {
+  // Same left inset as other control rows — no hanging checkbox.
+  align-items: center;
+}
+
+.essay-interactive__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  color: var(--ink-muted-color);
+  font-size: 0.82rem;
+  cursor: pointer;
+  line-height: 1.2;
 }
 
 .essay-interactive__label {
@@ -2653,7 +2704,17 @@ article code.mermaid svg * {
   max-width: 100%;
   height: auto;
   margin-top: 0.35rem;
+  margin-inline: auto;
   overflow: hidden;
+}
+
+// Shape stage: diagram-sized, not half-page poster.
+.essay-interactive__svg--stage {
+  max-height: min(300px, 45vw);
+}
+
+.essay-interactive__kappa {
+  max-height: 120px;
 }
 
 .essay-interactive__shape {
@@ -2711,5 +2772,17 @@ article code.mermaid svg * {
 }
 
 .essay-interactive input[type="checkbox"] {
+  appearance: auto;
   accent-color: var(--accent-color);
+  width: 0.95rem;
+  height: 0.95rem;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+  align-self: center;
+  transform: none;
+}
+
+.essay-interactive input[type="checkbox"]:hover {
+  transform: none;
 }
