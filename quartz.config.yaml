@@ -47,7 +47,8 @@ configuration:
 plugins:
   - source: "./quartz/plugins/local/i18n-slug"
     enabled: true
-    order: 5
+    # After note-properties (5), which parses the frontmatter this plugin reads.
+    order: 6
   - source: "@quartz-community/created-modified-date"
     enabled: true
     options:
@@ -202,8 +203,11 @@ plugins:
   - source: "@quartz-community/content-index"
     enabled: true
     options:
-      enableSiteMap: true
-      enableRSS: true
+      # presence-feeds writes both, with translations and hreflang alternates.
+      enableSiteMap: false
+      enableRSS: false
+  - source: "./quartz/plugins/local/presence-feeds"
+    enabled: true
   - source: "@quartz-community/favicon"
     enabled: true
   - source: "@quartz-community/og-image"

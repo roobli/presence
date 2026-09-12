@@ -2,11 +2,6 @@
 title: 快捷键系统——设计、历史与共享语法
 description: 从 Emacs 前缀与 vi 模态，到 Spotlight、命令面板与 Cmd+K：为何重度用户把快捷键当成命名空间，以及 KeyCombiner 如何把它变成可练习的系统。
 date: 2026-09-11
-lang: zh
-unlisted: true
-alt: /writing/keyboard-shortcut-systems
-aliases:
-  - zh/writing/keyboard-shortcut-systems
 tags:
   - keyboard
   - ux

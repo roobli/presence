@@ -40,7 +40,9 @@ export class FileTrieNode<T extends FileTrieData = ContentDetails> {
 
   get slug(): FullSlug {
     const path = joinSegments(...this.slugSegments) as FullSlug
-    if (this.isFolder) {
+    // A note with pages nested under it (writing/foo next to writing/foo/zh) is
+    // still that note, not a folder index that has no page behind it.
+    if (this.isFolder && this.data?.slug !== path) {
       return joinSegments(path, "index") as FullSlug
     }
 
@@ -76,7 +78,14 @@ export class FileTrieNode<T extends FileTrieData = ContentDetails> {
         // the fallback for any duplicates that still reach the trie.
         this.data = file
       } else {
-        this.makeChild(path, file)
+        // A deeper page inserted first (writing/foo/zh before writing/foo) has
+        // already created this node without data; attach instead of duplicating.
+        const existing = this.children.find((c) => c.slugSegment === segment)
+        if (existing) {
+          existing.data ??= file
+        } else {
+          this.makeChild(path, file)
+        }
       }
     } else if (path.length > 1) {
       // recursive case, we are not at the end of the path
