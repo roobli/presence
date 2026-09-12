@@ -1,22 +1,22 @@
 {
-  "name": "i18n-slug",
+  "name": "presence-feeds",
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "Map sibling *.zh.md files to /<path>/zh, derive translation pairs, and emit language head tags",
+  "description": "Write sitemap.xml with translation alternates and an RSS feed of writing and works",
   "exports": {
     ".": "./index.js",
     "./package.json": "./package.json"
   },
   "main": "./index.js",
   "quartz": {
-    "name": "i18n-slug",
-    "displayName": "i18n slug map",
-    "category": "transformer",
+    "name": "presence-feeds",
+    "displayName": "Presence feeds",
+    "category": "emitter",
     "version": "1.0.0",
     "quartzVersion": ">=5.0.0",
     "dependencies": [],
-    "defaultOrder": 6,
+    "defaultOrder": 50,
     "defaultEnabled": true,
     "defaultOptions": {}
   }

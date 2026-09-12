@@ -1,8 +1,9 @@
 import { h } from "preact"
 
 /**
- * Per-article language switch. Renders only when frontmatter.alt is set.
- * Convention: lang (en|zh, default en) + alt (absolute path of the other version).
+ * Per-article language switch. Renders only when frontmatter.alt is set, which
+ * i18n-slug derives for every translation pair (a hand-written alt overrides).
+ * Convention: lang (en | zh-Hans, default en) + alt (absolute path of the other version).
  */
 
 function normalizePath(path) {
@@ -24,18 +25,36 @@ function LanguageSwitchComponent({ fileData, displayClass }) {
   const zhHref = isZh ? selfPath : alt
 
   const enNode = isZh
-    ? h("a", { href: enHref, class: "lang-switch__link" }, "EN")
-    : h("span", { class: "lang-switch__link is-current", "aria-current": "page" }, "EN")
+    ? h(
+        "a",
+        { href: enHref, class: "lang-switch__link", rel: "alternate", hreflang: "en", lang: "en" },
+        "EN",
+      )
+    : h("span", { class: "lang-switch__link is-current", "aria-current": "page", lang: "en" }, "EN")
 
   const zhNode = isZh
-    ? h("span", { class: "lang-switch__link is-current", "aria-current": "page" }, "中")
-    : h("a", { href: zhHref, class: "lang-switch__link" }, "中")
+    ? h(
+        "span",
+        { class: "lang-switch__link is-current", "aria-current": "page", lang: "zh-Hans" },
+        "中",
+      )
+    : h(
+        "a",
+        {
+          href: zhHref,
+          class: "lang-switch__link",
+          rel: "alternate",
+          hreflang: "zh-Hans",
+          lang: "zh-Hans",
+        },
+        "中",
+      )
 
   return h(
     "nav",
     {
       class: ["lang-switch", displayClass].filter(Boolean).join(" "),
-      "aria-label": "Language",
+      "aria-label": isZh ? "语言" : "Language",
     },
     enNode,
     h("span", { class: "lang-switch__sep", "aria-hidden": "true" }, "|"),
@@ -71,6 +90,15 @@ LanguageSwitchComponent.css = `
   opacity: 0.55;
   user-select: none;
 }
+`
+
+// SPA navigation swaps <head> but never touches <html lang>. Copy the
+// page-lang marker that i18n-slug emits into every head.
+LanguageSwitchComponent.afterDOMLoaded = `
+document.addEventListener("nav", () => {
+  const lang = document.head.querySelector('meta[name="page-lang"]')?.content
+  if (lang) document.documentElement.lang = lang
+})
 `
 
 export const LanguageSwitch = () => LanguageSwitchComponent
