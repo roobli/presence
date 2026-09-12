@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "Build-time markers + client widgets for essay interactives (spring-zeta, squircle-compare)",
+  "description": "Build-time markers and client widgets for essay interactives, one widget per file in components/widgets",
   "exports": {
     ".": "./index.js",
     "./components": "./components/index.js",
