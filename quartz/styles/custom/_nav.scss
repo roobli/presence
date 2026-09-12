@@ -167,12 +167,10 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  // The scrollbar sits just inside the panel's own edge. It used to stand ten
-  // pixels off it to stay clear of the resize handle; the handle is narrower
-  // now and a press only starts a drag after four pixels of travel, so they
-  // can be neighbours without fighting.
+  // The scrollbar stops where the resize strip starts, so neither covers the
+  // other's grab area. The strip's width is set in _resize.scss.
   padding: 0 6px 1.5rem 10px;
-  margin-right: 4px;
+  margin-right: var(--tpl-resize-hit);
   scrollbar-width: thin;
   scrollbar-color: var(--line-strong-color) transparent;
 
@@ -236,6 +234,8 @@
 }
 
 .tpl-nav-item:focus-visible,
+.tpl-nav-controls button:focus-visible,
+.tpl-tree-crumb:focus-visible,
 #tpl-nav-toggle:focus-visible,
 #tpl-sidebar-reopen:focus-visible {
   outline: 2px solid var(--accent-color);

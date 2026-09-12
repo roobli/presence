@@ -138,6 +138,13 @@ $mark-ext: (
     font-weight: 400;
   }
 
+  // Quartz sets folder names in its heading face. Both kinds of row use the
+  // panel's UI face here.
+  .folder-container div > a,
+  .folder-container div > button {
+    font-family: inherit;
+  }
+
   .folder-title,
   a.nav-file-title {
     display: flex;

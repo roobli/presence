@@ -8,7 +8,7 @@
  * quartz/styles/custom.scss; this file only supplies state and geometry.
  */
 
-function roobUI() {
+function roobUI(prefs) {
   // plugins/wider/src/layout.ts
   var DEFAULT_CONTENT_WIDTH = 860
   var WIDE_MIN_CONTENT_WIDTH = 1000
@@ -120,6 +120,14 @@ function roobUI() {
     // <body>, a sibling of #quartz-root, so anything set on the root element
     // of the page layout would never reach it.
     var docEl = document.documentElement
+    // On one column the sidebar is a sticky bar over the article, and anchor
+    // jumps need its real height to land below it (_mobile-header.scss).
+    if (window.innerWidth <= MOBILE_MAX) {
+      var bar = document.querySelector(".page > #quartz-body > .sidebar.left")
+      if (bar && bar.offsetHeight > 0) {
+        docEl.style.setProperty("--tpl-mobile-header", bar.offsetHeight + "px")
+      }
+    }
     docEl.style.setProperty("--tpl-shell-gutter", layout.gutter + "px")
     docEl.style.setProperty("--tpl-sidenote-reserve-active", layout.reserve + "px")
     root.setAttribute("data-tpl-wider-mode", mode)
@@ -248,12 +256,24 @@ function roobUI() {
   document.addEventListener(
     "keydown",
     function (event) {
+      var sheet = document.getElementById("tpl-shortcuts")
+      var sheetOpen = sheet !== null && !sheet.hidden
       if (event.key === "Escape") {
-        var sheet = document.getElementById("tpl-shortcuts")
-        if (sheet && !sheet.hidden) {
+        // Innermost first: a drag in progress, then the sheet, then the
+        // narrow-screen nav. Search closes itself.
+        if (drag) {
+          event.preventDefault()
+          endDrag(false)
+        } else if (sheetOpen) {
           event.preventDefault()
           setShortcuts(false)
+        } else if (!searchIsOpen() && closeNav()) {
+          event.preventDefault()
         }
+        return
+      }
+      if (event.key === "Tab" && sheetOpen) {
+        trapFocus(sheet, event)
         return
       }
       var mod = event.metaKey || event.ctrlKey
@@ -305,13 +325,17 @@ function roobUI() {
   // the viewport each and scrolls inside them, which stops working the moment
   // the tree is deep. The palette stays the editor theme's.
   // -------------------------------------------------------------------------
-  var SIDEBAR_WIDTH_KEY = "roob-sidebar-width"
-  var SIDEBAR_COLLAPSED_KEY = "roob-sidebar-collapsed"
+  // Keys and limits come from SIDEBAR_PREFS, which the <head> script that
+  // paints the stored width before first paint reads too.
+  var SIDEBAR_WIDTH_KEY = prefs.widthKey
+  var SIDEBAR_COLLAPSED_KEY = prefs.collapsedKey
   var FILE_TREE_KEY = "fileTree" // owned by Quartz's explorer; shared on purpose
   var NAV_SCROLL_KEY = "roob-nav-scroll"
-  var SIDEBAR_MIN = 220
-  var SIDEBAR_MAX = 520
-  var DEFAULT_SIDEBAR_WIDTH = 280
+  var NAV_BODY_ID = "tpl-nav-body"
+  var SIDEBAR_MIN = prefs.min
+  var SIDEBAR_MAX = prefs.max
+  var DEFAULT_SIDEBAR_WIDTH = prefs.defaultWidth
+  var SIDEBAR_COLUMN_RESERVE = prefs.columnReserve
   var DRAG_THRESHOLD = 4
 
   var SVG_OPEN =
@@ -319,13 +343,9 @@ function roobUI() {
     ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
 
   var ICONS = {
-    home: SVG_OPEN + '<path d="M3 10.6 12 4l9 6.6V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
-    clock: SVG_OPEN + '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 1.8"/></svg>',
-    list: SVG_OPEN + '<path d="M4 6h10M4 12h16M4 18h13"/></svg>',
     folder:
       SVG_OPEN +
       '<path d="M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg>',
-    chevron: SVG_OPEN + '<path d="m9 6 6 6-6 6"/></svg>',
     panel:
       SVG_OPEN +
       '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 4v16"/></svg>',
@@ -425,22 +445,6 @@ function roobUI() {
     }
   }
 
-  function currentSlug() {
-    var path = location.pathname
-    try {
-      path = decodeURIComponent(path)
-    } catch (e) {
-      /* keep the raw path */
-    }
-    return path.replace(/^\/+/, "").replace(/\/+$/, "") || "index"
-  }
-
-  function currentTitle() {
-    var heading = document.querySelector(".page-header .article-title")
-    var text = heading && heading.textContent ? heading.textContent.trim() : ""
-    return text || document.title || currentSlug()
-  }
-
   // --- file tree: reveal, collapse -----------------------------------------
   // --- pinned ancestors ----------------------------------------------------
   //
@@ -526,6 +530,10 @@ function roobUI() {
   function makeCrumb(container, depth, body) {
     var row = el("button", "tpl-tree-crumb")
     row.type = "button"
+    // A crumb repeats a folder row that is still reachable in the tree, and
+    // it is redrawn on scroll. It stays out of the tab order, as the strip is
+    // out of the accessibility tree, so focus never sits on a node about to go.
+    row.tabIndex = -1
     row.style.paddingLeft = 10 + depth * 18 + "px"
     var chevron = container.querySelector(".folder-icon")
     if (chevron) {
@@ -569,7 +577,7 @@ function roobUI() {
     var alt = mod === "\u2318" ? "\u2325" : "Alt"
     return [
       [[mod + " ."], "\u6253\u5f00\u641c\u7d22", "\u6807\u9898\u3001\u6b63\u6587\u3001\u6807\u7b7e\u4e00\u8d77\u641c\uff1b" + mod + " ' \u540c\u6548"],
-      [[mod + " " + alt + " [", mod + " " + alt + " ]"], "\u6b63\u6587\u5bbd\u5ea6", "\u5728\u7a84\u3001\u4e2d\u3001\u5bbd\u3001\u6ee1\u5e45\u4e4b\u95f4\u9010\u7ea7\u5207\u6362"],
+      [[mod + " " + alt + " [", mod + " " + alt + " ]"], "\u6b63\u6587\u5bbd\u5ea6", "\u5728\u9ed8\u8ba4\u3001\u52a0\u5bbd\u3001\u6ee1\u5e45\u4e09\u6863\u4e4b\u95f4\u5faa\u73af\u5207\u6362"],
       [["Esc"], "\u5173\u95ed", "\u5173\u95ed\u641c\u7d22\u9762\u677f\u6216\u672c\u9875"],
     ]
   }
@@ -636,12 +644,21 @@ function roobUI() {
     return sheet
   }
 
+  var sheetReturnFocus = null
+
   function setShortcuts(open) {
     var sheet = document.getElementById("tpl-shortcuts") || buildShortcuts()
+    var wasOpen = !sheet.hidden
     sheet.hidden = !open
     if (open) {
+      // Whatever opened the sheet gets focus back when it closes.
+      if (!wasOpen) sheetReturnFocus = document.activeElement
       var close = sheet.querySelector(".tpl-sheet-close")
       if (close) close.focus()
+    } else if (wasOpen) {
+      var back = sheetReturnFocus
+      sheetReturnFocus = null
+      if (back && back.isConnected && typeof back.focus === "function") back.focus()
     }
   }
 
@@ -650,13 +667,36 @@ function roobUI() {
     setShortcuts(!sheet || sheet.hidden)
   }
 
-  function makeFootAction(name, label, run) {
+  /** aria-modal says the page behind is out of reach, so Tab cycles through
+   *  the sheet's own controls instead of walking out behind the backdrop. */
+  function trapFocus(container, event) {
+    var items = container.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    )
+    if (items.length === 0) return
+    var first = items[0]
+    var last = items[items.length - 1]
+    var active = document.activeElement
+    if (!container.contains(active)) {
+      event.preventDefault()
+      first.focus()
+    } else if (event.shiftKey && active === first) {
+      event.preventDefault()
+      last.focus()
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault()
+      first.focus()
+    }
+  }
+
+  /** Its click is handled on the document; see "sidebar controls". */
+  function makeFootAction(name, action, label) {
     var button = el("button", "tpl-foot-action")
     button.type = "button"
     button.title = label
     button.setAttribute("aria-label", label)
+    button.setAttribute("data-tpl-action", action)
     button.appendChild(icon(name))
-    button.addEventListener("click", run)
     return button
   }
 
@@ -885,25 +925,6 @@ function roobUI() {
     return out
   }
 
-  /** Re-apply the folder open/closed state the explorer persisted. */
-  function restoreSavedOpenState(explorer) {
-    var saved = readJson(FILE_TREE_KEY, [])
-    if (!Array.isArray(saved)) return
-    var byPath = {}
-    for (var i = 0; i < saved.length; i += 1) {
-      if (saved[i] && saved[i].path) byPath[saved[i].path] = saved[i].collapsed
-    }
-    var containers = explorer.querySelectorAll(".folder-container")
-    for (var j = 0; j < containers.length; j += 1) {
-      var container = containers[j]
-      var outer = container.nextElementSibling
-      if (!outer) continue
-      var path = container.dataset.folderpath
-      var collapsed = path in byPath ? byPath[path] : true
-      outer.classList.toggle("open", !collapsed)
-    }
-  }
-
   function persistOpenState(explorer) {
     var containers = explorer.querySelectorAll(".folder-container")
     var state = []
@@ -942,6 +963,16 @@ function roobUI() {
   }
 
   // --- panel width ---------------------------------------------------------
+  /** The widest the panel may be in this window: never past SIDEBAR_MAX, and
+   *  never so wide that the column is left less than SIDEBAR_COLUMN_RESERVE. */
+  function sidebarMax() {
+    return Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, window.innerWidth - SIDEBAR_COLUMN_RESERVE))
+  }
+
+  function fitSidebarWidth(width) {
+    return Math.round(clamp(width, SIDEBAR_MIN, sidebarMax()))
+  }
+
   function storedSidebarWidth() {
     var width = readJson(SIDEBAR_WIDTH_KEY, DEFAULT_SIDEBAR_WIDTH)
     if (typeof width !== "number" || width < SIDEBAR_MIN || width > SIDEBAR_MAX) {
@@ -950,13 +981,30 @@ function roobUI() {
     return width
   }
 
-  function paintSidebarWidth(width) {
-    document.documentElement.style.setProperty("--tpl-sidebar-width", width + "px")
+  /** The width on screen, which during a drag is not the stored one. */
+  function paintedSidebarWidth() {
+    var painted = parseFloat(document.documentElement.style.getPropertyValue("--tpl-sidebar-width"))
+    return painted > 0 ? painted : fitSidebarWidth(storedSidebarWidth())
   }
 
-  function applySidebarWidth(width) {
+  function paintSidebarWidth(width) {
+    document.documentElement.style.setProperty("--tpl-sidebar-width", width + "px")
+    if (width > 0) syncResizeHandle(width)
+  }
+
+  function syncResizeHandle(width) {
+    var handle = document.querySelector(".sidebar.left .tpl-nav-resize")
+    if (!handle) return
+    handle.setAttribute("aria-valuemin", String(SIDEBAR_MIN))
+    handle.setAttribute("aria-valuemax", String(sidebarMax()))
+    handle.setAttribute("aria-valuenow", String(Math.round(width)))
+  }
+
+  /** Paint and keep a width, and let the column and the row titles follow. */
+  function commitSidebarWidth(width) {
     writeJson(SIDEBAR_WIDTH_KEY, width)
     paintSidebarWidth(width)
+    applyLayout()
     var explorer = document.querySelector(".sidebar.left .explorer")
     if (explorer) scheduleTitles(explorer)
   }
@@ -971,15 +1019,16 @@ function roobUI() {
     // The width lives in an inline custom property, which outranks anything
     // the stylesheet says. Collapsing has to zero it here or the grid keeps a
     // column the width of a panel that is no longer on screen.
-    paintSidebarWidth(collapsed ? 0 : storedSidebarWidth())
+    paintSidebarWidth(collapsed ? 0 : fitSidebarWidth(storedSidebarWidth()))
     applyLayout()
     syncCollapseButton()
   }
 
+  /** Same result as roobSidebarPrepaint, which already ran in <head>. */
   function restoreSidebarPrefs() {
     var collapsed = sidebarCollapsed()
     document.documentElement.setAttribute("data-tpl-sidebar", collapsed ? "collapsed" : "open")
-    paintSidebarWidth(collapsed ? 0 : storedSidebarWidth())
+    paintSidebarWidth(collapsed ? 0 : fitSidebarWidth(storedSidebarWidth()))
   }
 
   function syncCollapseButton() {
@@ -991,66 +1040,144 @@ function roobUI() {
     button.setAttribute("aria-label", button.title)
   }
 
-  /** Drag the panel edge; the reading column recomputes as it moves. */
+  // --- dragging the panel edge ---------------------------------------------
+  //
+  // Bound once on the document and matched by class when the press lands.
+  // micromorph pairs the rebuilt sidebar's children with the server's by
+  // position and reuses a node of the same tag, so listeners put on the
+  // handle itself moved onto the file tree after a navigation: a press that
+  // travelled in the tree resized the panel, and a double-click reset it.
+  //
+  // The edge moves exactly as far as the pointer, from wherever the press
+  // caught it. Capture keeps the drag when the pointer leaves the strip, the
+  // writes wait for the next frame, and the width is only kept on release.
+  var drag = null
+  var dragFrame = 0
+
+  function paintDrag() {
+    dragFrame = 0
+    if (!drag) return
+    paintSidebarWidth(drag.width)
+    applyLayout()
+  }
+
+  function endDrag(keep) {
+    if (!drag) return
+    var ended = drag
+    drag = null
+    if (dragFrame) {
+      window.cancelAnimationFrame(dragFrame)
+      dragFrame = 0
+    }
+    document.documentElement.classList.remove("tpl-resizing")
+    if (ended.moved) {
+      if (keep) {
+        commitSidebarWidth(ended.width)
+      } else {
+        paintSidebarWidth(ended.startWidth)
+        applyLayout()
+      }
+    }
+    try {
+      if (ended.handle.hasPointerCapture(ended.pointerId)) {
+        ended.handle.releasePointerCapture(ended.pointerId)
+      }
+    } catch (e) {
+      /* the handle is already gone */
+    }
+  }
+
+  document.addEventListener("pointerdown", function (event) {
+    if (event.button !== 0 || !event.isPrimary) return
+    var target = event.target
+    var handle = target && target.closest ? target.closest(".tpl-nav-resize") : null
+    if (!handle) return
+    endDrag(false)
+    var width = paintedSidebarWidth()
+    drag = {
+      handle: handle,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startWidth: width,
+      width: width,
+      moved: false,
+    }
+    try {
+      handle.setPointerCapture(event.pointerId)
+    } catch (e) {
+      /* without capture the document still sees every move */
+    }
+    // No text selection, and no focus ring from a mouse press.
+    event.preventDefault()
+  })
+
+  document.addEventListener("pointermove", function (event) {
+    if (!drag || event.pointerId !== drag.pointerId) return
+    // A release the page never heard about still ends the drag, and keeps
+    // the width that was on screen when the button came up.
+    if (event.pointerType === "mouse" && !(event.buttons & 1)) {
+      endDrag(true)
+      return
+    }
+    var dx = event.clientX - drag.startX
+    // The strip sits beside the panel's scrollbar, so a press that lands on
+    // it by accident must not move anything. Only travel starts a resize.
+    if (!drag.moved) {
+      if (Math.abs(dx) < DRAG_THRESHOLD) return
+      drag.moved = true
+      document.documentElement.classList.add("tpl-resizing")
+    }
+    drag.width = fitSidebarWidth(drag.startWidth + dx)
+    if (!dragFrame) dragFrame = window.requestAnimationFrame(paintDrag)
+  })
+
+  document.addEventListener("pointerup", function (event) {
+    if (drag && event.pointerId === drag.pointerId) endDrag(true)
+  })
+
+  // Cancelled by the system, or the handle left the page mid-drag: the edge
+  // goes back to where the press found it and nothing is kept.
+  document.addEventListener("pointercancel", function (event) {
+    if (drag && event.pointerId === drag.pointerId) endDrag(false)
+  })
+
+  document.addEventListener("lostpointercapture", function (event) {
+    if (drag && event.pointerId === drag.pointerId) endDrag(false)
+  })
+
+  // The keyboard way to do the same: arrows nudge the edge, Shift takes
+  // bigger steps, Home and End go to the limits, Enter restores the default.
+  document.addEventListener("keydown", function (event) {
+    var handle = event.target
+    if (!handle || !handle.classList || !handle.classList.contains("tpl-nav-resize")) return
+    if (event.altKey || event.ctrlKey || event.metaKey) return
+    var width = paintedSidebarWidth()
+    var step = event.shiftKey ? 50 : 10
+    if (event.key === "ArrowLeft") width -= step
+    else if (event.key === "ArrowRight") width += step
+    else if (event.key === "Home") width = SIDEBAR_MIN
+    else if (event.key === "End") width = sidebarMax()
+    else if (event.key === "Enter") width = DEFAULT_SIDEBAR_WIDTH
+    else return
+    event.preventDefault()
+    commitSidebarWidth(fitSidebarWidth(width))
+  })
+
+  // A mis-drag is easy to make and hard to undo by hand, so give the edge
+  // the usual way back to the default width.
+  document.addEventListener("dblclick", function (event) {
+    var target = event.target
+    if (!target || !target.closest || !target.closest(".tpl-nav-resize")) return
+    commitSidebarWidth(fitSidebarWidth(DEFAULT_SIDEBAR_WIDTH))
+  })
+
   function makeResizeHandle() {
     var handle = el("div", "tpl-nav-resize")
     handle.setAttribute("role", "separator")
+    handle.setAttribute("aria-orientation", "vertical")
     handle.setAttribute("aria-label", "调整侧栏宽度")
+    handle.tabIndex = 0
     handle.title = "拖动调整宽度，双击复位"
-    var armed = false
-    var dragging = false
-    var startX = 0
-
-    var stop = function () {
-      if (!armed) return
-      armed = false
-      dragging = false
-      window.removeEventListener("pointermove", move)
-      window.removeEventListener("pointerup", stop)
-      window.removeEventListener("pointercancel", stop)
-      window.removeEventListener("blur", stop)
-      document.documentElement.classList.remove("tpl-resizing")
-    }
-
-    function move(event) {
-      // Pointer capture on the handle used to strand the drag whenever the
-      // panel went away mid-gesture, and every later click then resized the
-      // sidebar instead of opening what it hit. Watching the button state
-      // means a drag that lost its pointerup ends itself on the next move.
-      if (!(event.buttons & 1)) {
-        stop()
-        return
-      }
-      // The handle sits a few pixels from this panel's scrollbar, so a press
-      // that lands on it by accident must not move anything. Only a pointer
-      // that travels starts a resize; a click on the edge does nothing.
-      if (!dragging) {
-        if (Math.abs(event.clientX - startX) < DRAG_THRESHOLD) return
-        dragging = true
-        document.documentElement.classList.add("tpl-resizing")
-      }
-      applySidebarWidth(Math.round(Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, event.clientX))))
-      applyLayout()
-    }
-
-    handle.addEventListener("pointerdown", function (event) {
-      if (event.button !== 0) return
-      armed = true
-      dragging = false
-      startX = event.clientX
-      window.addEventListener("pointermove", move)
-      window.addEventListener("pointerup", stop)
-      window.addEventListener("pointercancel", stop)
-      window.addEventListener("blur", stop)
-      event.preventDefault()
-    })
-
-    // A mis-drag is easy to make and hard to undo by hand, so give the edge
-    // the usual way back to the default width.
-    handle.addEventListener("dblclick", function () {
-      applySidebarWidth(DEFAULT_SIDEBAR_WIDTH)
-      applyLayout()
-    })
     return handle
   }
 
@@ -1300,19 +1427,16 @@ function roobUI() {
     var head = el("div", "tpl-nav-head")
     var topRow = el("div", "tpl-nav-top")
     // Narrow screens fold the whole nav behind this; it is hidden on desktop.
+    // Nothing built here carries a listener of its own: clicks, scrolls and
+    // presses are taken on the document (see "sidebar controls" below).
     var toggle = el("button", "")
     toggle.id = "tpl-nav-toggle"
     toggle.type = "button"
     toggle.setAttribute("aria-label", "切换导航")
+    toggle.setAttribute("aria-expanded", "false")
+    toggle.setAttribute("aria-controls", NAV_BODY_ID)
     toggle.innerHTML =
       SVG_OPEN + '<path d="M3 6h18M3 12h18M3 18h18"/></svg>'
-    toggle.addEventListener("click", function () {
-      var open = sidebar.classList.toggle("tpl-nav-open")
-      toggle.setAttribute("aria-expanded", open ? "true" : "false")
-      // The dropdown is short-lived, so it opens at the top rather than
-      // wherever the panel was left scrolled on the last desktop visit.
-      if (open && sidebar.__tplBody) sidebar.__tplBody.scrollTop = 0
-    })
     topRow.appendChild(toggle)
     if (title) topRow.appendChild(title)
     var controls = el("div", "tpl-nav-controls")
@@ -1324,9 +1448,6 @@ function roobUI() {
     collapseButton.id = "tpl-sidebar-collapse"
     collapseButton.type = "button"
     collapseButton.appendChild(icon("panel"))
-    collapseButton.addEventListener("click", function () {
-      setSidebarCollapsed(!sidebarCollapsed())
-    })
     controls.appendChild(collapseButton)
     topRow.appendChild(controls)
     head.appendChild(topRow)
@@ -1367,21 +1488,9 @@ function roobUI() {
       }
     }
     var footTools = el("div", "tpl-nav-foot-tools")
-    footTools.appendChild(
-      makeFootAction("target", "展开并滚动到当前笔记", function () {
-        revealActive(explorer)
-      }),
-    )
-    footTools.appendChild(
-      makeFootAction("fold", "折叠所有目录", function () {
-        collapseAll(explorer)
-      }),
-    )
-    footTools.appendChild(
-      makeFootAction("help", "快捷键与用法", function () {
-        toggleShortcuts()
-      }),
-    )
+    footTools.appendChild(makeFootAction("target", "reveal", "展开并滚动到当前笔记"))
+    footTools.appendChild(makeFootAction("fold", "fold", "折叠所有目录"))
+    footTools.appendChild(makeFootAction("help", "help", "快捷键与用法"))
     foot.appendChild(footTools)
 
     // Quartz scrolls the tree to the open note on every navigation. With one
@@ -1393,14 +1502,8 @@ function roobUI() {
     } catch (e) {
       /* private mode */
     }
-    body.addEventListener("scroll", function () {
-      try {
-        sessionStorage.setItem(NAV_SCROLL_KEY, String(body.scrollTop))
-      } catch (e) {
-        /* private mode */
-      }
-    })
 
+    body.id = NAV_BODY_ID
     sidebar.textContent = ""
     sidebar.appendChild(head)
     sidebar.appendChild(body)
@@ -1409,43 +1512,149 @@ function roobUI() {
     sidebar.appendChild(makeResizeHandle())
     sidebar.dataset.tplNav = "ready"
     sidebar.__tplBody = body
+    syncResizeHandle(paintedSidebarWidth())
     mountReopenButton()
     syncCollapseButton()
 
     // The explorer rebuilds its tree asynchronously after every navigation,
     // so the row titles and the count have to be re-applied when it does.
+    // One observer at a time: the previous page's list is gone or reused.
+    if (treeObserver) treeObserver.disconnect()
+    treeObserver = null
     var list = explorer.querySelector(".explorer-ul")
     if (list && typeof MutationObserver !== "undefined") {
-      var observer = new MutationObserver(function () {
+      treeObserver = new MutationObserver(function () {
         titleTreeRows(explorer)
         restoreNavScroll(body)
         scheduleGuides(explorer)
         scheduleCrumbs(explorer, body)
       })
-      observer.observe(list, { childList: true, subtree: true })
+      treeObserver.observe(list, { childList: true, subtree: true })
     }
-    // Opening or closing a folder animates grid-template-rows for 300ms.
-    // Capture, because the explorer's own toggle stops the click before it
-    // bubbles this far: on the bubble phase neither of these ever ran.
-    explorer.addEventListener(
-      "click",
-      function (event) {
-        markUnfolding(event.target)
-        followGuides(explorer, 420)
-      },
-      true,
-    )
-    explorer.addEventListener("transitionend", function (event) {
-      if (event.propertyName === "grid-template-rows") scheduleGuides(explorer)
-    })
-    body.addEventListener("scroll", function () {
-      scheduleGuides(explorer)
-      scheduleCrumbs(explorer, body)
-    })
     titleTreeRows(explorer)
     scheduleGuides(explorer)
     scheduleCrumbs(explorer, body)
   }
+
+  var treeObserver = null
+
+  // --- sidebar controls ----------------------------------------------------
+  //
+  // Everything buildNav makes is handled here, on the document, for the same
+  // reason as the resize handle: after a navigation micromorph hands the old
+  // nodes to other server elements, and a node's listeners go with it. The
+  // reveal button, for one, came back as the theme toggle and kept revealing.
+  function setNavOpen(sidebar, open) {
+    if (!sidebar) return
+    sidebar.classList.toggle("tpl-nav-open", open)
+    var toggle = document.getElementById("tpl-nav-toggle")
+    if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false")
+    // The dropdown is short-lived, so it opens at the top rather than
+    // wherever the panel was left scrolled on the last desktop visit.
+    if (open && sidebar.__tplBody) sidebar.__tplBody.scrollTop = 0
+  }
+
+  /** Close the narrow-screen dropdown; true when there was one to close. */
+  function closeNav() {
+    var sidebar = document.querySelector(".sidebar.left.tpl-nav-open")
+    if (!sidebar) return false
+    var body = sidebar.__tplBody
+    var hadFocus = !!(body && body.contains(document.activeElement))
+    setNavOpen(sidebar, false)
+    var toggle = document.getElementById("tpl-nav-toggle")
+    if (hadFocus && toggle) toggle.focus()
+    return true
+  }
+
+  document.addEventListener("click", function (event) {
+    var target = event.target
+    if (!target || !target.closest) return
+    var control = target.closest(
+      "#tpl-nav-toggle, #tpl-sidebar-collapse, .tpl-foot-action[data-tpl-action]",
+    )
+    if (!control) return
+    if (control.id === "tpl-nav-toggle") {
+      var sidebar = control.closest(".sidebar.left")
+      setNavOpen(sidebar, !(sidebar && sidebar.classList.contains("tpl-nav-open")))
+      return
+    }
+    if (control.id === "tpl-sidebar-collapse") {
+      setSidebarCollapsed(!sidebarCollapsed())
+      return
+    }
+    var action = control.getAttribute("data-tpl-action")
+    if (action === "help") {
+      toggleShortcuts()
+      return
+    }
+    var explorer = document.querySelector(".sidebar.left .explorer")
+    if (!explorer) return
+    if (action === "reveal") revealActive(explorer)
+    else if (action === "fold") collapseAll(explorer)
+  })
+
+  // Opening or closing a folder animates grid-template-rows for 300ms.
+  // Capture, because the explorer's own toggle stops the click before it
+  // bubbles this far: on the bubble phase neither of these ever ran.
+  document.addEventListener(
+    "click",
+    function (event) {
+      var target = event.target
+      var explorer = target && target.closest ? target.closest(".sidebar.left .explorer") : null
+      if (!explorer) return
+      markUnfolding(target)
+      followGuides(explorer, 420)
+    },
+    true,
+  )
+
+  document.addEventListener("transitionend", function (event) {
+    if (event.propertyName !== "grid-template-rows") return
+    var target = event.target
+    var explorer = target && target.closest ? target.closest(".sidebar.left .explorer") : null
+    if (explorer) scheduleGuides(explorer)
+  })
+
+  // Scroll does not bubble, so the panel's scroller is caught on the way down.
+  document.addEventListener(
+    "scroll",
+    function (event) {
+      var body = event.target
+      if (!body || !body.classList || !body.classList.contains("tpl-nav-body")) return
+      rememberNavScroll(body.scrollTop)
+      var explorer = body.querySelector(".explorer")
+      if (!explorer) return
+      scheduleGuides(explorer)
+      scheduleCrumbs(explorer, body)
+    },
+    { capture: true, passive: true },
+  )
+
+  // The position is written at most five times a second, and once more before
+  // the page changes, so the next page's tree restores the latest one. The
+  // value is read at scroll time: a detached panel reports a scrollTop of 0.
+  var navScrollTop = null
+  var navScrollTimer = 0
+
+  function saveNavScroll() {
+    window.clearTimeout(navScrollTimer)
+    navScrollTimer = 0
+    if (navScrollTop === null) return
+    try {
+      sessionStorage.setItem(NAV_SCROLL_KEY, String(navScrollTop))
+    } catch (e) {
+      /* private mode */
+    }
+    navScrollTop = null
+  }
+
+  function rememberNavScroll(top) {
+    navScrollTop = top
+    if (!navScrollTimer) navScrollTimer = window.setTimeout(saveNavScroll, 200)
+  }
+
+  document.addEventListener("prenav", saveNavScroll)
+  window.addEventListener("pagehide", saveNavScroll)
 
   function refreshNav() {
     var sidebar = document.querySelector(".sidebar.left")
@@ -1462,10 +1671,15 @@ function roobUI() {
   }
 
 
+  // Remeasure whenever the column's room may have changed: a window resize,
+  // or, on localhost only, a restamped stylesheet finishing its load.
   var resizeTimer = 0
-  window.addEventListener("resize", function () {
+  function scheduleRelayout() {
     window.clearTimeout(resizeTimer)
     resizeTimer = window.setTimeout(function () {
+      // The panel's ceiling follows the window, so its width is refitted,
+      // except while a drag owns it.
+      if (!drag) restoreSidebarPrefs()
       applyLayout()
       var explorer = document.querySelector(".sidebar.left .explorer")
       if (explorer) {
@@ -1473,7 +1687,9 @@ function roobUI() {
         scheduleTitles(explorer)
       }
     }, 80)
-  })
+  }
+  window.addEventListener("resize", scheduleRelayout)
+  document.addEventListener("tpl-styles-loaded", scheduleRelayout)
 
   function refresh() {
     restoreSidebarPrefs()
@@ -1496,16 +1712,24 @@ function roobUI() {
  * the SPA router never replaces it either. A stylesheet edit then shows up
  * only after a manual hard reload, which makes every visual change look like
  * it did not take. Localhost gets a stamped href; nothing else is touched.
+ *
+ * A restamped sheet can land after roob-ui has measured the column against an
+ * unstyled page, which left the column pinned at its floor. Each sheet
+ * announces its load so roob-ui measures again.
  */
 function roobDevCacheBust() {
   var host = location.hostname
   if (host !== "localhost" && host !== "127.0.0.1" && host !== "[::1]") return
   var stamp = String(Date.now())
+  var landed = function () {
+    document.dispatchEvent(new CustomEvent("tpl-styles-loaded"))
+  }
   var apply = function () {
     var links = document.querySelectorAll('link[rel="stylesheet"], link[rel="preload"][as="style"]')
     for (var i = 0; i < links.length; i += 1) {
       var href = links[i].getAttribute("href")
       if (!href || href.indexOf("tplcb=") !== -1) continue
+      links[i].addEventListener("load", landed)
       links[i].setAttribute("href", href + (href.indexOf("?") === -1 ? "?" : "&") + "tplcb=" + stamp)
     }
   }
@@ -1513,8 +1737,51 @@ function roobDevCacheBust() {
   document.addEventListener("DOMContentLoaded", apply)
 }
 
-const script = "(" + roobUI.toString() + ")()"
-const beforeScript = "(" + roobDevCacheBust.toString() + ")()"
+/**
+ * Sidebar width and collapse before first paint.
+ *
+ * roob-ui runs after the body has been parsed, so a stored width or a folded
+ * panel used to arrive a frame late, over a first paint at the stylesheet's
+ * 280px. This runs in <head>, where only <html> exists, and <html> is where
+ * roob-ui keeps both. It has to land on the value roob-ui computes.
+ */
+function roobSidebarPrepaint(prefs) {
+  var read = function (key, fallback) {
+    try {
+      var raw = localStorage.getItem(key)
+      return raw ? JSON.parse(raw) : fallback
+    } catch (e) {
+      return fallback
+    }
+  }
+  var width = read(prefs.widthKey, prefs.defaultWidth)
+  if (typeof width !== "number" || width < prefs.min || width > prefs.max) {
+    width = prefs.defaultWidth
+  }
+  var max = Math.max(prefs.min, Math.min(prefs.max, window.innerWidth - prefs.columnReserve))
+  width = Math.round(Math.min(max, Math.max(prefs.min, width)))
+  var collapsed = read(prefs.collapsedKey, false) === true
+  var docEl = document.documentElement
+  docEl.setAttribute("data-tpl-sidebar", collapsed ? "collapsed" : "open")
+  docEl.style.setProperty("--tpl-sidebar-width", (collapsed ? 0 : width) + "px")
+}
+
+// Both scripts are serialized with toString, so they take these as an argument
+// instead of closing over them.
+const SIDEBAR_PREFS = {
+  widthKey: "roob-sidebar-width",
+  collapsedKey: "roob-sidebar-collapsed",
+  min: 220,
+  max: 520,
+  defaultWidth: 280,
+  // The panel never takes the window below this much room for the column.
+  columnReserve: 480,
+}
+
+const prefsArg = JSON.stringify(SIDEBAR_PREFS)
+const script = "(" + roobUI.toString() + ")(" + prefsArg + ")"
+const prepaintScript = "(" + roobSidebarPrepaint.toString() + ")(" + prefsArg + ")"
+const beforeScript = "(" + roobDevCacheBust.toString() + ")();\n" + prepaintScript
 
 const css = `
 #tpl-width-button {

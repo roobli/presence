@@ -1,11 +1,22 @@
 @use "../variables" as *;
 
 // --- resize and collapse ---------------------------------------------------
+// The grab strip is wider than the hairline it draws and sits inside the
+// panel, because the sidebar clips its overflow. .tpl-nav-body keeps its
+// scrollbar clear of the strip by the same amount.
+:root {
+  --tpl-resize-hit: 10px;
+
+  @media (pointer: coarse) {
+    --tpl-resize-hit: 20px;
+  }
+}
+
 .tpl-nav-resize {
   position: absolute;
   top: 0;
   right: 0;
-  width: 4px;
+  width: var(--tpl-resize-hit);
   height: 100%;
   cursor: col-resize;
   z-index: 3;
@@ -22,9 +33,23 @@
     background: var(--accent-color);
   }
 
+  // Inset, or the panel's own clipping would cut the ring off.
+  &:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: -2px;
+  }
+
   @media all and ($mobile) {
     display: none;
   }
+}
+
+// The strip runs the full height of the panel, so the buttons at either end
+// that reach into it stay on top of it.
+.tpl-nav-controls,
+.tpl-nav-foot-tools {
+  position: relative;
+  z-index: 4;
 }
 
 html.tpl-resizing {
@@ -32,10 +57,10 @@ html.tpl-resizing {
   user-select: none;
 }
 
-html[data-tpl-sidebar="collapsed"] {
-  --tpl-sidebar-width: 0px;
-
-  .page > #quartz-body > .sidebar.left {
+// Collapsing is a desktop state. On one column the sidebar is the header bar,
+// and neither the collapse nor the reopen button exists there to undo it.
+@media all and not ($mobile) {
+  html[data-tpl-sidebar="collapsed"] .page > #quartz-body > .sidebar.left {
     display: none;
   }
 }
@@ -74,11 +99,9 @@ html[data-tpl-sidebar="collapsed"] {
     color: var(--accent-color);
   }
 
-  html[data-tpl-sidebar="collapsed"] & {
-    display: grid;
-  }
-
-  @media all and ($mobile) {
-    display: none !important;
+  @media all and not ($mobile) {
+    html[data-tpl-sidebar="collapsed"] & {
+      display: grid;
+    }
   }
 }

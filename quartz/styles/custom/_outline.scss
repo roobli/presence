@@ -188,6 +188,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 1px;
+    border-radius: var(--radius-inline);
+  }
 }
 
 // The three steps the reader actually sees. The tilt grows in shrinking
