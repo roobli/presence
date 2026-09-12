@@ -1,0 +1,58 @@
+// ---------------------------------------------------------------------------
+// Page header: title, date, tags, breadcrumbs
+// ---------------------------------------------------------------------------
+.breadcrumb-container {
+  font-family: var(--font-ui);
+  font-size: 0.76rem;
+  color: var(--ink-muted-color);
+  margin: 0 0 0.9rem;
+
+  a {
+    color: var(--ink-muted-color);
+    font-weight: 400;
+    background-color: transparent;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--accent-color);
+    }
+  }
+}
+
+.page > #quartz-body .article-title {
+  font-family: var(--font-body);
+  font-size: 1.84em;
+  line-height: 1.16;
+  font-weight: 600;
+  color: var(--heading-color);
+  letter-spacing: 0;
+  margin: 0 0 0.5rem;
+}
+
+.content-meta {
+  font-family: var(--font-ui);
+  font-size: 0.76rem;
+  color: var(--ink-muted-color);
+  margin: 0;
+}
+
+.tag-list {
+  margin: 0.6rem 0 0;
+  gap: 0.4rem;
+
+  li > a {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 400;
+    padding: 1px 7px;
+    border-radius: var(--radius-inline);
+    background-color: var(--surface-color);
+    border: 1px solid var(--line-color);
+    color: var(--ink-muted-color);
+
+    &:hover {
+      color: var(--accent-color);
+      border-color: var(--accent-color);
+    }
+  }
+}

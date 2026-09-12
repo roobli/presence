@@ -1,0 +1,83 @@
+// --- tables ----------------------------------------------------------------
+article table {
+  padding: 0;
+  width: 100%;
+  border-collapse: collapse;
+  border-top: 1px solid var(--table-border-strong-color);
+  border-bottom: 1px solid var(--table-border-strong-color);
+  background-color: transparent;
+  word-break: initial;
+
+  tr {
+    border: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  thead,
+  tbody tr:nth-child(2n) {
+    background-color: transparent;
+  }
+
+  thead tr {
+    border-bottom: 1px solid var(--table-border-strong-color);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--table-row-border-color);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+
+    &:hover td {
+      background-color: var(--table-hover-color);
+    }
+  }
+
+  th {
+    font-family: var(--font-body);
+    font-weight: 600;
+    border: 0;
+    margin: 0;
+    padding: 11px 18px 10px 0;
+    text-align: left;
+    vertical-align: bottom;
+    color: var(--heading-color);
+    font-size: 0.92rem;
+    line-height: 1.46;
+    letter-spacing: 0;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  td {
+    border: 0;
+    margin: 0;
+    padding: 11px 18px 11px 0;
+    vertical-align: top;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    line-height: 1.52;
+    font-weight: 400;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  th:first-child,
+  td:first-child {
+    margin-top: 0;
+    color: var(--heading-color);
+  }
+
+  th:last-child,
+  td:last-child {
+    margin-bottom: 0;
+    padding-right: 0;
+  }
+
+  td strong,
+  th strong {
+    font-family: inherit;
+    font-weight: 600;
+    color: var(--heading-color);
+  }
+}
