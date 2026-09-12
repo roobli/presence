@@ -2834,15 +2834,16 @@ article figure > img {
 }
 
 // ===========================================================================
-// Pass A — Essay frame (typography / measure / muted chrome)
+// Pass A — Essay frame (type scale / quiet widgets; notes-site layout)
 //
 // Scope: pages with frontmatter `essayFrame: true` (body[data-essay-frame]),
 // plus the apple-design-physics slug as a hard fallback matching real DOM
 // (`body[data-slug="writing/apple-design-physics"]` from renderPage.tsx).
-// No new widgets; no sticky scrolly (Pass B).
+//
+// Notes site, not Distill: Explorer stays; article fills the grid so sidebar
+// drag still changes reading width. No measure lock. No sticky scrolly (Pass B).
 // ===========================================================================
 :root {
-  --essay-measure: 68ch;
   --essay-line: 1.6;
   --essay-body-size: 1.05rem;
   --essay-h2-size: 1.35em;
@@ -2856,14 +2857,7 @@ article figure > img {
 // Shared scope: reusable `essayFrame: true` OR this essay's slug.
 body[data-essay-frame="true"],
 body[data-slug="writing/apple-design-physics"] {
-  // --- Mute chrome: hide Explorer; de-emphasize TOC dial; hide header tags ---
-  // Explorer is noise on a long interactive essay; keep search/theme/reader.
-  .sidebar.left .explorer {
-    display: none !important;
-  }
-
-  // Quartz TOC is moved into .tpl-toc-source (already display:none) at runtime;
-  // the live outline is #tpl-outline. Soften it: rest as a faint rail.
+  // Soften TOC dial only — Explorer must remain (same as other writing pages).
   #tpl-outline {
     opacity: 0.42;
     transition: opacity 180ms ease-out;
@@ -2881,16 +2875,10 @@ body[data-slug="writing/apple-design-physics"] {
     display: none;
   }
 
-  // --- Measure + type scale on the article column ---
+  // --- Type scale on the article column (fills grid; no max-width lock) ---
   article.popover-hint {
     font-size: var(--essay-body-size);
     line-height: var(--essay-line);
-  }
-
-  // Prose children sit on Distill-like measure; interactives / figure pairs may outset.
-  article.popover-hint .markdown-rendered > *:not(.essay-interactive):not(.essay-figure-pair) {
-    max-width: var(--essay-measure);
-    margin-inline: auto;
   }
 
   article.popover-hint h2 {
@@ -2925,8 +2913,6 @@ body[data-slug="writing/apple-design-physics"] {
   article.popover-hint .table-container {
     overflow-x: auto;
     margin-block: 1.5em;
-    max-width: var(--essay-measure);
-    margin-inline: auto;
   }
 
   // Soften dashboard card chrome → figure-like slots.
