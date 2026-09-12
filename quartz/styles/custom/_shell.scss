@@ -1,0 +1,121 @@
+@use "../variables" as *;
+
+:root {
+  // Editor width, mirroring plugins/wider: default 860, wide 1000-1180, full
+  // up to 1680. roob-ui recomputes these against the visible column width.
+  --tpl-content-width: 860px;
+  --tpl-max-width: 860px;
+  --tpl-shell-gutter: 24px;
+  --tpl-write-padding: 32px;
+  --tpl-sidenote-reserve-active: 0px;
+  --tpl-sidebar-width: 280px;
+}
+
+// ---------------------------------------------------------------------------
+// Window shell: a sidebar panel and a sheet of paper, as in the editor.
+// ---------------------------------------------------------------------------
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--canvas-color);
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-color);
+  background-color: var(--canvas-color);
+  line-height: 1.58;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+.page {
+  max-width: none;
+  margin: 0;
+}
+
+.page > #quartz-body {
+  @media all and not ($mobile) {
+    grid-template-columns: var(--tpl-sidebar-width) minmax(0, 1fr);
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      "grid-sidebar-left grid-header"
+      "grid-sidebar-left grid-center"
+      "grid-sidebar-left grid-footer";
+    column-gap: 0;
+    row-gap: 0;
+    min-height: 100vh;
+  }
+
+  > .sidebar.right {
+    display: none;
+  }
+
+  > .center {
+    grid-area: grid-center;
+  }
+
+  > footer {
+    grid-area: grid-footer;
+  }
+
+  // #typora-sidebar
+  > .sidebar.left {
+    background-color: var(--side-bar-bg-color);
+    font-family: var(--font-ui);
+    gap: 0;
+    padding: 1.5rem 0 1.5rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    @media all and not ($mobile) {
+      border-right: 1px solid var(--line-color);
+      height: 100vh;
+    }
+
+    @media all and ($mobile) {
+      background-color: transparent;
+      padding: 1.25rem 1rem 0;
+    }
+  }
+}
+
+// .center inherits the width the wider plugin would have given #write, and
+// carries #write's own 32px side padding inside that box.
+.page > #quartz-body > .center {
+  min-width: 0;
+  max-width: none;
+  box-sizing: border-box;
+  width: min(100% - var(--tpl-shell-gutter) * 2, var(--tpl-max-width));
+  margin-inline: auto;
+  padding: 0 var(--tpl-write-padding) 104px;
+  padding-right: calc(var(--tpl-write-padding) + var(--tpl-sidenote-reserve-active));
+
+  @media all and ($mobile) {
+    width: 100%;
+    padding: 0 20px 84px;
+  }
+
+  > .page-header {
+    margin-top: 2.6rem;
+
+    @media all and ($mobile) {
+      margin-top: 1.25rem;
+    }
+  }
+}
+
+.page > #quartz-body > footer {
+  box-sizing: border-box;
+  width: min(100% - var(--tpl-shell-gutter) * 2, var(--tpl-max-width));
+  margin: 0 auto;
+  padding: 0 var(--tpl-write-padding) 2.5rem;
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  color: var(--ink-muted-color);
+  border-top: 0;
+
+  ul {
+    gap: 0.8rem;
+  }
+}

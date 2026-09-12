@@ -1,0 +1,306 @@
+@use "sass:map";
+
+// The mark says what kind of thing the row is. A bare sheet outline read as
+// an empty file, so a note carries two ruled lines on the page. Everything
+// else keys off the extension in the href, which is how anything that is not
+// a published note arrives: a note's slug has no extension at all, so it
+// falls through to the note mark without needing a rule of its own.
+//
+// Adding a type is one line in $file-marks: extensions on the left, the path
+// data on the right, both drawn on the same 24 grid at the same 1.7 stroke.
+$mark-head: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E";
+$mark-tail: "%3C/svg%3E";
+$page: "%3Cpath d='M13.6 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7.4z'/%3E%3Cpath d='M13.6 3v4.4H18'/%3E";
+
+$file-marks: (
+  // 笔记：页面加两条正文线，跟空白页区分开
+  "note": "#{$page}%3Cpath d='M9 13h6M9 16.4h4'/%3E",
+  // 代码：尖括号，一眼跟文档分开
+  "code": "%3Cpath d='m9 9-4 3 4 3M15 9l4 3-4 3'/%3E",
+  // PDF 与其它成品文档：页面加底部实心条
+  "doc": "#{$page}%3Cpath d='M9 17.6h6'/%3E%3Cpath d='M9 13.6h3'/%3E",
+  // 图片：画框加一座山和一个太阳
+  "image": "%3Crect x='3.5' y='5' width='17' height='14' rx='2'/%3E%3Ccircle cx='9' cy='10' r='1.6'/%3E%3Cpath d='m4.5 17 4.2-4.2 3 3 3-3 4.8 4.8'/%3E",
+  // 表格与数据
+  "data": "%3Crect x='3.5' y='4.5' width='17' height='15' rx='2'/%3E%3Cpath d='M3.5 9.5h17M9.5 9.5V19.5'/%3E",
+);
+
+$mark-ext: (
+  "code": (js, ts, tsx, jsx, py, go, rs, rb, java, c, h, cpp, sh, zsh, fish, lua, php, swift, kt, vim, el, scm, sql, toml, yaml, yml, json, ini, conf),
+  "doc": (pdf, epub, docx, doc, rtf),
+  "image": (png, jpg, jpeg, gif, svg, webp, avif, bmp),
+  "data": (csv, tsv, xlsx, xls, parquet),
+);
+
+@function mark($kind) {
+  @return url("#{$mark-head}#{map.get($file-marks, $kind)}#{$mark-tail}");
+}
+
+// --- file tree -------------------------------------------------------------
+.sidebar.left .explorer {
+  margin: 0;
+  padding: 0;
+  border-top: 0;
+  overflow: visible;
+}
+
+// Quartz marks these lists `.overflow` and makes each one its own scroll box
+// capped at max-height:100%. Inside one scrolling panel that turns the tree
+// into a dead scroller: it can never scroll itself, and it swallows the wheel
+// instead of handing it to the panel. Only the sliver of padding beside it
+// still worked, which is what made the tree feel unscrollable.
+.sidebar.left {
+  div:has(> .overflow) {
+    max-height: none;
+    overflow: visible;
+  }
+
+  ul.overflow {
+    max-height: none;
+    overflow: visible;
+    mask-image: none;
+
+    > li.overflow-end {
+      display: none;
+    }
+  }
+}
+
+// The guide lines are drawn as SVG paths by roob-ui, one stroke per group,
+// into a single overlay. Quartz draws its own full-height border-left on each
+// group, which is the stray vertical that used to run past every last item;
+// it goes, along with the per-row box borders this used to be built from.
+.explorer-content {
+  position: relative;
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  padding: 0 0 0 10px;
+  max-height: none;
+  overflow: visible;
+
+  ul.tree-item-children {
+    margin: 0;
+    padding: 0;
+    border-left: 0; // Quartz's own indent line; the overlay replaces it
+  }
+
+  ul.tree-item-children > li {
+    position: relative;
+    margin: 0;
+    // The trunk sits under the parent's chevron, which is 14px into this box,
+    // so the indent has to leave the arm somewhere to land before the child's
+    // own icon starts.
+    padding-left: 18px;
+  }
+
+  .tree-item-self {
+    position: relative;
+    z-index: 1; // above the guide overlay
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    box-sizing: border-box;
+    min-height: 26px;
+    // Even vertical padding so icon+label sit on the midline (Typora rail).
+    padding: 4px 8px 4px 7px;
+    border-radius: var(--radius-block);
+    color: var(--ink-color);
+    background-image: none;
+    line-height: 1.3;
+
+    &:hover {
+      background-color: var(--item-hover-bg-color);
+      color: var(--ink-strong-color);
+    }
+  }
+
+  // A folder row is icon plus label; a file row is the label itself, so only
+  // the folder row becomes a flex line. Truncation needs a block box.
+  .folder-container {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+
+    > div {
+      min-width: 0;
+      flex: 1;
+    }
+  }
+
+  a.nav-file-title,
+  a.folder-button {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    color: inherit;
+    background-image: none;
+    text-decoration: none;
+    font-weight: 400;
+  }
+
+  .folder-title,
+  a.nav-file-title {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    font-size: 13.5px;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .folder-title {
+    font-weight: 500;
+    color: var(--ink-strong-color);
+  }
+
+  // A folder and a note read alike once the names get long, and the chevron
+  // only marks folders that have something to open. Both rows carry a small
+  // grey mark instead. Drawn as a mask so it takes the ink colour rather than
+  // shipping a second copy for the dark theme, and as a pseudo-element so
+  // nothing is inserted into markup Quartz rebuilds on every navigation.
+  .folder-title::before,
+  a.nav-file-title::before {
+    content: "";
+    flex: none;
+    display: block;
+    width: 14px;
+    height: 14px;
+    margin-right: 0; // gap on the flex row handles spacing
+    background-color: var(--ink-muted-color);
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: 14px 14px;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: 14px 14px;
+  }
+
+  .folder-title::before {
+    $folder: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z'/%3E%3C/svg%3E";
+
+    mask-image: url($folder);
+    -webkit-mask-image: url($folder);
+  }
+
+  a.nav-file-title::before {
+    mask-image: mark("note");
+    -webkit-mask-image: mark("note");
+  }
+
+  @each $kind, $exts in $mark-ext {
+    @each $ext in $exts {
+      a.nav-file-title[href$=".#{$ext}"]::before {
+        mask-image: mark($kind);
+        -webkit-mask-image: mark($kind);
+      }
+    }
+  }
+
+  a.nav-file-title.active::before,
+  a.nav-file-title.is-active::before {
+    background-color: var(--accent-color);
+  }
+
+  .folder-icon {
+    flex: none;
+    color: var(--ink-muted-color);
+    // A little past the end and back: the turn reads as a mechanism rather
+    // than a fade between two pictures of an arrow.
+    transition:
+      transform 300ms cubic-bezier(0.34, 1.42, 0.52, 1),
+      color 180ms ease-out;
+  }
+
+  // Quartz opens a folder by growing the row from 0fr, which pulls the whole
+  // block down at once like a blind. The rows arrive one after another
+  // instead, each sliding out along its own arm from the trunk, so opening a
+  // folder unfolds rather than uncovers. Only on a folder the reader just
+  // clicked: the class goes on for one animation and comes straight off, so
+  // navigation, filtering and the state restored at load stay still.
+  .folder-outer.tpl-unfold > ul.tree-item-children > li {
+    animation: tpl-row-unfold 240ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+
+  @for $i from 1 through 14 {
+    .folder-outer.tpl-unfold > ul.tree-item-children > li:nth-child(#{$i}) {
+      animation-delay: #{($i - 1) * 22}ms;
+    }
+  }
+
+  .folder-outer.tpl-unfold > ul.tree-item-children > li:nth-child(n + 15) {
+    animation-delay: 308ms;
+  }
+
+  // The chevron that did it picks up the accent for the length of the turn.
+  .folder-container:has(+ .folder-outer.tpl-unfold) .folder-icon {
+    color: var(--accent-color);
+  }
+}
+
+// Horizontal only: the guides are measured from the row boxes every frame
+// while this runs, and anything vertical would make the arms wobble.
+@keyframes tpl-row-unfold {
+  from {
+    opacity: 0;
+    transform: translate3d(-10px, 0, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .explorer-content .folder-outer.tpl-unfold > ul.tree-item-children > li {
+    animation: none;
+  }
+
+  .explorer-content .folder-icon {
+    transition: none;
+  }
+}
+
+.explorer-content {
+
+  a.nav-file-title.active,
+  a.nav-file-title.is-active {
+    background-color: var(--surface-active-color);
+    color: var(--ink-strong-color);
+    font-weight: 500;
+    // Typora-style left spine: accent hairline, not a thicker pill alone.
+    box-shadow: inset 2px 0 0 0 var(--active-file-border-color);
+  }
+
+}
+
+svg.tpl-tree-guides {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 0;
+
+  path {
+    fill: none;
+    stroke: var(--tree-line-color);
+    stroke-width: 1;
+    stroke-linecap: round;
+    shape-rendering: geometricPrecision;
+  }
+
+  // The branch the open note sits on, drawn over the rest.
+  // Enough to find the branch at a glance, not enough to be the first thing
+  // the panel says. The accent is pulled most of the way toward the muted ink
+  // before it is faded, so it settles rather than glows.
+  path.tpl-guide-lit {
+    stroke: color-mix(in srgb, var(--accent-color) 55%, var(--ink-muted-color));
+    stroke-width: 1.3;
+    opacity: 0.42;
+  }
+}

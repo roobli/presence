@@ -1,0 +1,383 @@
+@use "../variables" as *;
+
+// ---------------------------------------------------------------------------
+// Sidebar navigation
+//
+// Interaction and density follow the Cloudflare dashboard's nav: a search pill
+// on top, flat rows of icon + label + right chevron at 32px, groups that open
+// under a vertical guide, recents written as title over location, and one
+// scroll region for all of it. The colours, type and rules are the editor
+// theme's, so the panel still belongs to the same product as the page.
+// ---------------------------------------------------------------------------
+#tpl-nav-toggle {
+  display: none;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-inline);
+  background: transparent;
+  color: var(--ink-color);
+  cursor: pointer;
+
+  @media all and ($mobile) {
+    display: grid;
+    place-items: center;
+  }
+
+  &:hover {
+    background: var(--item-hover-bg-color);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.page > #quartz-body > .sidebar.left {
+  // Base makes it sticky; that already positions the resize handle, and
+  // switching to relative would unpin the panel as the article scrolls.
+  padding: 0;
+  gap: 0;
+  overflow: hidden; // the body scrolls; the panel itself never does
+}
+
+.tpl-nav-head {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 10px 10px;
+}
+
+.tpl-nav-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 2px;
+
+  .page-title {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    // A wordmark, not a bold label. The UI sans at 15px semibold read as a
+    // heading that had been shrunk; a serif at reading size with the weight
+    // taken back out has the room to be a name, and it answers the serif the
+    // articles are set in.
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+      var(--headerFont), serif;
+    font-size: 1.12rem;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    a {
+      color: var(--ink-strong-color);
+      text-decoration: none;
+      background-image: none;
+    }
+  }
+}
+
+.tpl-nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+
+  button {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-block);
+    background: transparent;
+    color: var(--ink-muted-color);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--item-hover-bg-color);
+      color: var(--accent-color);
+    }
+
+  }
+
+  // All four are line drawings on the same 24 grid, redrawn in the script.
+  // Quartz fills its own two and pins them at `top: calc(50% - 10px)`, a
+  // number written for a 20px icon: at 16 that sat them two pixels high, which
+  // is what put the row out of line. Taking the positioning off lets the
+  // button centre them like the others. Never set `display` here, though: the
+  // theme toggle is `display: none` on whichever of the sun and moon is off.
+  svg {
+    position: static;
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+  }
+}
+
+// Search takes the shape of a nav row and inherits the rest from
+// `.tpl-nav-item`; only the parts Quartz's own markup brings are set here.
+.tpl-command-host > .search-button {
+  margin: 0;
+  padding-right: 8px;
+  border: 0;
+  background: transparent;
+
+  &:hover .tpl-command-key {
+    color: var(--accent-color);
+  }
+
+  p {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// A hint, not a control. The outline it used to carry made it read as a
+// second button sitting inside the row.
+.tpl-command-key {
+  flex: none;
+  padding: 1px 5px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--surface-color);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: var(--ink-muted-color);
+}
+
+.tpl-nav-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  // The scrollbar sits just inside the panel's own edge. It used to stand ten
+  // pixels off it to stay clear of the resize handle; the handle is narrower
+  // now and a press only starts a drag after four pixels of travel, so they
+  // can be neighbours without fighting.
+  padding: 0 6px 1.5rem 10px;
+  margin-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong-color) transparent;
+
+  &::-webkit-scrollbar {
+    width: 7px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background: var(--line-strong-color);
+  }
+}
+
+// Quartz's reset does not set border-box here, and every one of these is a
+// full-width box with its own padding. Without this they each overflow the
+// panel by their padding and give it a horizontal scrollbar.
+.tpl-nav-head,
+.tpl-nav-body,
+.tpl-nav-foot,
+.tpl-nav-item,
+.tpl-tree-crumb,
+.tpl-command-host > .search-button {
+  box-sizing: border-box;
+}
+
+// --- the row, in every place a row appears ---------------------------------
+.tpl-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-block);
+  background: transparent;
+  background-image: none;
+  color: var(--ink-color);
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--item-hover-bg-color);
+    color: var(--ink-strong-color);
+  }
+
+  &.tpl-active {
+    background-color: var(--surface-active-color);
+    color: var(--ink-strong-color);
+    font-weight: 500;
+  }
+}
+
+.tpl-nav-item:focus-visible,
+#tpl-nav-toggle:focus-visible,
+#tpl-sidebar-reopen:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: -1px;
+}
+
+.tpl-nav-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  color: var(--ink-muted-color);
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+// --- the bottom bar --------------------------------------------------------
+// Search and the tree's two actions live down here, clear of the tree and in
+// reach without travelling back to the top of a panel that scrolls.
+.tpl-nav-foot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px 8px 10px;
+  border-top: 1px solid var(--line-color);
+}
+
+.tpl-nav-foot .tpl-command-host {
+  flex: 1;
+  min-width: 0;
+  // Quartz caps its own search host at 224px, which left the bar short of the
+  // panel's edge and the actions stranded in the middle of it.
+  max-width: none;
+}
+
+.tpl-nav-foot-tools {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: auto;
+}
+
+.tpl-foot-action {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-block);
+  background: transparent;
+  color: var(--ink-muted-color);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--item-hover-bg-color);
+    color: var(--accent-color);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: -1px;
+  }
+
+  .tpl-nav-icon {
+    width: 15px;
+    height: 15px;
+    color: inherit;
+
+    svg {
+      width: 15px;
+      height: 15px;
+    }
+  }
+}
+
+// --- the pinned ancestors --------------------------------------------------
+// A zero-height strip at the top of the scroller, so the rows it paints hang
+// over the tree without moving any of it. The tree below is measured for the
+// guides on every scroll; anything that changed the flow here would drag them
+// along with it.
+.tpl-tree-crumbs {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  height: 0;
+  overflow: visible;
+}
+
+.tpl-tree-crumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: 26px;
+  padding: 0 10px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: var(--side-bar-bg-color);
+  color: var(--ink-strong-color);
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--item-hover-bg-color);
+  }
+
+  // Only the bottom of the stack carries the edge, so a four-deep breadcrumb
+  // reads as one block rather than four stacked cards.
+  &:last-child {
+    border-bottom-color: var(--line-color);
+    box-shadow: 0 2px 4px var(--overlay-shadow-color);
+  }
+}
+
+.tpl-crumb-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  color: var(--ink-muted-color);
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.tpl-crumb-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

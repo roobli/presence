@@ -1,0 +1,37 @@
+// 目录列表页的标签。Quartz 的栅格是 `fit-content(8em) 3fr 1fr`，标签挤在最右边那
+// 一列里，而 `agentic-software-engineering` 这种长标签在 1fr 的宽度下一行只放得下
+// 一个，于是右侧排成参差的一竖列，窄屏尤其难看。
+// 改成标签自己占一整行、跟在标题下面、左对齐正常换行，这样宽窄屏都成立。
+li.section-li > .section {
+  grid-template-columns: fit-content(8em) 1fr;
+  align-items: baseline;
+  row-gap: 0.15rem;
+
+  > .tags {
+    display: flex;
+    grid-column: 2 / -1;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.45rem;
+    margin: 0.3rem 0 0;
+  }
+
+  > .tags > li > a.tag-link {
+    font-size: 0.72rem;
+    line-height: 1.5;
+    padding: 0.05rem 0.4rem;
+  }
+}
+
+// 日期列在窄屏里挤掉标题，让它退到标题上方自己一行。
+@media all and (max-width: 640px) {
+  li.section-li > .section {
+    grid-template-columns: 1fr;
+
+    > .meta,
+    > .desc,
+    > .tags {
+      grid-column: 1 / -1;
+    }
+  }
+}

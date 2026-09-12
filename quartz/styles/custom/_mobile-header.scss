@@ -1,0 +1,87 @@
+@use "../variables" as *;
+
+// Narrow screens have no room for a panel beside the paper, so the sidebar
+// becomes a sticky header bar: nav toggle, title, command pill. The nav body
+// drops down over the article instead of pushing it a screen down the page.
+@media all and ($mobile) {
+  // Quartz insets the whole grid on narrow screens; the header bar and the
+  // paper carry their own padding instead, so the bar can span the screen.
+  .page > #quartz-body {
+    padding: 0;
+  }
+
+  .page > #quartz-body > .sidebar.left {
+    display: block; // base lays the sidebar out as a row on mobile
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    height: auto;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--line-color);
+  }
+
+  .tpl-nav-head {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 0.55rem 1rem;
+  }
+
+  .tpl-nav-top {
+    flex: none;
+    gap: 8px;
+
+    .page-title {
+      flex: none;
+      max-width: 7rem;
+    }
+  }
+
+  // Editor width has no meaning on one column, but theme and reader do.
+  #tpl-width-button {
+    display: none;
+  }
+
+  .tpl-command-host {
+    flex: 1;
+    min-width: 0;
+  }
+
+  // The bottom bar becomes the second line of the header bar rather than a
+  // strip at the foot of a panel that is now a dropdown.
+  .tpl-nav-foot {
+    padding: 0 1rem 0.5rem;
+    border-top: 0;
+  }
+
+  // On one column it shares the bar with the wordmark rather than heading a
+  // list, so it needs a surface of its own to read as a control.
+  .tpl-command-host > .search-button {
+    background: var(--surface-color);
+  }
+
+  .tpl-command-key {
+    display: none;
+  }
+
+  .tpl-nav-body {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    display: none;
+    max-height: 70vh;
+    background-color: var(--side-bar-bg-color);
+    border-bottom: 1px solid var(--line-color);
+    box-shadow: 0 12px 24px var(--overlay-shadow-color);
+  }
+
+  .sidebar.left.tpl-nav-open .tpl-nav-body {
+    display: block;
+  }
+
+  .tpl-nav-resize {
+    display: none;
+  }
+}

@@ -1,0 +1,17 @@
+// 独立成行的图片居中。markdown 里 `![](x)` 单独一段会被渲染成只含一个 img 的 <p>，
+// 用 :only-child 精确命中这一种，而句子中间的行内小图不受影响。
+// 同时不放大：没有宽度属性时浏览器按图片自身像素宽渲染，截图不会被拉伸变糊。
+article p:has(> img:only-child) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+article p > img:only-child {
+  display: block;
+  margin-inline: auto;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+}
