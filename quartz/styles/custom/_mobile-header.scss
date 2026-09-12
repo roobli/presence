@@ -4,6 +4,12 @@
 // becomes a sticky header bar: nav toggle, title, command pill. The nav body
 // drops down over the article instead of pushing it a screen down the page.
 @media all and ($mobile) {
+  // Anchor and outline jumps land below the bar rather than under it. roob-ui
+  // writes the bar's measured height; the fallback is its stock height.
+  html {
+    scroll-padding-top: var(--tpl-mobile-header, 87px);
+  }
+
   // Quartz insets the whole grid on narrow screens; the header bar and the
   // paper carry their own padding instead, so the bar can span the screen.
   .page > #quartz-body {
@@ -19,6 +25,8 @@
     overflow: visible;
     border-right: 0;
     border-bottom: 1px solid var(--line-color);
+    // The article scrolls underneath, so the bar has to be opaque.
+    background-color: var(--side-bar-bg-color);
   }
 
   .tpl-nav-head {
@@ -72,6 +80,7 @@
     right: 0;
     display: none;
     max-height: 70vh;
+    margin-right: 0; // no resize strip to keep clear of here
     background-color: var(--side-bar-bg-color);
     border-bottom: 1px solid var(--line-color);
     box-shadow: 0 12px 24px var(--overlay-shadow-color);
@@ -79,6 +88,28 @@
 
   .sidebar.left.tpl-nav-open .tpl-nav-body {
     display: block;
+  }
+
+  // On narrow screens Quartz turns the explorer into a drawer of its own:
+  // 100vw by 100dvh, slid off-canvas, stacked above the page, with its own
+  // menu button. Inside this dropdown it is only the tree, so none of that
+  // applies, whichever state the explorer script left it in.
+  .sidebar.left .explorer .explorer-content,
+  .sidebar.left .explorer.collapsed > .explorer-content {
+    width: auto;
+    max-width: none;
+    height: auto;
+    max-height: none;
+    margin-top: 0;
+    z-index: auto;
+    background-color: transparent;
+    transform: none;
+    visibility: visible;
+    transition: none;
+  }
+
+  .sidebar.left .explorer .explorer-toggle.mobile-explorer {
+    display: none;
   }
 
   .tpl-nav-resize {
