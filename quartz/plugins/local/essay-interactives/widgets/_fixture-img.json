@@ -1,0 +1,9 @@
+{
+  "name": "fixture-img",
+  "status": "live",
+  "aspect": "16 / 7",
+  "aspectNarrow": "4 / 3",
+  "railRows": 1,
+  "railRowsNarrow": 2,
+  "cites": ["0.5", "1.5", "16.3%"]
+}

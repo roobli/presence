@@ -1,9 +1,10 @@
 {
   "name": "fixture",
   "status": "live",
-  "aspect": "16 / 7",
-  "aspectNarrow": "4 / 3",
-  "railRows": 2,
-  "railRowsNarrow": 3,
+  "stage": "group",
+  "minHeight": 240,
+  "minHeightNarrow": 300,
+  "railRows": 4,
+  "railRowsNarrow": 9,
   "cites": ["0.35"]
 }

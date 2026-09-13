@@ -33,4 +33,8 @@ See also [the CUDA essay](cuda-course-without-a-gpu).
 
 <!-- interactive:fixture title="Second handle" caption="that numbering continues in document order." alt="The same handle, resting at the centre of its track." -->
 
+Inline math outside a figure still renders: $k = 320$.
+
+<!-- interactive:fixture-img title="Three settles, keys $mod and c$" caption="where each trace first crosses the rest line. Marker text stays literal: $mod, c$, $x$, [32][33], (tid & 31), in[i * stride] and 「32」." alt="Three step responses from one start: ζ 0.5 overshoots by 16.3%, ζ 1 settles without overshoot, ζ 1.5 creeps in." model="k = 320, m = 1, ζ = 0.5, 1 and 1.5; $$x(t)$$ is exact." -->
+
 The end.

@@ -1,5 +1,13 @@
 import assert from "node:assert/strict"
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { test } from "node:test"
+import { pathToFileURL } from "node:url"
+import { Latex } from "@quartz-community/latex"
+import remarkParse from "remark-parse"
+import remarkRehype from "remark-rehype"
+import { unified } from "unified"
 import {
   checkMarkers,
   loadRegistry,
@@ -12,9 +20,27 @@ import {
 const registry = new Map([
   [
     "demo",
-    { name: "demo", status: "live", adapter: null, style: "--fig-aspect:16 / 7", cites: ["320"] },
+    {
+      name: "demo",
+      status: "live",
+      adapter: null,
+      stage: "img",
+      style: "--fig-aspect:16 / 7",
+      cites: ["320"],
+    },
   ],
-  ["gone", { name: "gone", status: "strip", adapter: null, style: "", cites: [] }],
+  [
+    "chips",
+    {
+      name: "chips",
+      status: "live",
+      adapter: null,
+      stage: "group",
+      style: "--fig-min-h:320px",
+      cites: [],
+    },
+  ],
+  ["gone", { name: "gone", status: "strip", adapter: null, stage: "img", style: "", cites: [] }],
 ])
 
 const essay = [
@@ -57,6 +83,11 @@ function captureWarnings(fn) {
   return seen
 }
 
+function walk(node, visit) {
+  visit(node)
+  for (const child of node.children ?? []) walk(child, visit)
+}
+
 test("live markers become figures numbered in document order", () => {
   const out = replaceMarkers(essay, registry)
   assert.deepEqual(
@@ -86,13 +117,23 @@ test("the figure is one HTML block in the contract markup, with escaped text", (
     [
       '<figure class="essay-fig" id="fig-1" data-interactive="demo" data-figure="1" style="--fig-aspect:16 / 7">',
       '<div class="essay-fig__head"><span class="essay-fig__num">Fig. 1</span><span class="essay-fig__title">Spring &quot;one&quot;</span></div>',
-      '<div class="essay-fig__stage" role="img" aria-label="A mass at rest"><p class="essay-fig__fallback">A mass at rest <span class="essay-fig__nojs">Live figure. It needs JavaScript.</span></p></div>',
+      '<div class="essay-fig__stage" role="img" aria-label="A mass at rest"><div class="essay-fig__box"><p class="essay-fig__fallback">A mass at rest <span class="essay-fig__nojs">Live figure. It needs JavaScript.</span></p></div></div>',
       '<div class="essay-fig__rail"></div>',
-      '<figcaption class="essay-fig__caption"><span class="essay-fig__look">Look for</span> Watch &lt;the&gt; mass</figcaption>',
-      '<p class="essay-fig__model"><span class="essay-fig__model-label">Model</span> m = 1</p>',
+      '<figcaption class="essay-fig__caption"><span class="essay-fig__look">Look for</span>Watch &lt;the&gt; mass</figcaption>',
+      '<p class="essay-fig__model"><span class="essay-fig__model-label">Model</span>m = 1</p>',
       "</figure>",
     ].join("\n"),
   )
+})
+
+test("no space text node follows the Look for and Model labels", () => {
+  const html = renderFigure(
+    { name: "demo", attrs: { caption: "the settle", alt: "At rest", model: "k = 320" } },
+    1,
+    registry.get("demo"),
+  )
+  assert.ok(!/essay-fig__look">[^<]*<\/span>\s/.test(html))
+  assert.ok(!/essay-fig__model-label">[^<]*<\/span>\s/.test(html))
 })
 
 test("title and model line are omitted when the marker has none", () => {
@@ -103,6 +144,27 @@ test("title and model line are omitted when the marker has none", () => {
   assert.ok(!block.includes("essay-fig__model"))
 })
 
+test("a group stage is marked for the shell and keeps the img fallback before scripts run", () => {
+  const html = renderFigure(
+    { name: "chips", attrs: { title: "Prefix tree", caption: "c", alt: "A tree of keys" } },
+    4,
+    registry.get("chips"),
+  )
+  assert.ok(
+    html.startsWith(
+      '<figure class="essay-fig" id="fig-4" data-interactive="chips" data-figure="4" data-stage="group" style="--fig-min-h:320px">',
+    ),
+  )
+  assert.ok(
+    html.includes(
+      '<div class="essay-fig__stage" role="img" aria-label="A tree of keys"><div class="essay-fig__box">',
+    ),
+  )
+  assert.ok(
+    !renderFigure({ name: "demo", attrs: {} }, 1, registry.get("demo")).includes("data-stage"),
+  )
+})
+
 test("zh pages get zh frame labels", () => {
   const html = renderFigure(
     { name: "demo", attrs: { caption: "质量怎样停下", alt: "静止的质量", model: "m = 1" } },
@@ -111,10 +173,54 @@ test("zh pages get zh frame labels", () => {
     localeFor("zh-Hans"),
   )
   assert.ok(html.includes('<span class="essay-fig__num">图 3</span>'))
-  assert.ok(html.includes('<span class="essay-fig__look">留意</span> 质量怎样停下'))
-  assert.ok(html.includes('<span class="essay-fig__model-label">模型</span> m = 1'))
+  assert.ok(html.includes('<span class="essay-fig__look">留意</span>质量怎样停下'))
+  assert.ok(html.includes('<span class="essay-fig__model-label">模型</span>m = 1'))
   assert.ok(html.includes('<span class="essay-fig__nojs">交互图，需要启用 JavaScript。</span>'))
   assert.equal(localeFor("en"), localeFor(undefined))
+})
+
+test("marker text with $, brackets and 「」 stays one raw HTML block that math never parses", () => {
+  const src = [
+    "Inline $k = 320$ outside a figure is math.",
+    "",
+    '<!-- interactive:demo title="Keys $mod and c$" caption="Press $mod, then c$; see $x$, [32][33], 「32」, (tid & 31) and in[i * stride]." alt="A prefix key $mod and $x$ [32]" model="$$E = mc^2$$ with k = 320" -->',
+    "",
+    "Tail with [32][33].",
+  ].join("\n")
+  const latex = Latex({ renderEngine: "katex" })
+  const md = unified().use(remarkParse).use(latex.markdownPlugins())
+  const mdast = md.runSync(md.parse(replaceMarkers(src, registry)))
+
+  const figures = []
+  const math = []
+  walk(mdast, (node) => {
+    if (node.type === "html" && node.value.includes("<figure")) figures.push(node)
+    if (node.type === "inlineMath" || node.type === "math") math.push(node)
+  })
+  assert.equal(figures.length, 1, "the figure is a single html node")
+  assert.ok(figures[0].value.startsWith('<figure class="essay-fig"'))
+  assert.ok(figures[0].value.endsWith("</figure>"))
+  assert.ok(figures[0].value.includes("(tid &amp; 31) and in[i * stride]"))
+  assert.ok(figures[0].value.includes("Keys $mod and c$"))
+  assert.deepEqual(
+    math.map((node) => node.value),
+    ["k = 320"],
+    "only the paragraph outside the figure holds math",
+  )
+
+  const html = unified().use(remarkRehype, { allowDangerousHtml: true }).use(latex.htmlPlugins())
+  const hast = html.runSync(mdast)
+  let katex = 0
+  const raw = []
+  walk(hast, (node) => {
+    const names = node.properties?.className
+    if (Array.isArray(names) && names.includes("katex")) katex++
+    if (node.type === "raw" && node.value.includes('<figure class="essay-fig"'))
+      raw.push(node.value)
+  })
+  assert.ok(katex > 0, "math outside the figure renders, so the check can see katex")
+  assert.equal(raw.length, 1)
+  assert.ok(!raw[0].includes("katex"), "no .katex inside figure.essay-fig")
 })
 
 test("build warnings: missing caption, alt, cites, unknown names and loose markers", () => {
@@ -152,14 +258,41 @@ test("markers in frontmatter are ignored", () => {
   assert.equal(markers.length, 0)
 })
 
-test("registry: pre-shell widgets use the adapter; fixtures need the flag", () => {
+test("registry: pre-shell widgets use the adapter; fixtures need the flag; stage defaults to img", () => {
   const plain = loadRegistry(undefined, false)
   for (const name of ["spring-zeta", "zeta-triptych", "squircle-compare", "curvature-comb"]) {
     assert.equal(plain.get(name)?.status, "live", name)
     assert.equal(plain.get(name)?.adapter, "root", name)
+    assert.equal(plain.get(name)?.stage, "img", name)
   }
   assert.equal(plain.get("hinge-diagram")?.status, "strip")
   assert.ok(plain.get("spring-zeta").cites.includes("320"))
   assert.equal(plain.has("fixture"), false)
-  assert.equal(loadRegistry(undefined, true).get("fixture")?.status, "live")
+  const fixtures = loadRegistry(undefined, true)
+  assert.equal(fixtures.get("fixture")?.status, "live")
+  assert.equal(fixtures.get("fixture")?.stage, "group")
+  assert.equal(fixtures.get("fixture-img")?.stage, "img")
+  assert.match(fixtures.get("fixture").style, /--fig-min-h:240px;--fig-min-h-narrow:300px/)
+  assert.ok(
+    !fixtures.get("fixture").style.includes("--fig-aspect"),
+    "minHeight figures get no default aspect",
+  )
+})
+
+test("registry: an unknown stage value warns and falls back to img", () => {
+  const dir = mkdtempSync(join(tmpdir(), "essay-fig-registry-"))
+  try {
+    writeFileSync(
+      join(dir, "odd.json"),
+      JSON.stringify({ name: "odd", status: "live", stage: "canvas" }),
+    )
+    let entries
+    const warnings = captureWarnings(() => {
+      entries = loadRegistry(pathToFileURL(dir + "/"), false)
+    })
+    assert.equal(entries.get("odd").stage, "img")
+    assert.match(warnings.join("\n"), /widgets\/odd\.json: stage must be "img" or "group"/)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })

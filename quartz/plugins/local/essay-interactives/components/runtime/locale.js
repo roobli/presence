@@ -1,7 +1,10 @@
 /**
- * Shell strings, and the language rule the shell and every widget share: the
- * closest [lang] ancestor of the figure, else body.lang, else English. Any value
- * starting with "zh" selects the zh-Hans table.
+ * Shell strings, and the language rule the shell and every widget share. fig.lang
+ * comes from, in order: a lang attribute on the figure, the closest [lang]
+ * ancestor, document.body.lang, document.documentElement.lang, then English.
+ * body carries the page language from the server on every page, so the rule
+ * holds on the first mount after SPA navigation, before anything updates the
+ * html element. Any value starting with "zh" selects the zh-Hans table.
  */
 
 var SHELL_STRINGS = {
@@ -10,8 +13,13 @@ var SHELL_STRINGS = {
 }
 
 function figureLang(node) {
-  var host = node && node.closest ? node.closest("[lang]") : null
-  var value = (host && host.getAttribute("lang")) || (document.body && document.body.lang) || "en"
+  var value = (node && node.getAttribute && node.getAttribute("lang")) || ""
+  if (!value && node && node.parentElement) {
+    var host = node.parentElement.closest('[lang]:not([lang=""])')
+    if (host) value = host.getAttribute("lang") || ""
+  }
+  if (!value && document.body) value = document.body.lang || ""
+  if (!value && document.documentElement) value = document.documentElement.lang || ""
   return /^zh/i.test(value) ? "zh-Hans" : "en"
 }
 
