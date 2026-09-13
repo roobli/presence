@@ -1,0 +1,31 @@
+{
+  "name": "presence-colophon",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Site colophon in the page footer",
+  "exports": {
+    ".": "./index.js",
+    "./components": "./components/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./index.js",
+  "quartz": {
+    "name": "presence-colophon",
+    "displayName": "Presence colophon",
+    "category": "component",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 50,
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "Colophon": {
+        "displayName": "Colophon",
+        "defaultPosition": "footer",
+        "defaultPriority": 50
+      }
+    }
+  }
+}

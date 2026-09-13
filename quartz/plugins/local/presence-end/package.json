@@ -1,0 +1,31 @@
+{
+  "name": "presence-end",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "End matter: related work and more writing on essays, essays about a work on works",
+  "exports": {
+    ".": "./index.js",
+    "./components": "./components/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./index.js",
+  "quartz": {
+    "name": "presence-end",
+    "displayName": "Presence end matter",
+    "category": "component",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 50,
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "EndMatter": {
+        "displayName": "End matter",
+        "defaultPosition": "afterBody",
+        "defaultPriority": 10
+      }
+    }
+  }
+}
