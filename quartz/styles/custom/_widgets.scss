@@ -12,7 +12,7 @@
   // --fig-row-h comes from the site tokens; the fallbacks match its values.
   --fig-row: var(--fig-row-h, 36px);
   --fig-rail-gap: 8px;
-  --fig-ui-font: var(--font-interface, var(--font-ui));
+  --fig-ui-font: var(--font-interface);
   container: essay-fig / inline-size;
   box-sizing: border-box;
   width: 100%;

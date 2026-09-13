@@ -32,7 +32,7 @@
     max-height: min(75dvh, calc(100dvh - 48px));
     color: var(--ink-color);
     background: var(--surface-subtle-color);
-    font-family: var(--font-ui);
+    font-family: var(--font-interface);
     font-synthesis: none;
     -webkit-font-smoothing: antialiased;
     border: 1px solid var(--line-color);
@@ -63,7 +63,7 @@
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%236f6b66' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16.5' y1='16.5' x2='21' y2='21'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: 16px center;
-      font-family: var(--font-ui);
+      font-family: var(--font-interface);
       font-size: 16px;
       line-height: 1.35;
       letter-spacing: -0.01em;
@@ -119,7 +119,7 @@
           > .card-title {
             grid-column: 1;
             margin: 0;
-            font-family: var(--font-ui);
+            font-family: var(--font-interface);
             font-size: 13.5px;
             font-weight: 400;
             line-height: 1.25;
@@ -137,7 +137,7 @@
             justify-self: end;
             min-width: 0;
             max-width: 24rem;
-            font-family: var(--font-mono);
+            font-family: var(--font-code);
             font-size: 11.5px;
             line-height: 1.25;
             color: var(--ink-muted-color);
@@ -187,7 +187,7 @@
       > .preview-container {
         border-left: 1px solid var(--line-color);
         background: var(--canvas-color);
-        font-family: var(--font-body);
+        font-family: var(--font-text);
         color: var(--ink-color);
         padding: 0 1.5rem;
       }

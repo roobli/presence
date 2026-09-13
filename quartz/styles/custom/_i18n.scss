@@ -1,0 +1,59 @@
+// ---------------------------------------------------------------------------
+// Chinese pages
+// ---------------------------------------------------------------------------
+// body carries lang, so these rules hold on the first frame after an SPA
+// navigation (micromorph morphs body attributes, never html's). :lang(zh)
+// also matches zh-Hans.
+//
+// Inside the article, the page header and the homepage, the text face and the
+// scale swap to their zh tokens, so any rule there that reads --font-text or a
+// --size-* token gets the Chinese value. The column itself keeps the English
+// body size, because the measure is em of it.
+body:lang(zh) {
+  article,
+  .ph,
+  .home {
+    --font-text: var(--font-text-zh);
+    --bodyFont: var(--font-text-zh);
+    --headerFont: var(--font-text-zh);
+    --size-body: var(--size-body-zh);
+    --lh-body: var(--lh-body-zh);
+    --size-title: var(--size-title-zh);
+    --lh-title: var(--lh-title-zh);
+    --size-dek: var(--size-dek-zh);
+    --lh-dek: var(--lh-dek-zh);
+    --size-h2: var(--size-h2-zh);
+    --lh-head: var(--lh-head-zh);
+    --size-h3: var(--size-h3-zh);
+    --lh-h3: var(--lh-h3-zh);
+
+    font-family: var(--font-text-zh);
+    letter-spacing: 0;
+    line-break: strict;
+    text-spacing-trim: normal;
+    // The source already types a space between Han and Latin runs.
+    text-autospace: no-autospace;
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      letter-spacing: 0;
+    }
+
+    // Han has no italic: emphasis takes dots under the characters.
+    em {
+      font-style: normal;
+      text-emphasis: filled dot;
+      text-emphasis-position: under right;
+    }
+
+    strong,
+    b {
+      font-weight: 600;
+      font-synthesis: none;
+    }
+  }
+}
