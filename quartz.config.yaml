@@ -226,7 +226,9 @@ plugins:
   - source: "@quartz-community/content-page"
     enabled: true
   - source: "@quartz-community/folder-page"
-    enabled: true
+    # presence-index serves this page type with the tag lists dropped from its
+    # rows; they linked to tag pages this site no longer builds.
+    enabled: false
   - source: "@quartz-community/tag-page"
     # Tags stay in frontmatter for search and feeds; no thin tag pages.
     enabled: false

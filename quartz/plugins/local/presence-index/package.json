@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "Derived writing and works rows for the homepage and folder pages",
+  "description": "Derived writing and works rows for the homepage and folder pages, and the folder page type",
   "exports": {
     ".": "./index.js",
     "./components": "./components/index.js",
@@ -13,7 +13,10 @@
   "quartz": {
     "name": "presence-index",
     "displayName": "Presence index",
-    "category": "component",
+    "category": [
+      "pageType",
+      "component"
+    ],
     "version": "1.0.0",
     "quartzVersion": ">=5.0.0",
     "dependencies": [],
