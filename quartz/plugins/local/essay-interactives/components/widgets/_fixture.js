@@ -166,7 +166,7 @@ WIDGETS["fixture"] = function (fig) {
       bound = fixtureBound(w)
     }
     var cx = w / 2
-    var y = (h + FIXTURE_RULER) / 2
+    var y = (h + ruler.height()) / 2
     ctx.fillStyle = pal.canvas
     ctx.fillRect(0, 0, w, h)
     ctx.lineCap = "round"
@@ -238,7 +238,7 @@ WIDGETS["fixture"] = function (fig) {
   }
 
   function settled() {
-    drag.keys.set(percent(offset))
+    keys.set(percent(offset))
     fig.describe(s.resting + Math.round(offset) + s.pixels)
   }
 
@@ -274,14 +274,43 @@ WIDGETS["fixture"] = function (fig) {
 
   function nudge(dir) {
     spring.retarget(dir > 0 ? bound : -bound)
-    drag.keys.set(dir > 0 ? 100 : -100)
+    keys.set(dir > 0 ? 100 : -100)
     follow()
   }
+
+  // The keyboard alternative to the drag, on the same element: arrows step,
+  // Shift steps 25, PageUp and PageDown walk the marks, Enter nudges.
+  var keys = fig.keySlider(handle, {
+    min: -100,
+    max: 100,
+    step: 1,
+    shiftStep: 25,
+    value: 0,
+    marks: [-50, 0, 50],
+    label: s.handle,
+    valueText: function (v) {
+      return Math.round((v / 100) * bound) + s.pixels
+    },
+    onInput: function (v) {
+      spring.retarget((v / 100) * bound)
+      follow()
+    },
+    extraKeys: {
+      Enter: function () {
+        nudge(1)
+      },
+      "Shift+Enter": function () {
+        nudge(-1)
+      },
+    },
+  })
 
   var drag = fig.drag(
     handle,
     {
       onStart: function () {
+        // Keys keep working on the handle after a drag, so the press takes focus.
+        handle.focus({ preventScroll: true })
         offset = spring.value
         spring.set(offset)
         springMoving = false
@@ -297,7 +326,8 @@ WIDGETS["fixture"] = function (fig) {
       onEnd: function (point, velocity) {
         spring.set(offset, velocity.x)
         spring.retarget(clampInside(offset))
-        drag.keys.set(percent(clampInside(offset)))
+        keys.set(percent(clampInside(offset)))
+        keys.commit()
         follow()
       },
       onCancel: function () {
@@ -305,30 +335,6 @@ WIDGETS["fixture"] = function (fig) {
         spring.set(offset)
         spring.retarget(clampInside(offset))
         follow()
-      },
-      keyboard: {
-        min: -100,
-        max: 100,
-        step: 1,
-        shiftStep: 25,
-        value: 0,
-        marks: [-50, 0, 50],
-        label: s.handle,
-        valueText: function (v) {
-          return Math.round((v / 100) * bound) + s.pixels
-        },
-        onInput: function (v) {
-          spring.retarget((v / 100) * bound)
-          follow()
-        },
-        extraKeys: {
-          Enter: function () {
-            nudge(1)
-          },
-          "Shift+Enter": function () {
-            nudge(-1)
-          },
-        },
       },
     },
     { touchAction: "none" },
@@ -355,7 +361,7 @@ WIDGETS["fixture"] = function (fig) {
     fig.root.setAttribute("data-scope-keys", String(scopeKeys))
     fig.root.setAttribute("data-last-key", e.key)
     spring.retarget(target)
-    drag.keys.set(percent(target))
+    keys.set(percent(target))
     follow()
     return true
   })
@@ -467,10 +473,17 @@ WIDGETS["fixture"] = function (fig) {
     },
   })
 
+  // Narrow figures give the ruler more room; setHeight keeps its viewBox equal
+  // to its CSS size, and the canvas repaints around it.
   fig.onSizeChange(function (size, w) {
     sizeCalls += 1
     fig.root.setAttribute("data-size-calls", String(sizeCalls))
     fig.root.setAttribute("data-size-width", String(Math.round(w)))
+    var rulerHeight = size === "narrow" ? 32 : FIXTURE_RULER
+    if (ruler.height() !== rulerHeight) {
+      ruler.setHeight(rulerHeight)
+      surface.invalidate()
+    }
   })
 
   fig.model({
@@ -500,7 +513,7 @@ WIDGETS["fixture"] = function (fig) {
     springMoving = false
     offset = 0
     setTrailLength(12)
-    drag.keys.reset(0)
+    keys.reset(0)
     render()
     fig.describe(fig.alt)
   })
