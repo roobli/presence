@@ -5,9 +5,11 @@ import { styleText } from "node:util"
  * header, the index rows and the section spine:
  *   kind            "home" | "essay" | "work" | "folder" | "page"
  *   figures         [{ n, name, title }], live figures in document order
- *   sections        [{ id, title, words }], one per h2. When 50 or more words
- *                   precede the first h2, an intro entry (id and title null)
- *                   leads; fewer words join the first section.
+ *   sections        [{ id, title, words }], exactly one per h2
+ *   intro           { words } when 50 or more words precede the first h2, else
+ *                   null (a shorter lead-in joins the first section). The spine
+ *                   draws [intro, ...sections]; "fewer than 3 h2" is
+ *                   sections.length < 3.
  *   figureOffsets   words before each figure
  *   words           each Han character counts as one word
  *   readingMinutes  ceil(words / 200), or ceil(Han characters / 400) on zh pages
@@ -15,8 +17,9 @@ import { styleText } from "node:util"
  *
  * Word counts include code, diagrams and display math, which take reading time
  * too. They skip script and style, figure frames (so a figure's chrome never
- * moves them) and the footnotes section. On a page with an h2 the sections add
- * up to words, which keeps the spine's figure dots aligned with its segments.
+ * moves them) and the footnotes section. On a page with an h2, intro and
+ * sections add up to words, which keeps the spine's figure dots aligned with
+ * its segments.
  */
 
 const INTRO_MIN_WORDS = 50
@@ -170,14 +173,16 @@ function derivePage(tree, lang) {
   visit(tree)
   flush()
 
+  let intro = null
   if (sections.length > 0) {
-    if (lead >= INTRO_MIN_WORDS) sections.unshift({ id: null, title: null, words: lead })
+    if (lead >= INTRO_MIN_WORDS) intro = { words: lead }
     else sections[0].words += lead
   }
   const zh = /^zh/i.test(lang)
   return {
     figures,
     sections,
+    intro,
     figureOffsets,
     words,
     readingMinutes: Math.ceil(zh ? han / 400 : words / 200),

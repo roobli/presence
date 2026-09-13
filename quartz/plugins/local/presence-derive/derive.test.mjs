@@ -104,8 +104,8 @@ describe("presence-derive", () => {
     ])
     // Intro 60; Springs 1 + 40; Corners 1 + 8 code + 4 cells + 5;
     // Hinge torque 2 + 6 + 7 + 3 + 4 display math. Script, figure text and footnotes add nothing.
+    assert.deepStrictEqual(file.data.presence.intro, { words: 60 })
     assert.deepStrictEqual(file.data.presence.sections, [
-      { id: null, title: null, words: 60 },
       { id: "springs", title: "Springs", words: 41 },
       { id: "corners", title: "Corners", words: 18 },
       { id: "hinges", title: "Hinge torque", words: 22 },
@@ -121,12 +121,14 @@ describe("presence-derive", () => {
       slug: "writing/short",
     })
     assert.deepStrictEqual(essay.data.presence.sections, [{ id: "only", title: "Only", words: 31 }])
+    assert.equal(essay.data.presence.intro, null)
     assert.equal(essay.data.presence.words, 31)
 
     const about = derive(root(el("p", {}, prose(401))), { slug: "about" })
     assert.equal(about.data.presence.kind, "page")
     assert.equal(about.data.frontmatter.essayFrame, false)
     assert.deepStrictEqual(about.data.presence.sections, [])
+    assert.equal(about.data.presence.intro, null)
     assert.deepStrictEqual(about.data.presence.figures, [])
     assert.equal(about.data.presence.words, 401)
     assert.equal(about.data.presence.readingMinutes, 3)
@@ -156,8 +158,8 @@ describe("presence-derive", () => {
     assert.equal(file.data.presence.kind, "essay")
     assert.equal(file.data.frontmatter.essayFrame, true)
     // Han: 50 + (4 + 13 + 400) + (2 + 5) + (2 + 7) = 483; Latin: Cmd+K, Emacs, M-x, vi.
+    assert.deepStrictEqual(file.data.presence.intro, { words: 50 })
     assert.deepStrictEqual(file.data.presence.sections, [
-      { id: null, title: null, words: 50 },
       { id: "grammar", title: "共享语法", words: 420 },
       { id: "history", title: "历史", words: 8 },
       { id: "practice", title: "练习", words: 9 },
