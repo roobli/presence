@@ -1,0 +1,8 @@
+{
+  "name": "zeta-triptych",
+  "status": "live",
+  "adapter": "root",
+  "minHeight": 294,
+  "railRows": 1,
+  "cites": ["320"]
+}

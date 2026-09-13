@@ -29,6 +29,18 @@
     background-color: var(--side-bar-bg-color);
   }
 
+  // Until roob-ui rebuilds it into the bar (data-tpl-nav="ready"), the
+  // sidebar holds Quartz's stock children, the whole outline among them, and
+  // the first paint put the article a screen down before it jumped up. Hold
+  // the bar at its built height until then. Without scripting nothing
+  // rebuilds it, so the stock sidebar keeps its own height.
+  @media (scripting: enabled) {
+    .page > #quartz-body > .sidebar.left:not([data-tpl-nav="ready"]) {
+      height: var(--tpl-mobile-header, 87px);
+      overflow: hidden;
+    }
+  }
+
   .tpl-nav-head {
     flex-direction: row;
     align-items: center;
