@@ -157,7 +157,10 @@ $mark-ext: (
     white-space: nowrap;
   }
 
+  // The folder's mark sits inside the title rather than on the row, so it
+  // needs the row's gap of its own to stand as far off as a note's does.
   .folder-title {
+    gap: 5px;
     font-weight: 500;
     color: var(--ink-strong-color);
   }
@@ -309,5 +312,24 @@ svg.tpl-tree-guides {
     stroke: color-mix(in srgb, var(--accent-color) 55%, var(--ink-muted-color));
     stroke-width: 1.3;
     opacity: 0.42;
+  }
+}
+
+// A touch screen wide enough for the rail still needs finger-sized rows and
+// folder toggles. The chevron's box grows into the row's own padding and over
+// the start of its label, so the drawing and the row height stay as they are.
+@media (min-width: 801px) and (pointer: coarse) {
+  .explorer-content {
+    .tree-item-self {
+      min-height: 44px;
+    }
+
+    .folder-icon {
+      position: relative;
+      z-index: 1;
+      box-sizing: content-box;
+      padding: 16px;
+      margin: -16px -13px -16px -16px;
+    }
   }
 }
