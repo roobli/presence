@@ -12,6 +12,32 @@
 var NAV_SCROLL_KEY = "roob-nav-scroll"
 var NAV_BODY_ID = "tpl-nav-body"
 
+STRINGS.nav = {
+  en: {
+    toggle: "Open navigation",
+    darkMode: "Dark mode",
+    lightMode: "Light mode",
+    readerMode: "Reader mode",
+    outline: "Outline",
+    reveal: "Reveal the current note",
+    fold: "Collapse all folders",
+    help: "Keyboard shortcuts",
+  },
+  "zh-Hans": {
+    toggle: "打开导航",
+    darkMode: "暗色模式",
+    lightMode: "亮色模式",
+    readerMode: "阅读模式",
+    outline: "目录",
+    reveal: "展开并滚动到当前笔记",
+    fold: "折叠所有目录",
+    help: "快捷键与用法",
+  },
+}
+
+// Three rules stepping in, on the grid and stroke of the other foot actions.
+ICONS.outline = SVG_OPEN + '<path d="M4 6.5h16M8 12h12M8 17.5h9"/></svg>'
+
 /**
  * Quartz ships its own drawings for dark mode and reader mode: one a filled
  * sun on a 35 grid, the other a filled book on a 24 grid scaled unevenly and
@@ -21,9 +47,9 @@ var NAV_BODY_ID = "tpl-nav-body"
  */
 function normaliseControlIcons(controls) {
   var swap = [
-    [".dayIcon", "sun", "暗色模式"],
-    [".nightIcon", "moon", "亮色模式"],
-    [".readerIcon", "book", "阅读模式"],
+    [".dayIcon", "sun", t("nav", "darkMode")],
+    [".nightIcon", "moon", t("nav", "lightMode")],
+    [".readerIcon", "book", t("nav", "readerMode")],
   ]
   for (var i = 0; i < swap.length; i += 1) {
     var found = controls.querySelector(swap[i][0])
@@ -62,6 +88,18 @@ function makeFootAction(name, action, label) {
   return button
 }
 
+/** The rail offers the outline on an essay that has one. It asks the toc
+ *  itself, which buildNav moves out of the document before the foot is made.
+ *  Whether the dial already shows it beside the column is decided in CSS,
+ *  off the data-tpl-outline attribute the layout keeps on <html>. */
+function pageHasOutline(toc) {
+  return !!(
+    toc &&
+    toc.querySelector(".toc-content") &&
+    document.body.getAttribute("data-kind") === "essay"
+  )
+}
+
 function shortcutHint() {
   var mac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent || "")
   return mac ? "⌘ ." : "Ctrl ."
@@ -85,7 +123,7 @@ function buildNav() {
   var toggle = el("button", "")
   toggle.id = "tpl-nav-toggle"
   toggle.type = "button"
-  toggle.setAttribute("aria-label", "切换导航")
+  toggle.setAttribute("aria-label", t("nav", "toggle"))
   toggle.setAttribute("aria-expanded", "false")
   toggle.setAttribute("aria-controls", NAV_BODY_ID)
   toggle.innerHTML =
@@ -141,9 +179,14 @@ function buildNav() {
     }
   }
   var footTools = el("div", "tpl-nav-foot-tools")
-  footTools.appendChild(makeFootAction("target", "reveal", "展开并滚动到当前笔记"))
-  footTools.appendChild(makeFootAction("fold", "fold", "折叠所有目录"))
-  footTools.appendChild(makeFootAction("help", "help", "快捷键与用法"))
+  // The outline comes first: the tools sit against the right edge, so the
+  // tree's own actions hold their place when it appears and goes.
+  var outlineAction = makeFootAction("outline", "outline", t("nav", "outline"))
+  outlineAction.hidden = !pageHasOutline(toc)
+  footTools.appendChild(outlineAction)
+  footTools.appendChild(makeFootAction("target", "reveal", t("nav", "reveal")))
+  footTools.appendChild(makeFootAction("fold", "fold", t("nav", "fold")))
+  footTools.appendChild(makeFootAction("help", "help", t("nav", "help")))
   foot.appendChild(footTools)
 
   // Quartz scrolls the tree to the open note on every navigation. With one
@@ -216,6 +259,12 @@ document.addEventListener("click", function (event) {
   var action = control.getAttribute("data-tpl-action")
   if (action === "help") {
     toggleShortcuts()
+    return
+  }
+  // The outline sheet listens for this. The opener goes with it so focus can
+  // return there when the sheet closes.
+  if (action === "outline") {
+    document.dispatchEvent(new CustomEvent("tpl:open-outline", { detail: { opener: control } }))
     return
   }
   var explorer = document.querySelector(".sidebar.left .explorer")

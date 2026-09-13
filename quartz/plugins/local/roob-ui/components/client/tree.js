@@ -73,7 +73,7 @@ function drawCrumbs(explorer, body) {
   box.textContent = ""
   box.classList.toggle("tpl-crumbs-on", shown > 0)
   for (var j = 0; j < shown; j += 1) {
-    box.appendChild(makeCrumb(chain[j], j, body))
+    box.appendChild(makeCrumb(chain[j], j))
   }
   // Same rule as the tree rows: a tooltip only where the name was cut.
   var labels = box.querySelectorAll(".tpl-crumb-label")
@@ -84,7 +84,7 @@ function drawCrumbs(explorer, body) {
   }
 }
 
-function makeCrumb(container, depth, body) {
+function makeCrumb(container, depth) {
   var row = el("button", "tpl-tree-crumb")
   row.type = "button"
   // A crumb repeats a folder row that is still reachable in the tree, and
@@ -101,12 +101,11 @@ function makeCrumb(container, depth, body) {
   var label = crumbLabel(container)
   row.appendChild(el("span", "tpl-crumb-label", label))
   row.dataset.full = label
-  // Going back to the row it stands for is the only thing it has to do.
-  row.addEventListener("click", function () {
-    var rect = container.getBoundingClientRect()
-    var host = body.getBoundingClientRect()
-    body.scrollTop += rect.top - host.top - depth * CRUMB_ROW - 4
-  })
+  // The click is taken on the document, which finds the folder row again by
+  // its path: micromorph can hand a node built here to a server element on
+  // the next page, and a listener on the node would go along with it.
+  row.dataset.folderpath = container.dataset.folderpath || ""
+  row.dataset.depth = String(depth)
   return row
 }
 
@@ -121,6 +120,23 @@ function scheduleCrumbs(explorer, body) {
     }
   }, 0)
 }
+
+// Going back to the row a crumb stands for is the only thing it has to do.
+document.addEventListener("click", function (event) {
+  var target = event.target
+  var crumb = target && target.closest ? target.closest(".tpl-tree-crumb") : null
+  var body = crumb ? crumb.closest(".tpl-nav-body") : null
+  if (!body) return
+  var containers = body.querySelectorAll(".folder-container")
+  for (var i = 0; i < containers.length; i += 1) {
+    if (containers[i].dataset.folderpath !== crumb.dataset.folderpath) continue
+    var rect = containers[i].getBoundingClientRect()
+    var host = body.getBoundingClientRect()
+    var depth = parseInt(crumb.dataset.depth, 10) || 0
+    body.scrollTop += rect.top - host.top - depth * CRUMB_ROW - 4
+    return
+  }
+})
 
 // --- tree guides ---------------------------------------------------------
 //
@@ -305,19 +321,58 @@ function markUnfolding(target) {
   }, 0)
 }
 
-/** Deep rows truncate, so the full name has to live somewhere reachable. */
+// A note's row is labelled with its title cut at the dash (the explorer's
+// mapFn in quartz.ts), so the whole title goes in the row's tooltip. Titles
+// come from the content index, which Quartz fetches once per load as
+// fetchData; the explorer builds its tree from the same response.
+var fullTitles = null // slug -> frontmatter title
+var fullTitlesRequested = false
+
+function requestFullTitles() {
+  if (fullTitlesRequested || typeof fetchData === "undefined") return
+  fullTitlesRequested = true
+  Promise.resolve(fetchData)
+    .then(function (data) {
+      var entries = (data && data.content) || data || {}
+      var titles = {}
+      for (var slug in entries) {
+        var entry = entries[slug]
+        if (entry && typeof entry.title === "string") titles[slug] = entry.title
+      }
+      fullTitles = titles
+      var explorer = document.querySelector(".sidebar.left .explorer")
+      if (explorer) titleTreeRows(explorer)
+    })
+    .catch(function (err) {
+      console.error("[roob] content index failed:", err)
+    })
+}
+
+/** The slug a file row links to, the way the content index keys it. */
+function rowSlug(link) {
+  var href = link.getAttribute("href") || ""
+  var base = (document.body && document.body.dataset.basepath) || ""
+  if (base && href.indexOf(base + "/") === 0) href = href.slice(base.length)
+  return href.replace(/[?#].*$/, "").replace(/^\/+/, "")
+}
+
 /**
- * A name that fits is already on screen, and a tooltip repeating it is
- * noise: it covers the rows below, arrives late, and says nothing new. The
- * tooltip is only for a name the panel had to cut, so whether a row gets one
- * depends on the panel's current width and is re-decided when that changes.
+ * A note's row always carries its full title. Any other name that fits is
+ * already on screen, and a tooltip repeating it is noise: it covers the rows
+ * below, arrives late, and says nothing new. Those rows get one only when the
+ * panel had to cut the name, so it depends on the panel's current width and
+ * is re-decided when that changes.
  */
 function titleTreeRows(explorer) {
+  requestFullTitles()
   var rows = explorer.querySelectorAll(".folder-title, a.nav-file-title")
   for (var i = 0; i < rows.length; i += 1) {
     var row = rows[i]
-    if (row.scrollWidth > row.clientWidth + 1) {
-      var text = (row.textContent || "").trim()
+    var full =
+      fullTitles && row.classList.contains("nav-file-title") ? fullTitles[rowSlug(row)] : null
+    var text = typeof full === "string" ? full : ""
+    if (!text && row.scrollWidth > row.clientWidth + 1) text = (row.textContent || "").trim()
+    if (text) {
       if (row.title !== text) row.title = text
     } else if (row.title) {
       row.removeAttribute("title")
