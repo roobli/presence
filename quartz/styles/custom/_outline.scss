@@ -9,6 +9,10 @@
 // touch larger, its neighbours dimmer, softer and tilted off it, so the set
 // sits on a shallow arc that closes toward the right edge. Pointing at it
 // opens the whole outline, upright and opaque, over the article if it must be.
+//
+// It stands in the gutter right of the column, sized from the gutter roob-ui
+// measures (--tpl-right-gutter), and only where html[data-tpl-outline] says
+// the gutter can carry it.
 // ---------------------------------------------------------------------------
 #tpl-outline {
   --tpl-outline-row: 26px;
@@ -24,14 +28,23 @@
   border-radius: 10px;
   font-family: var(--font-ui);
   // No backdrop at rest. It used to carry a canvas-coloured wash so text
-  // underneath would fade out, but the column now yields the room instead, and
+  // underneath would fade out, but the dial now keeps to the gutter, and
   // that wash cut a pale strip through anything tinted it happened to cross.
   background: transparent;
   transition:
-    width 260ms cubic-bezier(0.22, 0.61, 0.36, 1),
     background-color 200ms ease-out,
     border-color 200ms ease-out,
     box-shadow 200ms ease-out;
+
+  // Width glides only when roob-ui asks for it: a text width mode change, or
+  // the dial opening and closing. A gutter measured after a resize snaps.
+  &.tpl-outline-morph {
+    transition:
+      width 260ms cubic-bezier(0.22, 0.61, 0.36, 1),
+      background-color 200ms ease-out,
+      border-color 200ms ease-out,
+      box-shadow 200ms ease-out;
+  }
 
   // The spine. The lines hang off it, which is what turns a stack of text
   // into a dial; it fades out at both ends so it never reads as a border.
@@ -72,13 +85,12 @@
     display: none;
   }
 
-  // Below this there is no room beside the column and no pointer to hover.
-  @media all and not ($desktop) {
+  // One column has no gutter; the mobile header carries the outline there.
+  @media all and ($mobile) {
     display: none;
   }
 
-  // Set when yielding the room would squeeze the measure too far to be worth
-  // it; the dial stands down rather than covering the article.
+  // The gutter is too narrow to carry the dial without covering the text.
   html[data-tpl-outline="off"] & {
     display: none;
   }
@@ -317,13 +329,13 @@
 }
 
 // --- docked ------------------------------------------------------------------
-// Pinned, the outline stops being an overlay. The reading column gives up the
-// width for it and it stands in that width as a rail, so nothing of the
-// article is underneath it any more. That lets it drop the card treatment the
-// overlay needed, the opaque fill and the drop shadow, and keep the spine,
-// which docked reads as the rail's own edge rather than a border.
+// Pinned in a gutter wide enough to hold it (data-tpl-outline="dock"), the
+// outline stops being an overlay and stands in the gutter as a rail, at the
+// dial's own width, so nothing of the article is underneath it. That lets it
+// drop the card treatment the overlay needed, the opaque fill and the drop
+// shadow, and keep the spine, which docked reads as the rail's own edge.
 #tpl-outline.tpl-outline-docked {
-  width: var(--tpl-outline-dock-width, 288px);
+  width: clamp(150px, calc(var(--tpl-right-gutter, 220px) - 26px), 300px);
 
   &[data-state="open"] {
     border-color: transparent;
@@ -356,6 +368,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   #tpl-outline,
+  #tpl-outline.tpl-outline-morph,
   .tpl-outline-head,
   .tpl-outline-body,
   .tpl-outline-list,

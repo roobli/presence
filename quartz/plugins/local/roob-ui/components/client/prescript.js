@@ -10,9 +10,9 @@
  * only after a manual hard reload, which makes every visual change look like
  * it did not take. Localhost gets a stamped href; nothing else is touched.
  *
- * A restamped sheet can land after roob-ui has measured the column against an
- * unstyled page, which left the column pinned at its floor. Each sheet
- * announces its load so roob-ui measures again.
+ * A restamped sheet can land after roob-ui has measured the right gutter
+ * against an unstyled page. Each sheet announces its load, and roob-ui runs
+ * applyLayout again (boot.js).
  */
 function roobDevCacheBust() {
   var host = location.hostname
@@ -35,12 +35,13 @@ function roobDevCacheBust() {
 }
 
 /**
- * Sidebar width and collapse before first paint.
+ * Panel width, collapse and text width before first paint.
  *
- * roob-ui runs after the body has been parsed, so a stored width or a folded
- * panel used to arrive a frame late, over a first paint at the stylesheet's
- * 280px. This runs in <head>, where only <html> exists, and <html> is where
- * roob-ui keeps both. It has to land on the value roob-ui computes.
+ * roob-ui runs after the body has been parsed, so a stored width, a folded
+ * panel or a wide column used to arrive a frame late, over a first paint at
+ * the stylesheet's defaults. This runs in <head>, where only <html> exists,
+ * and <html> is where all three live. It has to land on the values roob-ui
+ * computes (resize.js, width.js).
  */
 function roobSidebarPrepaint(prefs) {
   var read = function (key, fallback) {
@@ -61,7 +62,33 @@ function roobSidebarPrepaint(prefs) {
   var docEl = document.documentElement
   docEl.setAttribute("data-tpl-sidebar", collapsed ? "collapsed" : "open")
   docEl.style.setProperty("--tpl-sidebar-width", (collapsed ? 0 : width) + "px")
+
+  // The mode is a plain string, not JSON.
+  var mode = "default"
+  try {
+    mode = localStorage.getItem(prefs.modeKey) || "default"
+  } catch (e) {
+    /* private mode */
+  }
+  if (mode !== "wide" && mode !== "full") mode = "default"
+  docEl.setAttribute("data-tpl-width", mode)
+}
+
+/**
+ * A first visit opens on Writing. Quartz's explorer reads its folder state
+ * from this key and keys folders by slug, and it never reads a default of its
+ * own, so the seed has to be in place before its script runs.
+ */
+function roobSeedFileTree() {
+  try {
+    if (localStorage.getItem("fileTree") === null) {
+      localStorage.setItem("fileTree", '[{"path":"writing/index","collapsed":false}]')
+    }
+  } catch (e) {
+    /* private mode */
+  }
 }
 
 roobDevCacheBust()
 roobSidebarPrepaint(prefs)
+roobSeedFileTree()

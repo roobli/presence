@@ -1,11 +1,10 @@
 @use "../variables" as *;
 
 // --- resize and collapse ---------------------------------------------------
-// The grab strip is wider than the hairline it draws and sits inside the
-// panel, because the sidebar clips its overflow. .tpl-nav-body keeps its
-// scrollbar clear of the strip by the same amount.
+// The grab strip is wider than the line it draws and sits inside the panel.
+// .tpl-nav-body keeps its scrollbar clear of the strip by the same amount.
 :root {
-  --tpl-resize-hit: 10px;
+  --tpl-resize-hit: 12px;
 
   @media (pointer: coarse) {
     --tpl-resize-hit: 20px;
@@ -22,15 +21,26 @@
   z-index: 3;
   touch-action: none;
 
-  &:hover::after,
-  .tpl-resizing &::after {
+  // The line over the panel's edge. It is fixed rather than absolute because
+  // past the widest setting it stretches out beyond the panel, which clips
+  // its own overflow. roob-ui moves it through --tpl-resize-offset.
+  &::after {
     content: "";
-    position: absolute;
+    position: fixed;
     top: 0;
-    right: 0;
-    width: 1px;
-    height: 100%;
+    bottom: 0;
+    left: calc(var(--tpl-sidebar-width) - 2px);
+    width: 2px;
     background: var(--accent-color);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(var(--tpl-resize-offset, 0px));
+  }
+
+  &:hover::after,
+  &.tpl-resize-settling::after,
+  html.tpl-resizing &::after {
+    opacity: 1;
   }
 
   // Inset, or the panel's own clipping would cut the ring off.
@@ -52,7 +62,8 @@
   z-index: 4;
 }
 
-html.tpl-resizing {
+html.tpl-resizing,
+html.tpl-resizing * {
   cursor: col-resize;
   user-select: none;
 }
