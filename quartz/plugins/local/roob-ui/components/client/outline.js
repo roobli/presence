@@ -7,20 +7,31 @@
 // arranged on a shallow arc, the line you are reading crisp and level, its
 // neighbours dimmer, blurrier and tilted off it. Pointing at it opens the
 // whole outline, upright and opaque, over the article if it has to be.
+//
+// It lives in the gutter right of the column. applyLayout (width.js) measures
+// that gutter and sets html[data-tpl-outline]; the column never gives up
+// width for it.
 // -------------------------------------------------------------------------
+STRINGS.outline = {
+  en: {
+    label: "On this page",
+    title: "Outline",
+    pin: "Pin outline",
+    unpin: "Unpin outline",
+  },
+  "zh-Hans": {
+    label: "本页目录",
+    title: "目录",
+    pin: "固定目录",
+    unpin: "取消固定",
+  },
+}
+
 var OUTLINE_ROW = 26 // px per line; layout stays fixed so the states can swap
-// What the dial needs on each side of the column, and the narrowest measure
-// worth keeping once it has taken it.
-var OUTLINE_GUTTER = 200
-var OUTLINE_MIN_COLUMN = 900
-// Pinned, the panel itself has to fit in that gutter, so the column pays the
-// panel's width plus the room it needs on either side of it. The floor is
-// lower than the dial's: asking for the rail is asking to spend the width.
-var OUTLINE_DOCK_WIDTH = 288
-var OUTLINE_DOCK_GUTTER = 330
-var OUTLINE_MIN_DOCK_COLUMN = 640
 var OUTLINE_ANCHOR = 3 // the current line rides the fourth row of the dial
 var OUTLINE_PIN_KEY = "roob-outline-pinned"
+// A little longer than the width transition in _outline.scss.
+var OUTLINE_MORPH_MS = 320
 
 var outlineEl = null
 var outlineListEl = null
@@ -28,14 +39,30 @@ var outlineCountEl = null
 var outlineItems = [] // { id: string, node: HTMLElement }
 var outlineActive = -1
 var outlineTicking = false
+var outlineMorphTimer = 0
 
 function outlineIsOpen() {
   return outlineEl !== null && outlineEl.getAttribute("data-state") === "open"
 }
 
+/**
+ * Let the dial's next width change glide. Only a mode change and the dial
+ * opening or closing ask for it; a gutter measured after a window resize
+ * snaps, so nothing restarts a transition while the window is being sized.
+ */
+function morphOutlineWidth() {
+  if (!outlineEl) return
+  outlineEl.classList.add("tpl-outline-morph")
+  window.clearTimeout(outlineMorphTimer)
+  outlineMorphTimer = window.setTimeout(function () {
+    if (outlineEl) outlineEl.classList.remove("tpl-outline-morph")
+  }, OUTLINE_MORPH_MS)
+}
+
 function setOutlineState(open) {
   if (!outlineEl) return
   if (outlineIsOpen() === open) return
+  morphOutlineWidth()
   outlineEl.setAttribute("data-state", open ? "open" : "collapsed")
   var body = outlineEl.querySelector(".tpl-outline-body")
   if (!body) return
@@ -54,9 +81,9 @@ function outlinePinned() {
 
 /**
  * Reconcile the panel with the room the layout just gave it. Pinning is a
- * request for a rail, not a promise of one: on a window too narrow to carry
- * both the rail and a readable column it stays a dial, and hovering it still
- * opens the full outline the way it always did.
+ * request for a rail, not a promise of one: in a gutter too narrow to carry
+ * the rail it stays a dial, and hovering it still opens the full outline the
+ * way it always did.
  */
 function syncOutlineDock() {
   if (!outlineEl) return
@@ -67,7 +94,7 @@ function syncOutlineDock() {
   var pin = outlineEl.querySelector(".tpl-outline-pin")
   if (pin) {
     pin.setAttribute("aria-pressed", pinned ? "true" : "false")
-    pin.title = pinned ? "取消固定" : "固定在右侧"
+    pin.title = t("outline", pinned ? "unpin" : "pin")
     pin.setAttribute("aria-label", pin.title)
   }
   if (docked) setOutlineState(true)
@@ -76,33 +103,38 @@ function syncOutlineDock() {
   else if (!outlineEl.matches(":hover")) setOutlineState(false)
 }
 
+/** The dial outlives SPA navigation, and the page's language can change. */
+function syncOutlineLabels() {
+  outlineEl.setAttribute("aria-label", t("outline", "label"))
+  var title = outlineEl.querySelector(".tpl-outline-title")
+  if (title) title.textContent = t("outline", "title")
+}
+
 function mountOutline() {
   if (document.getElementById("tpl-outline")) {
     outlineEl = document.getElementById("tpl-outline")
     outlineListEl = outlineEl.querySelector(".tpl-outline-list")
     outlineCountEl = outlineEl.querySelector(".tpl-outline-count")
+    syncOutlineLabels()
     return
   }
   outlineEl = el("aside", "")
   outlineEl.id = "tpl-outline"
   outlineEl.setAttribute("data-state", "collapsed")
-  outlineEl.setAttribute("aria-label", "本页目录")
   outlineEl.hidden = true
 
   var head = el("div", "tpl-outline-head")
-  head.appendChild(el("span", "tpl-outline-title", "目录"))
+  head.appendChild(el("span", "tpl-outline-title"))
   outlineCountEl = el("span", "tpl-outline-count")
   head.appendChild(outlineCountEl)
   var pin = el("button", "tpl-outline-pin")
   pin.type = "button"
-  pin.title = "固定目录"
-  pin.setAttribute("aria-label", "固定目录")
   pin.innerHTML =
     SVG_OPEN + '<path d="M9 4h6l-1 6 3 3v2H7v-2l3-3z"/><path d="M12 15v5"/></svg>'
   pin.addEventListener("click", function (event) {
     event.stopPropagation()
     writeJson(OUTLINE_PIN_KEY, !outlinePinned())
-    // The column has to give up the width before the panel can take it.
+    // Docking is decided by the gutter, so measure before the panel changes.
     applyLayout()
   })
   head.appendChild(pin)
@@ -113,6 +145,7 @@ function mountOutline() {
 
   outlineEl.appendChild(head)
   outlineEl.appendChild(body)
+  syncOutlineLabels()
 
   outlineEl.addEventListener("pointerenter", function () {
     setOutlineState(true)
@@ -164,7 +197,7 @@ function refreshOutline() {
 
   var count = outlineItems.length
   outlineEl.hidden = count === 0
-  // A note with no headings should not cost the column any width.
+  // A note with no headings turns the dial off.
   applyLayout()
   if (outlineCountEl) outlineCountEl.textContent = count ? String(count) : ""
   if (count === 0) return

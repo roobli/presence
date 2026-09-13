@@ -10,7 +10,8 @@ import { readFileSync } from "fs"
  * quartz/styles/custom.scss; the scripts only supply state and geometry.
  *
  * The scripts are plain browser files in client/, assembled at import time:
- *   prescript.js    the <head> script: dev cache buster and sidebar prepaint
+ *   prescript.js    the <head> script: dev cache buster, and the panel width,
+ *                   text width and tree state before first paint
  *   CLIENT_MODULES  everything else, concatenated into one function scope
  */
 
@@ -29,6 +30,7 @@ function readClient(name) {
 const CLIENT_MODULES = [
   "helpers.js",
   "locale.js",
+  "motion.js",
   "width.js",
   "article.js",
   "shortcuts.js",
@@ -50,6 +52,8 @@ const SIDEBAR_PREFS = {
   defaultWidth: 280,
   // The panel never takes the window below this much room for the column.
   columnReserve: 480,
+  // Text width mode, a plain string: default, wide or full (width.js).
+  modeKey: "roob-editor-width",
 }
 
 const prefsArg = JSON.stringify(SIDEBAR_PREFS)

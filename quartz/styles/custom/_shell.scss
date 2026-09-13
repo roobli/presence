@@ -1,14 +1,66 @@
 @use "../variables" as *;
 
+// Layout tokens. The column below is built from these; roob-ui writes only
+// --tpl-sidebar-width (and --tpl-right-gutter, which the outline reads).
 :root {
-  // Editor width, mirroring plugins/wider: default 860, wide 1000-1180, full
-  // up to 1680. roob-ui recomputes these against the visible column width.
-  --tpl-content-width: 860px;
-  --tpl-max-width: 860px;
+  --tpl-sidebar-ref: 280px;
   --tpl-shell-gutter: 24px;
   --tpl-write-padding: 32px;
+  --measure: 35em;
+  --measure-wide: 48em;
+  --measure-floor: 20em;
+  --header-h: 48px;
+  --progress-h: 2px;
   --tpl-sidenote-reserve-active: 0px;
   --tpl-sidebar-width: 280px;
+
+  @media all and ($mobile) {
+    --tpl-write-padding: 20px;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// The note column.
+//
+// The measure is 35em of the English body size, plus whatever the panel gives
+// up against its 280px reference. So the text's right edge stays put while
+// its left edge follows the sidebar handle 1:1. On a narrow window the 100%
+// term takes over, and the drag still changes the width 1:1 there. The em
+// basis is this element's own font size: set smaller text on children.
+// ---------------------------------------------------------------------------
+@mixin note-column {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: none;
+  font-size: var(--size-body, clamp(17px, 16.296px + 0.1878vw, 19px));
+  --col-drag: calc(var(--tpl-sidebar-ref) - var(--tpl-sidebar-width));
+  width: min(
+    100% - 2 * var(--tpl-shell-gutter),
+    max(
+      var(--measure-floor) + 2 * var(--tpl-write-padding),
+      var(--measure) + 2 * var(--tpl-write-padding) + var(--col-drag)
+    )
+  );
+  margin-inline: auto;
+
+  @media all and not ($mobile) {
+    // Folding the panel away keeps the measure rather than widening it.
+    html[data-tpl-sidebar="collapsed"] & {
+      --col-drag: 0px;
+    }
+
+    html[data-tpl-width="wide"] & {
+      --measure: var(--measure-wide);
+    }
+
+    html[data-tpl-width="full"] & {
+      width: calc(100% - 2 * var(--tpl-shell-gutter));
+    }
+  }
+
+  @media all and ($mobile) {
+    width: 100%;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -45,9 +97,9 @@ body {
     column-gap: 0;
     row-gap: 0;
     min-height: 100vh;
-    // Quartz insets the grid by 1rem below its desktop breakpoint. The panel
-    // stays flush with the window edge at every width that shows it, and
-    // roob-ui measures the column from this box with no padding to subtract.
+    // Quartz insets the grid by 1rem below its desktop breakpoint, the tablet
+    // band included. The panel stays flush with the window edge at every
+    // width that shows it, and the column's 100% is the whole track.
     padding: 0;
   }
 
@@ -83,19 +135,13 @@ body {
   }
 }
 
-// .center inherits the width the wider plugin would have given #write, and
-// carries #write's own 32px side padding inside that box.
+// .center carries #write's own side padding inside the column box.
 .page > #quartz-body > .center {
-  min-width: 0;
-  max-width: none;
-  box-sizing: border-box;
-  width: min(100% - var(--tpl-shell-gutter) * 2, var(--tpl-max-width));
-  margin-inline: auto;
+  @include note-column;
   padding: 0 var(--tpl-write-padding) 104px;
   padding-right: calc(var(--tpl-write-padding) + var(--tpl-sidenote-reserve-active));
 
   @media all and ($mobile) {
-    width: 100%;
     padding: 0 20px 84px;
   }
 
@@ -109,12 +155,9 @@ body {
 }
 
 .page > #quartz-body > footer {
-  box-sizing: border-box;
-  width: min(100% - var(--tpl-shell-gutter) * 2, var(--tpl-max-width));
-  margin: 0 auto;
+  @include note-column;
   padding: 0 var(--tpl-write-padding) 2.5rem;
   font-family: var(--font-interface);
-  font-size: 0.78rem;
   color: var(--ink-muted-color);
   border-top: 0;
 
