@@ -2,6 +2,11 @@
 title: CUDA C++ Course
 description: Fifteen lessons and four in-browser GPU labs. English default, Chinese at /zh/. Finish without a local GPU; nine CUDA samples when you have one.
 date: 2026-09-11
+live: https://lr00rl.github.io/cuda-cpp-course/
+source: https://github.com/lr00rl/cuda-cpp-course
+live_zh: https://lr00rl.github.io/cuda-cpp-course/zh/
+image: works/cuda-cpp-course-home.webp
+image_alt: CUDA C++ Course home page
 tags:
   - cuda
   - works
