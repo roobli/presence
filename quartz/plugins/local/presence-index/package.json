@@ -1,0 +1,31 @@
+{
+  "name": "presence-index",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Derived writing and works rows for the homepage and folder pages",
+  "exports": {
+    ".": "./index.js",
+    "./components": "./components/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./index.js",
+  "quartz": {
+    "name": "presence-index",
+    "displayName": "Presence index",
+    "category": "component",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 50,
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "HomeIndex": {
+        "displayName": "Home index",
+        "defaultPosition": "beforeBody",
+        "defaultPriority": 20
+      }
+    }
+  }
+}

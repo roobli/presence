@@ -1,4 +1,6 @@
 @use "./claude-like-tokens.scss";
+// Site tokens come straight after the generated ones, so they override them.
+@use "./custom/site-tokens";
 
 // ===========================================================================
 // RooB site theme
@@ -36,5 +38,11 @@
 @use "./custom/folder-listing";
 @use "./custom/mermaid";
 @use "./custom/math";
+@use "./custom/drawer";
+@use "./custom/outline-sheet";
+@use "./custom/home";
+@use "./custom/end-matter";
+@use "./custom/colophon";
+@use "./custom/i18n";
 @use "./custom/widgets";
 @use "./custom/essay-frame";

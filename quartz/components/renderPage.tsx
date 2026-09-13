@@ -297,6 +297,18 @@ export function renderTranscludes(
   walk(root)
 }
 
+/**
+ * Page kind from the slug alone, for pages presence-derive never sees, such as
+ * the virtual folder listings. Same rules as presence-derive.
+ */
+function pageKind(slug: FullSlug): string {
+  if (slug === "index") return "home"
+  if (slug.endsWith("/index")) return "folder"
+  if (slug.startsWith("writing/")) return "essay"
+  if (slug.startsWith("works/")) return "work"
+  return "page"
+}
+
 export function renderPage(
   cfg: GlobalConfiguration,
   slug: FullSlug,
@@ -335,7 +347,14 @@ export function renderPage(
   const Body = BodyConstructor()
   const frame = resolveFrame(frameName)
 
-  const lang = componentData.fileData.frontmatter?.lang ?? cfg.locale?.split("-")[0] ?? "en"
+  const fileData = componentData.fileData as typeof componentData.fileData & {
+    i18n?: { lang?: string }
+    presence?: { kind?: string }
+  }
+  // The same value i18n-slug writes to meta[name=page-lang]. body carries it
+  // too, because SPA navigation morphs body attributes but never html's.
+  const lang = fileData.i18n?.lang ?? fileData.frontmatter?.lang ?? "en"
+  const kind = fileData.presence?.kind ?? pageKind(slug)
   const direction = i18n(cfg.locale).direction ?? "ltr"
   // During local dev (--serve), the dev server serves from root without the
   // baseUrl subpath, so basePath must be empty to avoid broken links.
@@ -350,7 +369,13 @@ export function renderPage(
   const doc = (
     <html lang={lang} dir={direction}>
       <Head {...componentData} />
-      <body data-slug={slug} data-basepath={basePath} {...(essayFrame ? { "data-essay-frame": "true" } : {})}>
+      <body
+        lang={lang}
+        data-kind={kind}
+        data-slug={slug}
+        data-basepath={basePath}
+        {...(essayFrame ? { "data-essay-frame": "true" } : {})}
+      >
         {frame.css && <style dangerouslySetInnerHTML={{ __html: frame.css }} />}
         <div id="quartz-root" class="page" data-frame={frame.name}>
           <Body {...componentData}>
