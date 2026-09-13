@@ -1,0 +1,9 @@
+{
+  "name": "sector-stride",
+  "status": "live",
+  "minHeight": 312,
+  "minHeightNarrow": 438,
+  "railRows": 2,
+  "railRowsNarrow": 3,
+  "cites": ["0", "1", "4", "8", "31", "32", "128", "1024", "12.5%", "100.0%"]
+}
