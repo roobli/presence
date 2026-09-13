@@ -14,18 +14,23 @@
   color: inherit;
 }
 
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+// Thin scrollbars only where a mouse drives them. On touch screens a styled
+// scrollbar stops being an overlay: the page scrollbar (styled through body)
+// then reserves its width, and a phone's layout viewport grows past the screen.
+@media (hover: hover) and (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 3px;
-}
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+  }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
 
 @media print {
