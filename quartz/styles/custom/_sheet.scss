@@ -22,7 +22,7 @@
   border-radius: 12px;
   background: var(--canvas-color);
   box-shadow: 0 24px 60px var(--overlay-shadow-color);
-  font-family: var(--font-ui);
+  font-family: var(--font-interface);
 }
 
 .tpl-sheet-head {
@@ -35,7 +35,7 @@
 .tpl-sheet-title {
   flex: 1;
   margin: 0;
-  font-family: var(--font-ui);
+  font-family: var(--font-interface);
   font-size: 15px;
   font-weight: 600;
   color: var(--ink-strong-color);

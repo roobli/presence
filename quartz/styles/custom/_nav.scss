@@ -62,14 +62,11 @@
     flex: 1;
     min-width: 0;
     margin: 0;
-    // A wordmark, not a bold label. The UI sans at 15px semibold read as a
-    // heading that had been shrunk; a serif at reading size with the weight
-    // taken back out has the room to be a name, and it answers the serif the
-    // articles are set in.
-    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
-      var(--headerFont), serif;
-    font-size: 1.12rem;
-    font-weight: 400;
+    // A wordmark, not a bold label: the articles' text face at 600, so the
+    // name answers the serif the essays are set in.
+    font-family: var(--font-text);
+    font-size: 20px;
+    font-weight: 600;
     letter-spacing: -0.005em;
     line-height: 1.3;
     overflow: hidden;
@@ -155,7 +152,7 @@
   border: 0;
   border-radius: 4px;
   background: var(--surface-color);
-  font-family: var(--font-mono);
+  font-family: var(--font-code);
   font-size: 11px;
   line-height: 1.5;
   letter-spacing: 0.02em;
@@ -213,7 +210,7 @@
   background: transparent;
   background-image: none;
   color: var(--ink-color);
-  font-family: var(--font-ui);
+  font-family: var(--font-interface);
   font-size: 13.5px;
   font-weight: 400;
   line-height: 1.4;
@@ -342,7 +339,7 @@
   border-bottom: 1px solid transparent;
   background: var(--side-bar-bg-color);
   color: var(--ink-strong-color);
-  font-family: var(--font-ui);
+  font-family: var(--font-interface);
   font-size: 13.5px;
   font-weight: 500;
   text-align: left;

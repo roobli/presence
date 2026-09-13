@@ -22,7 +22,7 @@
   padding: 0;
   border: 1px solid transparent;
   border-radius: 10px;
-  font-family: var(--font-ui);
+  font-family: var(--font-interface);
   // No backdrop at rest. It used to carry a canvas-coloured wash so text
   // underneath would fade out, but the column now yields the room instead, and
   // that wash cut a pale strip through anything tinted it happened to cross.

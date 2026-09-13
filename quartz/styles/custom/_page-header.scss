@@ -2,7 +2,7 @@
 // Page header: title, date, tags, breadcrumbs
 // ---------------------------------------------------------------------------
 .breadcrumb-container {
-  font-family: var(--font-ui);
+  font-family: var(--font-interface);
   font-size: 0.76rem;
   color: var(--ink-muted-color);
   margin: 0 0 0.9rem;
@@ -20,7 +20,7 @@
 }
 
 .page > #quartz-body .article-title {
-  font-family: var(--font-body);
+  font-family: var(--font-text);
   font-size: 1.84em;
   line-height: 1.16;
   font-weight: 600;
@@ -30,7 +30,7 @@
 }
 
 .content-meta {
-  font-family: var(--font-ui);
+  font-family: var(--font-interface);
   font-size: 0.76rem;
   color: var(--ink-muted-color);
   margin: 0;
@@ -41,7 +41,7 @@
   gap: 0.4rem;
 
   li > a {
-    font-family: var(--font-ui);
+    font-family: var(--font-interface);
     font-size: 0.72rem;
     font-weight: 400;
     padding: 1px 7px;

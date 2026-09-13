@@ -1,58 +1,28 @@
-/* Essay page: center display math, interactives, and standalone figures. */
-/* Safety: paragraph that is only a KaTeX span (legacy single-line $$). */
-article p:has(> .katex:only-child) {
-  text-align: center;
-  margin: 1.15em auto;
-  font-size: 1.12em;
-}
-
-article p:has(> .katex:only-child) > .katex {
-  font-size: 1.06em;
-}
-
-/* Display math: one size up from body, centered like a figure. */
+// ---------------------------------------------------------------------------
+// Math (KaTeX) and standalone figures
+// ---------------------------------------------------------------------------
+// katex.min.css sets .katex to 1.21em. Here math is sized against the prose
+// instead: display math one step up at 1.05em, inline math at text size.
 article .katex-display {
   text-align: center;
   margin: 1.15em auto;
-  margin-left: auto;
-  margin-right: auto;
   overflow-x: auto;
   overflow-y: hidden;
-  font-size: 1.12em; // ~one step above body prose
 }
 
 article .katex-display > .katex {
-  font-size: 1.06em;
+  font-size: 1.05em;
   text-align: center;
 }
 
-/* Inline math: keep optical size with prose; slight baseline polish. */
 article .katex:not(.katex-display .katex) {
-  font-size: 1.02em;
-  font-weight: 450;
+  font-size: 1em;
   line-height: 0;
-  vertical-align: -0.08em;
 }
 
-article p .katex,
-article li .katex,
-article td .katex {
-  // Avoid fattening; just sit cleaner in Songti/PingFang lines.
-  text-rendering: geometricPrecision;
-}
-
-article mjx-container[display="true"],
-article .math.math-display {
-  display: flex;
-  justify-content: center;
-  text-align: center;
-  margin: 1.15em auto;
-  margin-left: auto;
-  margin-right: auto;
-  font-size: 1.12em;
-}
-
-article figure {
+// Image figures centre the picture and its caption. Code blocks are figures
+// too (rehype-pretty-code), so only figures that hold an image qualify.
+article figure:has(> img) {
   margin-inline: auto;
   text-align: center;
 }

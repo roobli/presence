@@ -1,34 +1,8 @@
 // ---------------------------------------------------------------------------
-// After the article: backlinks, graph, and the rest of the chrome
+// Popovers, selection, scrollbars and print
 // ---------------------------------------------------------------------------
-.page-footer {
-  margin-top: 2.4rem;
-
-  .backlinks,
-  .graph {
-    padding-top: 1.1rem;
-    border-top: 1px solid var(--line-color);
-  }
-
-  h3 {
-    font-family: var(--font-ui);
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    color: var(--ink-muted-color);
-    margin: 0 0 0.5rem;
-  }
-
-  .graph-outer {
-    max-width: 480px;
-    border: 1px solid var(--line-color);
-    border-radius: var(--radius-block);
-    background: var(--surface-subtle-color);
-  }
-}
-
 .popover > .popover-inner {
-  font-family: var(--font-body);
+  font-family: var(--font-text);
   border: 1px solid var(--line-color);
   background-color: var(--canvas-color);
   border-radius: var(--radius-block);

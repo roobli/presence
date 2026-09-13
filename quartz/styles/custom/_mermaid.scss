@@ -25,7 +25,7 @@ article code.mermaid {
 article code.mermaid svg {
   max-width: 100%;
   height: auto;
-  font-family: var(--font-ui) !important;
+  font-family: var(--font-interface) !important;
 }
 
 article code.mermaid svg .node rect,
@@ -74,7 +74,7 @@ article code.mermaid svg foreignObject,
 article code.mermaid svg foreignObject div,
 article code.mermaid svg foreignObject span {
   color: var(--ink-color) !important;
-  font-family: var(--font-ui) !important;
+  font-family: var(--font-interface) !important;
   font-size: 0.82rem !important;
   font-weight: 500 !important;
   line-height: 1.35 !important;
