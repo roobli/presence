@@ -1,0 +1,9 @@
+{
+  "name": "curvature-comb",
+  "status": "live",
+  "adapter": "root",
+  "minHeight": 334,
+  "railRows": 1,
+  "railRowsNarrow": 2,
+  "cites": []
+}

@@ -1,0 +1,9 @@
+{
+  "name": "fixture",
+  "status": "live",
+  "aspect": "16 / 7",
+  "aspectNarrow": "4 / 3",
+  "railRows": 2,
+  "railRowsNarrow": 3,
+  "cites": ["0.35"]
+}
