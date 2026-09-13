@@ -4,13 +4,15 @@
  *   WIDGETS["name"] = function (fig) { ...; return { destroy: function () {} } }
  * The shell renders one polite live region per figure and one Reset button,
  * always last in the rail. Everything made through fig (controls, listeners,
- * surfaces, observers, loops, drags) is released on SPA cleanup, then the
- * widget's destroy runs. Widgets in ADAPTED_WIDGETS still take mount(root) and
- * go through mountAdapted until they are rebuilt on fig.
+ * surfaces, observers, loops, drags, key scopes, presses, rulers) is released on
+ * SPA cleanup, then the widget's destroy runs. Widgets in ADAPTED_WIDGETS still
+ * take mount(root) and go through mountAdapted until they are rebuilt on fig.
  */
 
 var FIG_SVG_NS = "http://www.w3.org/2000/svg"
 var FIG_NARROW_BELOW = 560
+var FIG_FOCUSABLE =
+  'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"]), [contenteditable=""], [contenteditable="true"]'
 var mountedFigures = []
 var figureCleanupQueued = false
 
@@ -31,13 +33,71 @@ function syncRangeFill(input) {
   input.style.setProperty("--fig-fill", Math.min(100, Math.max(0, pct)) + "%")
 }
 
-function applyFigureSize(rec, width) {
-  if (!(width > 0)) return
+// data-size from the box width (the same 560px break as the container query on
+// the stage), then every onSizeChange callback with the class and the width.
+function applyFigureSize(rec, measured) {
+  if (!(measured > 0)) return
+  var width = Math.round(measured * 100) / 100
   var size = width < FIG_NARROW_BELOW ? "narrow" : "wide"
-  if (size === rec.size) return
-  rec.size = size
-  rec.root.setAttribute("data-size", size)
-  for (var i = 0; i < rec.sizeFns.length; i++) rec.sizeFns[i](size)
+  if (size === rec.size && width === rec.width) return
+  rec.width = width
+  if (size !== rec.size) {
+    rec.size = size
+    rec.root.setAttribute("data-size", size)
+  }
+  var fns = rec.sizeFns.slice()
+  for (var i = 0; i < fns.length; i++) fns[i](size, width)
+}
+
+/**
+ * A "group" stage: role group, labelled by the figure title (the number when
+ * there is no title) and described by a visually hidden element that holds the
+ * alt text, or whatever fig.describe last said.
+ */
+function exposeGroup(rec) {
+  if (rec.desc) return
+  var base = rec.root.id || "fig-" + rec.n
+  var title = rec.root.querySelector(".essay-fig__title")
+  var label = title || rec.root.querySelector(".essay-fig__num")
+  rec.stage.setAttribute("role", "group")
+  rec.stage.removeAttribute("aria-label")
+  if (label) {
+    if (!label.id) {
+      label.id = base + (title ? "-title" : "-num")
+      rec.labelIdSet = label
+    }
+    rec.stage.setAttribute("aria-labelledby", label.id)
+  }
+  rec.desc = el("div", { class: "essay-fig__desc", id: base + "-desc", text: rec.description })
+  rec.stage.parentNode.insertBefore(rec.desc, rec.stage)
+  rec.stage.setAttribute("aria-describedby", rec.desc.id)
+}
+
+function restoreStage(rec) {
+  if (rec.desc) {
+    rec.desc.remove()
+    rec.desc = null
+    rec.stage.removeAttribute("aria-labelledby")
+    rec.stage.removeAttribute("aria-describedby")
+  }
+  if (rec.labelIdSet) {
+    rec.labelIdSet.removeAttribute("id")
+    rec.labelIdSet = null
+  }
+  if (rec.alt) {
+    rec.stage.setAttribute("role", "img")
+    rec.stage.setAttribute("aria-label", rec.alt)
+  }
+}
+
+// An "img" stage hides its children from assistive technology, so a focusable
+// element inside one would be unreachable. Make it a group and say so.
+function checkImgStage(rec) {
+  if (rec.desc || !rec.stage.querySelector(FIG_FOCUSABLE)) return
+  console.warn(
+    "[essay-fig] " + rec.name + ': the stage holds a focusable element; register "stage": "group"',
+  )
+  exposeGroup(rec)
 }
 
 function buildFig(rec) {
@@ -60,14 +120,6 @@ function buildFig(rec) {
   function addControl(node) {
     rec.rail.insertBefore(node, rec.reset)
     return node
-  }
-
-  // role=img hides its children, so a stage that holds a focusable handle
-  // becomes a named group.
-  function exposeStage(node) {
-    if (rec.stage.contains(node) && rec.stage.getAttribute("role") === "img") {
-      rec.stage.setAttribute("role", "group")
-    }
   }
 
   function announce(text) {
@@ -137,7 +189,7 @@ function buildFig(rec) {
     })
 
     sync()
-    addControl(
+    var control = addControl(
       el("div", { class: "essay-fig__control essay-fig__slider" }, [
         el("label", { class: "essay-fig__label", for: id, text: o.label }),
         input,
@@ -150,6 +202,10 @@ function buildFig(rec) {
       set: function (v) {
         input.value = String(v)
         sync()
+      },
+      setDisabled: function (flag) {
+        input.disabled = !!flag
+        control.classList.toggle("is-disabled", !!flag)
       },
     }
   }
@@ -202,13 +258,14 @@ function buildFig(rec) {
       group.appendChild(button)
     })
     render()
-    addControl(
+    var control = addControl(
       el("div", { class: "essay-fig__control essay-fig__segmented" }, [
         el("span", { class: "essay-fig__label", id: labelId, text: o.label }),
         group,
       ]),
     )
     return {
+      el: group,
       get: function () {
         return o.options[index].value
       },
@@ -216,6 +273,13 @@ function buildFig(rec) {
         for (var i = 0; i < o.options.length; i++) {
           if (o.options[i].value === value) select(i, false)
         }
+      },
+      setDisabled: function (flag) {
+        var off = !!flag
+        for (var i = 0; i < buttons.length; i++) buttons[i].disabled = off
+        if (off) group.setAttribute("aria-disabled", "true")
+        else group.removeAttribute("aria-disabled")
+        control.classList.toggle("is-disabled", off)
       },
     }
   }
@@ -226,7 +290,7 @@ function buildFig(rec) {
     listen(input, "change", function () {
       if (o.onChange) o.onChange(input.checked)
     })
-    addControl(
+    var control = addControl(
       el("label", { class: "essay-fig__control essay-fig__toggle" }, [
         input,
         el("span", { text: o.label }),
@@ -239,6 +303,10 @@ function buildFig(rec) {
       },
       set: function (value) {
         input.checked = !!value
+      },
+      setDisabled: function (flag) {
+        input.disabled = !!flag
+        control.classList.toggle("is-disabled", !!flag)
       },
     }
   }
@@ -253,6 +321,10 @@ function buildFig(rec) {
       el: node,
       setLabel: function (text) {
         node.textContent = text
+      },
+      setDisabled: function (flag) {
+        node.disabled = !!flag
+        node.classList.toggle("is-disabled", !!flag)
       },
     }
   }
@@ -279,14 +351,14 @@ function buildFig(rec) {
   }
 
   // paint(ctx, w, h, palette) in CSS px. Without height or aspect the canvas
-  // fills the stage, whose height the registry reserves. Call draw() to paint.
+  // fills the box, whose height the registry reserves. Call draw() to paint.
   function canvas(o) {
     var node = el("canvas", { class: "essay-fig__canvas", "aria-hidden": "true" })
     var fixed = o.height > 0 ? Number(o.height) : null
     if (fixed) node.style.height = fixed + "px"
     else if (o.aspect) node.style.aspectRatio = String(o.aspect)
     else node.classList.add("essay-fig__canvas--fill")
-    ;(o.parent || rec.stage).appendChild(node)
+    ;(o.parent || rec.box).appendChild(node)
     var surface = createSurface(node, fixed, o.paint)
     own(surface.destroy)
     return { el: node, draw: surface.draw, invalidate: surface.invalidate }
@@ -294,13 +366,14 @@ function buildFig(rec) {
 
   // An SVG whose viewBox always equals its CSS size, so 12px text stays 12px.
   // The size is set before this returns; onSize(w, h) runs on later changes,
-  // coalesced into one animation frame.
+  // coalesced into one animation frame. setHeight(h) changes the CSS height
+  // and the viewBox at once.
   function svg(o) {
     var node = document.createElementNS(FIG_SVG_NS, "svg")
     node.setAttribute("class", "essay-fig__svg" + (o.height > 0 ? "" : " essay-fig__svg--fill"))
     node.setAttribute("aria-hidden", "true")
     if (o.height > 0) node.style.height = o.height + "px"
-    ;(o.parent || rec.stage).appendChild(node)
+    ;(o.parent || rec.box).appendChild(node)
 
     var width = 0
     var height = 0
@@ -350,11 +423,26 @@ function buildFig(rec) {
       height: function () {
         return height
       },
+      setHeight: function (h) {
+        node.classList.remove("essay-fig__svg--fill")
+        node.style.height = h + "px"
+        apply(width || node.getBoundingClientRect().width, h)
+      },
+    }
+  }
+
+  // data-moving="1" on the figure while any of its loops runs.
+  function onLoopRun(running) {
+    rec.running = Math.max(0, rec.running + (running ? 1 : -1))
+    if (rec.running > 0) {
+      if (!rec.root.hasAttribute("data-moving")) rec.root.setAttribute("data-moving", "1")
+    } else {
+      rec.root.removeAttribute("data-moving")
     }
   }
 
   function loop(step) {
-    var handle = createLoop(step)
+    var handle = createLoop(step, onLoopRun)
     handle.pause(!rec.visible)
     rec.loops.push(handle)
     own(handle.stop)
@@ -373,7 +461,6 @@ function buildFig(rec) {
     }
     var handle = createDrag(node, handlers, opts)
     own(handle.destroy)
-    if (handle.keys) exposeStage(node)
     return handle
   }
 
@@ -381,23 +468,65 @@ function buildFig(rec) {
     if (!o.announce) o.announce = announce
     var handle = createKeySlider(node, o)
     own(handle.destroy)
-    exposeStage(node)
     return handle
   }
 
-  return {
+  function press(node, fn) {
+    var handle = createPress(node, fn)
+    own(handle.destroy)
+    return handle
+  }
+
+  // One bubble-phase keydown listener on the stage for every handler; the
+  // first handler that returns true takes the key.
+  function keyScope(handler) {
+    rec.keyHandlers.push(handler)
+    if (rec.keyHandlers.length > 1) return
+    var root = rec.root
+    var stage = rec.stage
+    listen(stage, "keydown", function (e) {
+      var list = rec.keyHandlers
+      for (var i = 0; i < list.length; i++) {
+        if (list[i](e) === true) {
+          e.preventDefault()
+          e.stopPropagation()
+          return
+        }
+      }
+    })
+    listen(stage, "focusin", function () {
+      root.setAttribute("data-keys", "figure")
+    })
+    listen(stage, "focusout", function (e) {
+      if (!e.relatedTarget || !stage.contains(e.relatedTarget))
+        root.setAttribute("data-keys", "page")
+    })
+    own(function () {
+      root.removeAttribute("data-keys")
+    })
+    root.setAttribute("data-keys", stage.contains(document.activeElement) ? "figure" : "page")
+  }
+
+  var api = {
     root: rec.root,
     stage: rec.stage,
+    box: rec.box,
     rail: rec.rail,
     lang: rec.lang,
     n: rec.n,
     name: rec.name,
+    alt: rec.alt,
     strings: function (table) {
       return pickStrings(table, rec.lang)
     },
     describe: function (text) {
-      if (!rec.stage.hasAttribute("role")) rec.stage.setAttribute("role", "img")
-      rec.stage.setAttribute("aria-label", text)
+      rec.description = text
+      if (rec.desc) {
+        rec.desc.textContent = text
+      } else {
+        if (!rec.stage.hasAttribute("role")) rec.stage.setAttribute("role", "img")
+        rec.stage.setAttribute("aria-label", text)
+      }
     },
     announce: announce,
     listen: listen,
@@ -415,9 +544,13 @@ function buildFig(rec) {
     spring: spring,
     drag: drag,
     keySlider: keySlider,
+    keyScope: keyScope,
+    press: press,
     velocityTracker: createVelocityTracker,
     stepSpring: stepSpring,
     uiSpring: uiSpring,
+    springAt: springAt,
+    springVelocityAt: springVelocityAt,
     rubberBand: rubberBand,
     rubberBandInverse: rubberBandInverse,
     project: project,
@@ -428,20 +561,36 @@ function buildFig(rec) {
     size: function () {
       return rec.size
     },
+    width: function () {
+      return rec.width
+    },
     onSizeChange: function (fn) {
       rec.sizeFns.push(fn)
     },
+    model: function (fns) {
+      var ns = window.__essayInteractives
+      if (!ns.models) ns.models = {}
+      ns.models[rec.name] = fns
+      own(function () {
+        if (ns.models[rec.name] === fns) delete ns.models[rec.name]
+      })
+      return fns
+    },
   }
+  api.ruler = function (o) {
+    return createRuler(api, { addControl: addControl, own: own, listen: listen, nextId: nextId }, o)
+  }
+  return api
 }
 
 /**
  * Compatibility adapter for widgets written as mount(root). The widget builds
- * its old card inside the stage; its control rows move into the rail, its title
+ * its old card inside the box; its control rows move into the rail, its title
  * gives way to the figure head, and its own Reset gives way to the shell's.
  */
 function mountAdapted(rec) {
-  var handle = rec.mount(rec.stage)
-  var card = rec.stage.querySelector(".essay-interactive__card")
+  var handle = rec.mount(rec.box)
+  var card = rec.box.querySelector(".essay-interactive__card")
   if (!card) return handle
   var title = card.querySelector(".essay-interactive__title")
   if (title) title.remove()
@@ -464,10 +613,17 @@ function mountAdapted(rec) {
 
 function mountWidget(rec) {
   rec.handle = ADAPTED_WIDGETS[rec.name] ? mountAdapted(rec) : rec.mount(rec.fig)
+  // Nodes a widget put straight into the stage belong in the box, which holds
+  // the reserved height; outside it they would add to that height.
+  var kids = rec.stage.children
+  for (var k = kids.length - 1; k >= 0; k--) {
+    if (kids[k] !== rec.box) rec.box.appendChild(kids[k])
+  }
   // Reset stays last whatever the widget appended.
   rec.rail.appendChild(rec.reset)
   var ranges = rec.rail.querySelectorAll('input[type="range"]')
   for (var i = 0; i < ranges.length; i++) syncRangeFill(ranges[i])
+  checkImgStage(rec)
 }
 
 // Shell-made resources first, then the widget's own destroy.
@@ -476,8 +632,11 @@ function disposeWidget(rec) {
   rec.disposers = []
   rec.loops = []
   rec.sizeFns = []
+  rec.keyHandlers = []
   rec.resetFn = null
   for (var i = disposers.length - 1; i >= 0; i--) runSafely(disposers[i])
+  rec.running = 0
+  rec.root.removeAttribute("data-moving")
   var handle = rec.handle
   rec.handle = null
   if (handle && typeof handle.destroy === "function") runSafely(handle.destroy)
@@ -496,7 +655,7 @@ function resetFigure(rec) {
     runSafely(rec.resetFn)
   } else {
     disposeWidget(rec)
-    rec.stage.textContent = ""
+    rec.box.textContent = ""
     var kids = rec.rail.children
     for (var i = kids.length - 1; i >= 0; i--) if (kids[i] !== rec.reset) kids[i].remove()
     try {
@@ -514,16 +673,30 @@ function mountFigure(root) {
   var rail = root.querySelector(".essay-fig__rail")
   if (!Object.prototype.hasOwnProperty.call(WIDGETS, name) || !stage || !rail) return null
 
+  // Pages built before the box existed still get one.
+  var box = stage.querySelector(".essay-fig__box")
+  if (!box) {
+    box = el("div", { class: "essay-fig__box" })
+    while (stage.firstChild) box.appendChild(stage.firstChild)
+    stage.appendChild(box)
+  }
+
   var lang = figureLang(root)
+  var alt = stage.getAttribute("aria-label") || ""
   var rec = {
     root: root,
     stage: stage,
+    box: box,
     rail: rail,
     name: name,
     mount: WIDGETS[name],
     lang: lang,
     n: parseInt(root.getAttribute("data-figure"), 10) || 0,
     strings: pickStrings(SHELL_STRINGS, lang),
+    alt: alt,
+    description: alt,
+    desc: null,
+    labelIdSet: null,
     fig: null,
     handle: null,
     resetFn: null,
@@ -531,7 +704,10 @@ function mountFigure(root) {
     shellDisposers: [],
     loops: [],
     sizeFns: [],
+    keyHandlers: [],
     size: "",
+    width: 0,
+    running: 0,
     visible: true,
     ids: 0,
     announceTimer: 0,
@@ -551,22 +727,22 @@ function mountFigure(root) {
   rec.reset.addEventListener("click", onReset)
   rail.addEventListener("input", onRailInput)
 
-  // Size class from the figure's own width, never the viewport. Observer
-  // callbacks apply it in the next frame, so a layout change it causes cannot
-  // feed back into the same observation.
-  applyFigureSize(rec, root.getBoundingClientRect().width)
+  // Size class from the box, never the viewport, so a sidebar drag or a width
+  // mode change reaches onSizeChange with no window resize. Observer callbacks
+  // apply it in the next frame, so a layout change it causes cannot feed back
+  // into the same observation.
+  applyFigureSize(rec, box.getBoundingClientRect().width)
   var sizeFrame = 0
   var sizeWidth = 0
   var sizeObserver = new ResizeObserver(function (entries) {
     sizeWidth = entries[entries.length - 1].contentRect.width
-    var size = sizeWidth < FIG_NARROW_BELOW ? "narrow" : "wide"
-    if (sizeFrame || !(sizeWidth > 0) || size === rec.size) return
+    if (sizeFrame || !(sizeWidth > 0)) return
     sizeFrame = requestAnimationFrame(function () {
       sizeFrame = 0
       applyFigureSize(rec, sizeWidth)
     })
   })
-  sizeObserver.observe(root)
+  sizeObserver.observe(box)
 
   // Loops of a figure that is fully off screen hold still.
   var visibility = new IntersectionObserver(function (entries) {
@@ -586,19 +762,21 @@ function mountFigure(root) {
     rail.removeEventListener("input", onRailInput)
     rec.reset.remove()
     rec.live.remove()
+    restoreStage(rec)
   })
 
+  if (root.getAttribute("data-stage") === "group") exposeGroup(rec)
   rec.fig = buildFig(rec)
-  var fallback = stage.querySelector(".essay-fig__fallback")
+  var fallback = box.querySelector(".essay-fig__fallback")
   if (fallback) fallback.remove()
   try {
     mountWidget(rec)
   } catch (err) {
     console.error("[essay-fig] " + name + " failed to mount:", err)
     disposeFigure(rec)
-    stage.textContent = ""
+    box.textContent = ""
     rail.textContent = ""
-    if (fallback) stage.appendChild(fallback)
+    if (fallback) box.appendChild(fallback)
     root.setAttribute("data-fig-state", "error")
     return null
   }
@@ -633,7 +811,9 @@ function mountAll() {
 }
 
 function boot() {
-  if (!window.__essayInteractives) window.__essayInteractives = { activeLoops: 0 }
+  var ns = window.__essayInteractives || (window.__essayInteractives = {})
+  if (typeof ns.activeLoops !== "number") ns.activeLoops = 0
+  if (!ns.models) ns.models = {}
   document.addEventListener("nav", mountAll)
   document.addEventListener("render", mountAll)
   mountAll()
