@@ -1,9 +1,9 @@
 // ---------------------------------------------------------------------------
 // Folder listings
 // ---------------------------------------------------------------------------
-// /writing/ and /works/ list their pages through presence-index's derived rows
-// in the page header, so FolderPage's stock list stays hidden there. Any other
-// folder keeps the stock list below.
+// /writing/ and /works/ list their pages as presence-index's derived rows,
+// which render above the article, so FolderPage's stock list stays hidden
+// there. Any other folder keeps the stock list below.
 body[data-slug="writing/index"] .page-listing,
 body[data-slug="works/index"] .page-listing {
   display: none;

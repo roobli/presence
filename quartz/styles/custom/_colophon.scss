@@ -7,13 +7,14 @@
 // ---------------------------------------------------------------------------
 .page > #quartz-body > footer.colophon {
   font-family: var(--font-interface);
-  font-size: var(--size-ui-sm);
   line-height: var(--lh-ui);
   color: var(--ink-muted-color);
 
+  // The footer keeps the body size, because the column width is em of it.
+  // The small text goes on the line inside.
   p {
     margin: 0;
-    font-size: inherit;
+    font-size: var(--size-ui-sm);
     line-height: inherit;
     color: inherit;
   }
