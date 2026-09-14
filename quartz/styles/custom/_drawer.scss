@@ -219,6 +219,12 @@
       padding-block: 10px;
     }
 
+    // A folder's link covers only its name. Padded to the row's height, a tap
+    // near the row's edge opens this folder rather than the row beside it.
+    a.folder-button {
+      padding-block: 12px;
+    }
+
     .folder-icon {
       position: relative;
       z-index: 1;
