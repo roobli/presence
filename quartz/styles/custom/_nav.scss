@@ -173,6 +173,14 @@
   color: var(--ink-muted-color);
 }
 
+// In light the chip's fill is all but the panel's own colour, so a hairline
+// in the panel's line colour holds it together as a chip. It is drawn inside
+// the box, which keeps the row's label its width. The dark fill already
+// stands off its panel.
+:root:not([saved-theme="dark"]) .tpl-command-key {
+  box-shadow: inset 0 0 0 1px var(--line-color);
+}
+
 .tpl-nav-body {
   flex: 1 1 auto;
   min-height: 0;
