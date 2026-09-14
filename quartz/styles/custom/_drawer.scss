@@ -1,0 +1,222 @@
+@use "../variables" as *;
+
+// ---------------------------------------------------------------------------
+// The navigation drawer (roob-ui drawer.js)
+//
+// Beside the column #tpl-drawer is display: contents, and the tree sits in the
+// panel as it always has. On one column it is a left sheet over a scrim: a
+// search row level with the header, the tree in 44px rows, then a theme row.
+// roob-ui writes the sheet's transform and the scrim's opacity each frame.
+// ---------------------------------------------------------------------------
+#tpl-drawer {
+  display: contents;
+}
+
+#tpl-drawer-scrim,
+.tpl-drawer-head,
+.tpl-drawer-foot {
+  display: none;
+}
+
+@media all and ($mobile) {
+  html.mobile-no-scroll {
+    overflow: hidden;
+  }
+
+  #tpl-drawer-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    background: var(--scrim-color);
+    opacity: 0;
+    touch-action: none;
+  }
+
+  html.tpl-drawer-shown #tpl-drawer-scrim {
+    display: block;
+  }
+
+  #tpl-drawer {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: min(86vw, 340px);
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background: var(--side-bar-bg-color);
+    box-shadow: var(--sheet-shadow);
+    font-family: var(--font-interface);
+    transform: translate3d(-100%, 0, 0);
+    // Closed, it leaves the tab order and the accessibility tree, and its
+    // shadow no longer shows along the left edge.
+    visibility: hidden;
+    touch-action: pan-y;
+
+    a {
+      -webkit-user-drag: none;
+    }
+  }
+
+  html.tpl-drawer-shown #tpl-drawer {
+    visibility: visible;
+    will-change: transform;
+  }
+
+  html.tpl-drawer-dragging #tpl-drawer {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  // Level with the header row. The menu button stays above the drawer at the
+  // header's left edge, so the row starts clear of it.
+  .tpl-drawer-head {
+    display: flex;
+    align-items: center;
+    flex: none;
+    box-sizing: border-box;
+    height: var(--header-h);
+    padding: 0 10px 0 calc(6px + 44px + 6px);
+    border-bottom: 1px solid var(--line-color);
+  }
+
+  .tpl-drawer-foot {
+    display: block;
+    flex: none;
+    padding: 2px 8px;
+    border-top: 1px solid var(--line-color);
+  }
+
+  .tpl-drawer-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 44px;
+    margin: 0;
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--radius-block);
+    background: transparent;
+    color: var(--ink-color);
+    font-family: var(--font-interface);
+    font-size: 15px;
+    line-height: 1.3;
+    text-align: left;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+
+    .tpl-nav-icon,
+    .tpl-nav-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    &:active {
+      background: var(--item-hover-bg-color);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent-color);
+      outline-offset: -2px;
+    }
+  }
+
+  @media (hover: hover) {
+    .tpl-drawer-row:hover {
+      background: var(--item-hover-bg-color);
+    }
+  }
+
+  // A field's surface, so the row reads as the place to type. The paper colour
+  // and a hairline, because the light sidebar and surface tones nearly match.
+  .tpl-drawer-search {
+    min-height: 44px;
+    background: var(--canvas-color);
+    box-shadow: inset 0 0 0 1px var(--line-color);
+    color: var(--ink-muted-color);
+  }
+
+  #tpl-drawer .tpl-nav-body {
+    position: static;
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    margin: 0;
+    padding: 6px 8px 16px 4px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+
+  // On narrow screens Quartz turns the explorer into a drawer of its own:
+  // 100vw by 100dvh, absolutely placed, slid off-canvas, with its own menu
+  // button. In here it is only the tree, whichever state its script left.
+  .sidebar.left .explorer {
+    overflow: visible;
+    margin: 0;
+    align-self: auto;
+  }
+
+  .sidebar.left .explorer .explorer-content,
+  .sidebar.left .explorer.collapsed > .explorer-content {
+    position: relative;
+    width: auto;
+    max-width: none;
+    height: auto;
+    max-height: none;
+    margin-top: 0;
+    padding: 0 0 0 10px;
+    overflow: visible;
+    z-index: auto;
+    background-color: transparent;
+    transform: none;
+    visibility: visible;
+    transition: none;
+  }
+
+  .sidebar.left .explorer .explorer-toggle.mobile-explorer {
+    display: none;
+  }
+
+  // Finger-sized rows. The chevron's box grows into the row's padding and over
+  // the start of its label, so the drawing stays where it was.
+  #tpl-drawer .explorer-content {
+    font-size: 15px;
+
+    .tree-item-self {
+      min-height: 44px;
+    }
+
+    // A name that does not fit wraps to a second line rather than being cut
+    // at the drawer's edge.
+    .folder-title,
+    a.nav-file-title {
+      font-size: 15px;
+      line-height: 1.3;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    a.nav-file-title {
+      padding-block: 10px;
+    }
+
+    .folder-icon {
+      position: relative;
+      z-index: 1;
+      box-sizing: content-box;
+      padding: 16px;
+      margin: -16px -13px -16px -16px;
+    }
+  }
+}

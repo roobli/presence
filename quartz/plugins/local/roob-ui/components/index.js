@@ -38,6 +38,9 @@ const CLIENT_MODULES = [
   "resize.js",
   "outline.js",
   "mobile.js",
+  "drawer.js",
+  "outline-sheet.js",
+  "progress.js",
   "nav.js",
   "boot.js",
 ]

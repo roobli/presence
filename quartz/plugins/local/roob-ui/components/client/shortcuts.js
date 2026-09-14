@@ -1,5 +1,48 @@
 // The keyboard: quick open, the width steps, Escape for whatever is
-// innermost, and the shortcuts sheet.
+// innermost, Tab kept inside whichever dialog is open, and the shortcuts sheet.
+
+STRINGS.shortcuts = {
+  en: {
+    title: "Keyboard shortcuts and tips",
+    close: "Close",
+    searchWhat: "Open search",
+    searchHow: "Titles, text and tags together; {mod} ' does the same",
+    widthWhat: "Text width",
+    widthHow: "Cycles through default, wide and full",
+    escWhat: "Close",
+    escHow: "Closes search or this sheet",
+    treeWhat: "File tree",
+    treeHow:
+      "Click a folder's name to open its index page, and the arrow beside it to expand or collapse it. The folders above the current note stack at the top of the panel; click one to go back to it.",
+    footWhat: "Bottom buttons",
+    footHow:
+      "Reveal opens the folders above the current note and scrolls to it, and Collapse closes every folder. Outline opens the outline when there is no room for it beside the text.",
+    dialWhat: "Outline, top right",
+    dialHow:
+      "Point at it to open the whole outline. Pin it to keep it as a column on the right; where the window is wide enough it stands beside the text instead of over it.",
+    panelWhat: "Sidebar",
+    panelHow:
+      "Drag its right edge to resize it, and double-click the edge to reset it. The last icon at the top right hides the whole panel.",
+  },
+  "zh-Hans": {
+    title: "快捷键与用法",
+    close: "关闭",
+    searchWhat: "打开搜索",
+    searchHow: "标题、正文、标签一起搜；{mod} ' 同效",
+    widthWhat: "正文宽度",
+    widthHow: "在默认、加宽、满幅三档之间循环切换",
+    escWhat: "关闭",
+    escHow: "关闭搜索面板或本页",
+    treeWhat: "目录树",
+    treeHow: "点目录名进它的索引页，点左侧箭头展开或折叠。当前笔记的上级目录会堆在面板顶部，点一下回到它。",
+    footWhat: "底部按钮",
+    footHow: "定位展开并滚动到当前笔记，折叠收起所有目录；正文旁放不下目录时，目录按钮打开大纲。",
+    dialWhat: "右上角目录",
+    dialHow: "鼠标移上去展开全文大纲。点图钉固定成右侧栏，窗口够宽时它停在正文旁边，不遮住正文。",
+    panelWhat: "侧边栏",
+    panelHow: "拖右边缘调宽，双击复位；右上角最后一个图标收起整个面板。",
+  },
+}
 
 // --- quick open (plugins/fuzzy-search) -----------------------------------
 function searchIsOpen() {
@@ -18,27 +61,40 @@ function isTypingTarget(target) {
   return tag === "input" || tag === "textarea" || target.isContentEditable === true
 }
 
+/** The dialog that owns the keyboard right now, innermost first. */
+function openDialog() {
+  var sheet = document.getElementById("tpl-shortcuts")
+  if (sheet !== null && !sheet.hidden) return sheet
+  if (searchIsOpen()) return null
+  if (outlineSheetIsOpen()) return sheetEl
+  if (drawerIsOpen()) return drawerEl()
+  return null
+}
+
 document.addEventListener(
   "keydown",
   function (event) {
     var sheet = document.getElementById("tpl-shortcuts")
     var sheetOpen = sheet !== null && !sheet.hidden
     if (event.key === "Escape") {
-      // Innermost first: a drag in progress, then the sheet, then the
-      // narrow-screen nav. Search closes itself.
+      // Innermost first: a panel drag, the shortcuts sheet, then search,
+      // which closes itself, the outline sheet and the drawer.
       if (drag) {
         event.preventDefault()
         endDrag(false)
       } else if (sheetOpen) {
         event.preventDefault()
         setShortcuts(false)
-      } else if (!searchIsOpen() && closeNav()) {
+      } else if (searchIsOpen()) {
+        return
+      } else if (closeOutlineSheet(true) || closeNav()) {
         event.preventDefault()
       }
       return
     }
-    if (event.key === "Tab" && sheetOpen) {
-      trapFocus(sheet, event)
+    if (event.key === "Tab") {
+      var dialog = openDialog()
+      if (dialog) trapFocus(dialog, event)
       return
     }
     var mod = event.metaKey || event.ctrlKey
@@ -68,26 +124,30 @@ document.addEventListener(
 // --- shortcuts sheet -----------------------------------------------------
 function modKey() {
   return /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent || "")
-    ? "\u2318"
+    ? "⌘"
     : "Ctrl"
 }
 
 function shortcutRows() {
   var mod = modKey()
-  var alt = mod === "\u2318" ? "\u2325" : "Alt"
+  var alt = mod === "⌘" ? "⌥" : "Alt"
   return [
-    [[mod + " ."], "\u6253\u5f00\u641c\u7d22", "\u6807\u9898\u3001\u6b63\u6587\u3001\u6807\u7b7e\u4e00\u8d77\u641c\uff1b" + mod + " ' \u540c\u6548"],
-    [[mod + " " + alt + " [", mod + " " + alt + " ]"], "\u6b63\u6587\u5bbd\u5ea6", "\u5728\u9ed8\u8ba4\u3001\u52a0\u5bbd\u3001\u6ee1\u5e45\u4e09\u6863\u4e4b\u95f4\u5faa\u73af\u5207\u6362"],
-    [["Esc"], "\u5173\u95ed", "\u5173\u95ed\u641c\u7d22\u9762\u677f\u6216\u672c\u9875"],
+    [[mod + " ."], t("shortcuts", "searchWhat"), t("shortcuts", "searchHow", { mod: mod })],
+    [
+      [mod + " " + alt + " [", mod + " " + alt + " ]"],
+      t("shortcuts", "widthWhat"),
+      t("shortcuts", "widthHow"),
+    ],
+    [["Esc"], t("shortcuts", "escWhat"), t("shortcuts", "escHow")],
   ]
 }
 
 function usageRows() {
   return [
-    ["\u76ee\u5f55\u6811", "\u70b9\u76ee\u5f55\u540d\u8fdb\u5b83\u7684\u7d22\u5f15\u9875\uff0c\u70b9\u5de6\u4fa7\u7bad\u5934\u5c55\u5f00\u6216\u6298\u53e0\u3002\u5f53\u524d\u7b14\u8bb0\u7684\u4e0a\u7ea7\u76ee\u5f55\u4f1a\u5806\u5728\u9762\u677f\u9876\u90e8\uff0c\u70b9\u4e00\u4e0b\u56de\u5230\u5b83\u3002"],
-    ["\u5e95\u90e8\u6309\u94ae", "\u5b9a\u4f4d\u5c55\u5f00\u5e76\u6eda\u5230\u5f53\u524d\u7b14\u8bb0\uff0c\u6298\u53e0\u6536\u8d77\u6240\u6709\u76ee\u5f55\u3002"],
-    ["\u53f3\u4e0a\u89d2\u76ee\u5f55", "\u9f20\u6807\u79fb\u4e0a\u53bb\u5c55\u5f00\u5168\u6587\u5927\u7eb2\uff0c\u70b9\u56fe\u9489\u56fa\u5b9a\u6210\u53f3\u4fa7\u680f\uff0c\u56fa\u5b9a\u65f6\u6b63\u6587\u4f1a\u8ba9\u51fa\u4f4d\u7f6e\u800c\u4e0d\u662f\u88ab\u906e\u4f4f\u3002"],
-    ["\u4fa7\u8fb9\u680f", "\u62d6\u53f3\u8fb9\u7f18\u8c03\u5bbd\uff0c\u53cc\u51fb\u590d\u4f4d\uff1b\u53f3\u4e0a\u89d2\u6700\u540e\u4e00\u4e2a\u56fe\u6807\u6536\u8d77\u6574\u4e2a\u9762\u677f\u3002"],
+    [t("shortcuts", "treeWhat"), t("shortcuts", "treeHow")],
+    [t("shortcuts", "footWhat"), t("shortcuts", "footHow")],
+    [t("shortcuts", "dialWhat"), t("shortcuts", "dialHow")],
+    [t("shortcuts", "panelWhat"), t("shortcuts", "panelHow")],
   ]
 }
 
@@ -95,16 +155,17 @@ function buildShortcuts() {
   var sheet = el("div", "tpl-sheet")
   sheet.id = "tpl-shortcuts"
   sheet.hidden = true
+  sheet.dataset.locale = pageLocale()
   var card = el("div", "tpl-sheet-card")
   card.setAttribute("role", "dialog")
   card.setAttribute("aria-modal", "true")
-  card.setAttribute("aria-label", "\u5feb\u6377\u952e\u4e0e\u7528\u6cd5")
+  card.setAttribute("aria-label", t("shortcuts", "title"))
 
   var head = el("div", "tpl-sheet-head")
-  head.appendChild(el("h2", "tpl-sheet-title", "\u5feb\u6377\u952e\u4e0e\u7528\u6cd5"))
+  head.appendChild(el("h2", "tpl-sheet-title", t("shortcuts", "title")))
   var close = el("button", "tpl-sheet-close")
   close.type = "button"
-  close.setAttribute("aria-label", "\u5173\u95ed")
+  close.setAttribute("aria-label", t("shortcuts", "close"))
   close.appendChild(icon("close"))
   close.addEventListener("click", function () {
     setShortcuts(false)
@@ -147,7 +208,13 @@ function buildShortcuts() {
 var sheetReturnFocus = null
 
 function setShortcuts(open) {
-  var sheet = document.getElementById("tpl-shortcuts") || buildShortcuts()
+  var sheet = document.getElementById("tpl-shortcuts")
+  // A sheet built on a page in the other language is rebuilt before it opens.
+  if (sheet && open && sheet.hidden && sheet.dataset.locale !== pageLocale()) {
+    sheet.remove()
+    sheet = null
+  }
+  if (!sheet) sheet = buildShortcuts()
   var wasOpen = !sheet.hidden
   sheet.hidden = !open
   if (open) {
@@ -168,12 +235,13 @@ function toggleShortcuts() {
 }
 
 /** aria-modal says the page behind is out of reach, so Tab cycles through
- *  the sheet's own controls instead of walking out behind the backdrop. */
+ *  the dialog's own controls instead of walking out behind it. */
 function trapFocus(container, event) {
-  var items = container.querySelectorAll(
-    'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
-  )
-  if (items.length === 0) return
+  var items = focusableIn(container)
+  if (items.length === 0) {
+    event.preventDefault()
+    return
+  }
   var first = items[0]
   var last = items[items.length - 1]
   var active = document.activeElement

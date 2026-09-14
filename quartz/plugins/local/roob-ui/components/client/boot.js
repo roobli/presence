@@ -26,7 +26,9 @@ function refresh() {
   decorateSidenotes()
   mountWidthButton()
   refreshNav()
+  refreshMobile()
   refreshOutline()
+  refreshProgress()
   applyLayout()
 }
 
