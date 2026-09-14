@@ -34,6 +34,13 @@ article {
       text-decoration-color: currentColor;
     }
 
+    // The same ring as every other control on the page.
+    &:focus-visible {
+      outline: 2px solid var(--accent-color);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+
     // Typora has no chip behind an internal link; it is ordinary link text.
     &.internal {
       background-color: transparent;
@@ -68,6 +75,8 @@ article {
     line-height: 1.35;
     color: var(--heading-color);
     letter-spacing: 0;
+    // Lines of even length, so a heading never ends on one word or one 字.
+    text-wrap: balance;
   }
 
   h1 {
