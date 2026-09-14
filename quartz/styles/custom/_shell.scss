@@ -6,8 +6,7 @@
   --tpl-sidebar-ref: 280px;
   --tpl-shell-gutter: 24px;
   --tpl-write-padding: 32px;
-  --measure: 35em;
-  --measure-wide: 48em;
+  --measure: 48em;
   --measure-floor: 20em;
   --header-h: 48px;
   --progress-h: 2px;
@@ -22,11 +21,14 @@
 // ---------------------------------------------------------------------------
 // The note column.
 //
-// The measure is 35em of the English body size, plus whatever the panel gives
+// The measure is 48em of the English body size, plus whatever the panel gives
 // up against its 280px reference. So the text's right edge stays put while
 // its left edge follows the sidebar handle 1:1. On a narrow window the 100%
 // term takes over, and the drag still changes the width 1:1 there. The em
 // basis is this element's own font size: set smaller text on children.
+//
+// Three text widths: default is that column, full is the whole track, and
+// wide sits halfway between them, so it follows the handle 1:1 as well.
 // ---------------------------------------------------------------------------
 @mixin note-column {
   box-sizing: border-box;
@@ -34,13 +36,15 @@
   max-width: none;
   font-size: var(--size-body, clamp(17px, 16.296px + 0.1878vw, 19px));
   --col-drag: calc(var(--tpl-sidebar-ref) - var(--tpl-sidebar-width));
-  width: min(
-    100% - 2 * var(--tpl-shell-gutter),
+  --col-track: calc(100% - 2 * var(--tpl-shell-gutter));
+  --col-default: min(
+    var(--col-track),
     max(
       var(--measure-floor) + 2 * var(--tpl-write-padding),
       var(--measure) + 2 * var(--tpl-write-padding) + var(--col-drag)
     )
   );
+  width: var(--col-default);
   margin-inline: auto;
 
   @media all and not ($mobile) {
@@ -50,11 +54,11 @@
     }
 
     html[data-tpl-width="wide"] & {
-      --measure: var(--measure-wide);
+      width: calc((var(--col-default) + var(--col-track)) / 2);
     }
 
     html[data-tpl-width="full"] & {
-      width: calc(100% - 2 * var(--tpl-shell-gutter));
+      width: var(--col-track);
     }
   }
 
