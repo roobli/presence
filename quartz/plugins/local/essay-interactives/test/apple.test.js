@@ -115,3 +115,52 @@ test("curvature-comb: model exports match the replayed table geometry", () => {
   near(0.1184 / rho0, 0.218, 1e-3, "arc tooth at rho0")
   near(0.1184 / 0.35, 0.338, 1e-3, "arc tooth at 0.35")
 })
+
+/* ---------- zeta-triptych ---------- */
+
+test("zeta-triptych: closed-form overshoot, settle time and extra time", () => {
+  const run = load("zeta-triptych.js")
+  near(run("zetaOvershoot(0.825)"), 0.0102, 1e-4, "overshoot(0.825)")
+  near(run("zetaOvershoot(0.5)"), 0.163, 1e-4, "overshoot(0.5)")
+  near(run("zetaOvershoot(0.3)"), 0.3723, 1e-4, "overshoot(0.3)")
+  near(run("zetaOvershoot(0.7)"), 0.046, 1e-4, "overshoot(0.7)")
+  near(run("zetaOvershoot(0.9)"), 0.0015, 1e-4, "overshoot(0.9)")
+  assert.equal(run("zetaOvershoot(1)"), 0)
+  assert.equal(run("zetaOvershoot(1.5)"), 0)
+  near(run("zetaSettle(1)"), 0.3711, 5e-4, "settle(1)")
+  assert.ok(Number.isNaN(run("zetaSettle(0.9)")), "no settle time is computed below ζ = 1")
+  near(run("zetaExtra(1.25)"), 0.474, 2e-3, "extra(1.25)")
+  near(run("zetaExtra(1.5)"), 0.878, 2e-3, "extra(1.5)")
+  near(run("zetaExtra(2)"), 1.631, 3e-3, "extra(2)")
+  let previous = -Infinity
+  for (let i = 0; i <= 40; i++) {
+    const z = 1 + i * 0.025
+    const extra = run(`zetaExtra(${z})`)
+    assert.ok(extra > previous, `extra rises at ζ ${z.toFixed(3)}`)
+    previous = extra
+  }
+})
+
+test("zeta-triptych: positions of the reference responses", () => {
+  const run = load("zeta-triptych.js")
+  near(run("zetaX(0.5, 0.2)"), -0.1628, 5e-4, "x(0.5, 0.2)")
+  near(run("zetaX(1, 0.2)"), 0.1279, 5e-4, "x(1, 0.2)")
+  near(run("zetaX(1.5, 0.2)"), 0.2985, 5e-4, "x(1.5, 0.2)")
+  near(run("zetaX(2, 1.2)"), 0.0034, 1e-4, "x(2, 1.2) fits the 1.2 s axis")
+  const trough = run(
+    "(() => { let low = Infinity; for (let t = 0; t <= 1.2; t += 0.0005) low = Math.min(low, zetaX(0.3, t)); return low })()",
+  )
+  near(trough, -0.3723, 5e-4, "lowest point at ζ 0.3")
+})
+
+test("zeta-triptych: readout and value text at the acceptance settings", () => {
+  const run = load("zeta-triptych.js")
+  const say = (z, spoken) => run(`zetaSay(ZETA_STRINGS.en, ${z}, ${spoken})`)
+  assert.equal(say(1, false), "ζ 1.00 · no overshoot · the fastest settle that never overshoots")
+  assert.equal(say(2, false), "ζ 2.00 · no overshoot · settles 163% later than ζ = 1")
+  assert.equal(say(0.3, false), "ζ 0.30 · overshoot 37.2% · oscillates")
+  assert.match(say(0.825, false), /overshoot 1\.0%/)
+  assert.match(say(1.5, false), /settles 88% later/)
+  assert.equal(say(1.5, true), "ζ 1.50, no overshoot, settles 88 percent later than ζ 1")
+  assert.equal(say(1, true), "ζ 1.00, no overshoot, the fastest settle that never overshoots")
+})

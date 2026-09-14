@@ -1,8 +1,10 @@
 {
   "name": "zeta-triptych",
   "status": "live",
-  "adapter": "root",
-  "minHeight": 294,
+  "stage": "group",
+  "minHeight": 428,
+  "minHeightNarrow": 400,
   "railRows": 1,
-  "cites": ["320"]
+  "railRowsNarrow": 2,
+  "cites": ["0.825", "320", "0.5", "1.5", "0.3", "1.2"]
 }

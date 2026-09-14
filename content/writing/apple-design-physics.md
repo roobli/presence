@@ -34,7 +34,7 @@ The dimensionless knob that separates those feels is the damping ratio $\zeta$. 
 | $\zeta = 1$ | Critically damped | Fastest approach to rest with no oscillation | Navigation transitions, app open/close, system sheets |
 | $\zeta > 1$ | Overdamped | Heavy, sluggish crawl toward the target | Avoid for high-frequency UI; reads as lag |
 
-<!-- interactive:zeta-triptych -->
+<!-- interactive:zeta-triptych title="Same pull, three damping ratios" caption="where both cost rows reach zero. Below ζ = 1 the spring pays in overshoot; above it, it pays in time." alt="Three responses to the same pull on a 1.2 s axis: ζ 0.5 dips below rest and swings back, ζ 1 arrives without crossing rest, ζ 1.5 approaches slowly. Below them, two cost curves over ζ from 0.3 to 2: overshoot falls to zero at ζ = 1, and extra settle time rises from zero at ζ = 1. A tick marks 0.825, the SwiftUI default." model="Computed from the essay's spring equation with m = 1 and an illustrative stiffness k = 320. ζ 0.5 and 1.5 are illustrative picks for the table's rows. Settled means staying within 1% of the pull; overshoot and extra settle time do not depend on k. Settle times below ζ = 1 are not drawn, because whether they beat ζ = 1 depends on ζ and on the tolerance." -->
 
 Why $\zeta = 1$ for most navigation? Critical damping is the **fastest settle that still refuses to oscillate**. Any $\zeta < 1$ spends energy on overshoot; any $\zeta > 1$ spends time crawling. Navigation is a trust surface: push a sheet up, open an app, pop a stack. The user's motor system expects the destination to arrive and stay arrived. Oscillation there is not "delight." It is a lie about whether the transition finished.
 
