@@ -1,7 +1,7 @@
 import { readFileSync } from "fs"
 import { h } from "preact"
 import { formatDate, isoDate } from "../../presence-shared/dates.js"
-import { isZh, langOf, t, ZH } from "../../presence-shared/locale.js"
+import { langOf, t, ZH } from "../../presence-shared/locale.js"
 import {
   hrefOf,
   joined,
@@ -11,11 +11,11 @@ import {
 } from "../../presence-shared/rows.js"
 
 /**
- * Page header: a one-word kicker, the title, the dek, then the meta line with
- * the language control. Essays state date, revision, reading time and live
- * figures; works show their links and screenshot; every other kind shows the
- * title alone. The homepage has no page header: its h1 is the thesis, which
- * presence-index renders.
+ * Page header: a one-word kicker, the title, the dek, then the meta line.
+ * Essays state date, revision, reading time and live figures; works show their
+ * links and screenshot; every other kind shows the title alone. A translated
+ * page ends its meta line with a link to the other language. The homepage has
+ * no page header: its h1 is the thesis, which presence-index renders.
  *
  * client.js keeps html lang in step with the page and carries the reading
  * position across a language switch.
@@ -30,7 +30,7 @@ const KICKERS = {
 
 const LANGUAGE_NAMES = { en: "English", [ZH]: "中文" }
 
-function essayFacts(fileData, allFiles, lang) {
+function essayFacts(fileData, allFiles, lang, languages) {
   const fm = fileData.frontmatter ?? {}
   const facts = []
   const date = isoDate(fm.date)
@@ -43,41 +43,30 @@ function essayFacts(fileData, allFiles, lang) {
   if (minutes) facts.push(t(lang, "minRead", { n: minutes }))
   const figures = fileData.presence?.figures?.length ?? 0
   if (figures > 0) facts.push(t(lang, "liveFigures", { n: figures }))
+  facts.push(...languages)
   return facts.length > 0 ? h("p", { class: "ph-facts" }, joined(facts, "ph-sep")) : null
 }
 
-function workLine(fileData, lang) {
-  const links = workLinks(fileData, lang)
+function workLine(fileData, lang, languages) {
+  const links = [...workLinks(fileData, lang), ...languages]
   return links.length > 0 ? h("p", { class: "ph-links" }, joined(links, "ph-sep")) : null
 }
 
-// English | 中文, English first, when the page has a translation pair.
-function languageNav(fileData, lang) {
+// The other language of a translated page, as the last item on the meta line:
+// 中文 on the English page, English on the Chinese one. A plain link says where
+// it goes, where a two-state switch left readers unsure which side was current.
+function languageLinks(fileData) {
   const alternates = fileData.i18n?.alternates ?? []
-  if (alternates.length === 0) return null
-  const versions = [{ lang, slug: fileData.slug }, ...alternates].sort(
-    (a, b) => Number(isZh(a.lang)) - Number(isZh(b.lang)),
-  )
-  return h(
-    "nav",
-    { class: "ph-lang", "aria-label": t(lang, "language") },
-    versions.map((version) => {
-      const name = LANGUAGE_NAMES[version.lang] ?? version.lang
-      if (version.slug === fileData.slug) {
-        return h("span", { class: "ph-lang-seg", "aria-current": "page", lang: version.lang }, name)
-      }
-      return h(
+  return alternates.map((version) =>
+    h(
+      "span",
+      { class: "ph-lang" },
+      h(
         "a",
-        {
-          class: "ph-lang-seg",
-          href: hrefOf(version.slug),
-          lang: version.lang,
-          hreflang: version.lang,
-          rel: "alternate",
-        },
-        name,
-      )
-    }),
+        { href: hrefOf(version.slug), lang: version.lang, hreflang: version.lang, rel: "alternate" },
+        LANGUAGE_NAMES[version.lang] ?? version.lang,
+      ),
+    ),
   )
 }
 
@@ -94,9 +83,12 @@ export const PageHeader = () => {
     let shot = null
     if (kind === "essay" || kind === "work") {
       if (fm.description) dek = h("p", { class: "ph-dek" }, fm.description)
-      const lead = kind === "essay" ? essayFacts(fileData, allFiles, lang) : workLine(fileData, lang)
-      const nav = languageNav(fileData, lang)
-      if (lead || nav) meta = h("div", { class: "ph-meta" }, lead, nav)
+      const languages = languageLinks(fileData)
+      const lead =
+        kind === "essay"
+          ? essayFacts(fileData, allFiles, lang, languages)
+          : workLine(fileData, lang, languages)
+      if (lead) meta = h("div", { class: "ph-meta" }, lead)
       if (kind === "work") shot = workShot(fileData, { className: "ph-shot", lazy: false })
     }
 
