@@ -33,6 +33,19 @@ export default (() => {
         ? `https://${cfg.baseUrl}/`
         : joinSegments(url.toString(), fileData.slug!)
 
+    // Essays and works are articles. published_time is the frontmatter date as
+    // written (a YYYY-MM-DD date or an ISO 8601 timestamp); reading it through a
+    // Date in the build machine's time zone can move a day.
+    const kind = (fileData as { presence?: { kind?: string } }).presence?.kind
+    const isArticle = kind === "essay" || kind === "work"
+    const date = (fileData.frontmatter as Record<string, unknown> | undefined)?.date
+    const publishedTime =
+      isArticle &&
+      typeof date === "string" &&
+      /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})?)?$/.test(date.trim())
+        ? date.trim()
+        : undefined
+
     const usesCustomOgImage = ctx.cfg.plugins.emitters.some((e) => e.name === "CustomOgImages")
     const ogImageDefaultPath = `https://${cfg.baseUrl}/static/og-image.png`
 
@@ -64,7 +77,8 @@ export default (() => {
 
         <meta property="og:site_name" content={cfg.pageTitle}></meta>
         <meta property="og:title" content={title} />
-        <meta property="og:type" content="website" />
+        <meta property="og:type" content={isArticle ? "article" : "website"} />
+        {publishedTime && <meta property="article:published_time" content={publishedTime} />}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
