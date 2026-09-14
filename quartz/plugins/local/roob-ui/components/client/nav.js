@@ -22,6 +22,8 @@ STRINGS.nav = {
     reveal: "Reveal the current note",
     fold: "Collapse all folders",
     help: "Keyboard shortcuts",
+    search: "Search",
+    searchPlaceholder: "Search for something...",
   },
   "zh-Hans": {
     toggle: "打开导航",
@@ -32,6 +34,8 @@ STRINGS.nav = {
     reveal: "展开并滚动到当前笔记",
     fold: "折叠所有目录",
     help: "快捷键与用法",
+    search: "搜索",
+    searchPlaceholder: "搜索",
   },
 }
 
@@ -65,6 +69,34 @@ function normaliseControlIcons(controls) {
     found.parentNode.replaceChild(next, found)
   }
 }
+
+/**
+ * Quartz renders its search and theme controls in the build locale, which is
+ * English on every page, and the rail adopts both. Their words follow the
+ * page here: the search row's label and name, the field's placeholder and
+ * name, and the theme button's name, which says what a press does, the way
+ * the icon showing inside it does. Runs on every navigation and theme change.
+ */
+function syncControlLabels() {
+  var buttons = document.querySelectorAll(".search > .search-button")
+  for (var i = 0; i < buttons.length; i += 1) {
+    buttons[i].setAttribute("aria-label", t("nav", "search"))
+    var label = buttons[i].querySelector("p")
+    if (label) label.textContent = t("nav", "search")
+  }
+  var fields = document.querySelectorAll(".search .search-bar")
+  for (var j = 0; j < fields.length; j += 1) {
+    fields[j].setAttribute("placeholder", t("nav", "searchPlaceholder"))
+    fields[j].setAttribute("aria-label", t("nav", "searchPlaceholder"))
+  }
+  var dark = document.documentElement.getAttribute("saved-theme") === "dark"
+  var themes = document.querySelectorAll(".sidebar.left button.darkmode")
+  for (var k = 0; k < themes.length; k += 1) {
+    themes[k].setAttribute("aria-label", t("nav", dark ? "lightMode" : "darkMode"))
+  }
+}
+
+document.addEventListener("themechange", syncControlLabels)
 
 function restoreNavScroll(body) {
   try {
@@ -318,6 +350,7 @@ function refreshNav() {
   var sidebar = document.querySelector(".sidebar.left")
   if (!sidebar) return
   if (sidebar.dataset.tplNav !== "ready") buildNav()
+  syncControlLabels()
   sidebar = document.querySelector(".sidebar.left")
   if (!sidebar) return
   var explorer = sidebar.querySelector(".explorer")
