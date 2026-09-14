@@ -6,7 +6,8 @@
 // It is a fixed dial in the top right instead: a few lines of the outline
 // arranged on a shallow arc, the line you are reading crisp and level, its
 // neighbours dimmer, blurrier and tilted off it. Pointing at it opens the
-// whole outline, upright and opaque, over the article if it has to be.
+// whole outline, upright and opaque, inside the same gutter; only a pinned
+// outline that the gutter cannot dock opens wider, over the article.
 //
 // It lives in the gutter right of the column. applyLayout (width.js) measures
 // that gutter and sets html[data-tpl-outline]; the column never gives up
