@@ -115,6 +115,7 @@
   a {
     @include ph.quiet-link;
     @include ph.focus-ring;
+    @include ph.touch-target;
   }
 }
 
