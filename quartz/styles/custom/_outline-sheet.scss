@@ -1,0 +1,211 @@
+// ---------------------------------------------------------------------------
+// The outline sheet (roob-ui outline-sheet.js)
+//
+// A bottom sheet over a scrim, with detents at half and nine tenths of the
+// window. roob-ui sizes it to the window, moves it with translateY and fades
+// the scrim with the height it shows. Beside a column it is centred and kept
+// to the width of a readable list.
+// ---------------------------------------------------------------------------
+.tpl-os-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: var(--scrim-color);
+  opacity: 0;
+  touch-action: none;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.tpl-outline-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 31;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 640px;
+  height: 100vh;
+  margin: 0 auto;
+  overflow: hidden;
+  border-top: 1px solid var(--line-color);
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  background: var(--canvas-color);
+  box-shadow: var(--sheet-shadow);
+  color: var(--ink-color);
+  font-family: var(--font-interface);
+  transform: translate3d(0, 100%, 0);
+  will-change: transform;
+
+  &[hidden] {
+    display: none;
+  }
+
+  @media (min-width: 641px) {
+    border-left: 1px solid var(--line-color);
+    border-right: 1px solid var(--line-color);
+  }
+}
+
+// The handle row: grabber, label and Close. Touch here always moves the sheet.
+.tpl-os-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: none;
+  box-sizing: border-box;
+  height: 44px;
+  padding: 0 0 0 16px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html.tpl-sheet-dragging {
+  .tpl-outline-sheet,
+  .tpl-os-head {
+    cursor: grabbing;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
+
+.tpl-os-grabber {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  width: 36px;
+  height: 5px;
+  margin-left: -18px;
+  border-radius: 3px;
+  background: var(--line-strong-color);
+  pointer-events: none;
+}
+
+.tpl-outline-sheet .tpl-os-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 0 0;
+  font-family: var(--font-interface);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: var(--ink-strong-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tpl-os-close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-block);
+  background: transparent;
+  color: var(--ink-muted-color);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  .tpl-nav-icon,
+  svg {
+    width: 18px;
+    height: 18px;
+    color: inherit;
+  }
+
+  &:active {
+    background: var(--item-hover-bg-color);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: -2px;
+  }
+}
+
+.tpl-os-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  // roob-ui adds the part of the sheet hidden below the screen at the
+  // current detent, so the last rows can still be scrolled into view.
+  padding: 4px 0 calc(var(--tpl-os-hidden, 0px) + 12px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line-color);
+}
+
+.tpl-os-sections,
+.tpl-os-subs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.tpl-outline-sheet .tpl-os-row {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 10px 16px 10px 14px;
+  border-left: 2px solid transparent;
+  background-image: none;
+  color: var(--ink-color);
+  font-family: var(--font-interface);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.35;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active {
+    background-color: var(--item-hover-bg-color);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: -2px;
+  }
+
+  // The section being read.
+  &.tpl-os-current {
+    border-left-color: var(--accent-color);
+    color: var(--ink-strong-color);
+    font-weight: 600;
+  }
+
+  // Its h3s, indented 16px beneath it.
+  &.tpl-os-sub {
+    padding-left: 30px;
+    color: var(--ink-muted-color);
+    font-size: 14px;
+  }
+}
+
+@media (hover: hover) {
+  .tpl-os-close:hover {
+    background: var(--item-hover-bg-color);
+    color: var(--accent-color);
+  }
+
+  .tpl-outline-sheet .tpl-os-row:hover {
+    background-color: var(--item-hover-bg-color);
+    color: var(--ink-strong-color);
+  }
+}

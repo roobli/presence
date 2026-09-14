@@ -125,7 +125,7 @@ function buildNav() {
   toggle.type = "button"
   toggle.setAttribute("aria-label", t("nav", "toggle"))
   toggle.setAttribute("aria-expanded", "false")
-  toggle.setAttribute("aria-controls", NAV_BODY_ID)
+  toggle.setAttribute("aria-controls", "tpl-drawer")
   toggle.innerHTML =
     SVG_OPEN + '<path d="M3 6h18M3 12h18M3 18h18"/></svg>'
   topRow.appendChild(toggle)
