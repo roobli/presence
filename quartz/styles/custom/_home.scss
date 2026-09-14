@@ -1,0 +1,253 @@
+@use "../variables" as *;
+@use "./page-header" as ph;
+
+// ---------------------------------------------------------------------------
+// Homepage and folder index (presence-index): thesis, intro and links, then
+// the derived Writing and Works rows, each essay with its section spine. The
+// end matter reuses .idx-list, .idx-row and .work-row, so those rules stand
+// on their own outside .home.
+// ---------------------------------------------------------------------------
+.home-mast {
+  margin-bottom: var(--space-8);
+
+  @media all and ($mobile) {
+    margin-bottom: var(--space-7);
+  }
+}
+
+.home .home-thesis {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: var(--size-title);
+  line-height: var(--lh-title);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink-strong-color);
+  overflow-wrap: break-word;
+}
+
+.home-intro {
+  margin: var(--space-3) 0 0;
+  font-family: var(--font-text);
+  font-size: var(--size-body);
+  line-height: var(--lh-body);
+  color: var(--ink-muted-color);
+}
+
+.home-links {
+  margin: var(--space-4) 0 0;
+  font-family: var(--font-interface);
+  font-size: var(--size-ui);
+  line-height: var(--lh-ui);
+  color: var(--ink-muted-color);
+
+  a {
+    @include ph.ui-link;
+    @include ph.focus-ring;
+    @include ph.touch-target;
+  }
+}
+
+// --- sections ---------------------------------------------------------------
+.idx + .idx {
+  margin-top: var(--space-8);
+
+  @media all and ($mobile) {
+    margin-top: var(--space-7);
+  }
+}
+
+.idx-label,
+.idx-year {
+  margin: 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line-color);
+  font-family: var(--font-interface);
+  font-size: var(--size-ui);
+  line-height: var(--lh-ui);
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ink-muted-color);
+}
+
+.idx-list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+
+  @media all and ($mobile) {
+    gap: var(--space-5);
+  }
+
+  > li {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.idx-more {
+  margin: var(--space-5) 0 0;
+  font-family: var(--font-interface);
+  font-size: var(--size-ui);
+  line-height: var(--lh-ui);
+
+  a {
+    @include ph.ui-link;
+    @include ph.focus-ring;
+    @include ph.touch-target;
+  }
+}
+
+// --- rows -------------------------------------------------------------------
+.idx-title {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: var(--size-row-title);
+  line-height: var(--lh-row-title);
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ink-strong-color);
+  overflow-wrap: break-word;
+
+  a {
+    @include ph.quiet-link;
+    @include ph.focus-ring;
+  }
+}
+
+.idx-dek {
+  margin: var(--space-1) 0 0;
+  font-family: var(--font-text);
+  font-size: var(--size-row-dek);
+  line-height: var(--lh-row-dek);
+  color: var(--text-color);
+}
+
+.idx-meta {
+  margin: 6px 0 0;
+  font-family: var(--font-interface);
+  font-size: var(--size-ui);
+  line-height: var(--lh-ui);
+  color: var(--ink-muted-color);
+  font-variant-numeric: tabular-nums;
+
+  @media all and ($mobile) {
+    font-size: 13.5px;
+  }
+
+  a {
+    @include ph.ui-link;
+    @include ph.focus-ring;
+    @include ph.touch-target;
+  }
+}
+
+// 中文 is two glyphs wide: pad it out to a 44px square target in place.
+.idx-alt {
+  @media (pointer: coarse), #{$mobile} {
+    padding-inline: 9px;
+    margin-inline: -9px;
+  }
+}
+
+// --- section spine ----------------------------------------------------------
+// One segment per section, sized by words (flex-grow), and a dot per live
+// figure. The dots' inline left accounts for --spine-gap (spine.js).
+.spine {
+  --spine-gap: 3px;
+  position: relative;
+  display: flex;
+  gap: var(--spine-gap);
+  align-items: center;
+  height: 8px;
+  width: calc(var(--spine-len, 1) * 100%);
+  margin-top: 10px;
+
+  i {
+    flex-basis: 0;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--line-strong-color);
+  }
+
+  b {
+    position: absolute;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    margin: -3px 0 0 -3px;
+    border-radius: 50%;
+    background: var(--accent-color);
+  }
+}
+
+// --- works ------------------------------------------------------------------
+.work-row {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  column-gap: var(--space-5);
+  align-items: start;
+
+  &:not(:has(> .work-shot)) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  @media all and ($mobile) {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-4);
+  }
+}
+
+// The Related work card under an essay keeps its picture beside the text.
+.work-row--compact {
+  grid-template-columns: 120px minmax(0, 1fr);
+  column-gap: var(--space-4);
+
+  @media all and ($mobile) {
+    grid-template-columns: 120px minmax(0, 1fr);
+  }
+}
+
+.work-shot {
+  display: block;
+  border-radius: var(--radius-block);
+
+  img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    margin: 0;
+    outline: 1px solid var(--image-outline-color);
+    outline-offset: -1px;
+    border-radius: var(--radius-block);
+  }
+}
+
+.work-links {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-interface);
+  font-size: var(--size-ui);
+  line-height: var(--lh-ui);
+  color: var(--ink-muted-color);
+
+  a {
+    @include ph.ui-link;
+    @include ph.focus-ring;
+  }
+
+  // Touch and narrow screens: the links wrap as rows of 44px targets.
+  @media (pointer: coarse), #{$mobile} {
+    margin-top: 0;
+
+    a {
+      display: inline-block;
+      padding-block: 12px;
+    }
+  }
+}
