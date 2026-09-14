@@ -107,6 +107,8 @@ Word 等软件里，Ctrl+K 长期是「插入超链接」。另一条完全不�
 
 所以今天你会看到冲突地图：同一物理键，在文档里是链接，在协作工具里是跳转，在 VS Code 里是和弦前缀，在 Cursor 里又可能是 AI。标准化从来不是一张无冲突的表，而是**传播路径**的结果。
 
+<!-- interactive:conflict-map title="K 的冲突图" caption="每个应用旁的标签：同一个物理 K 键，意思分别是链接、跳转、和弦领袖、AI 入口；到最后一行，同一个组合键打开的是本站搜索。" alt="五行，每行一个场景，K 键帽停在选中的一行旁边。Word 等软件：Ctrl+K 插入超链接。Slack：Cmd/Ctrl+K 打开 Quick Switcher，即应用内 Jump；2014 年 hack day 上常用键被占光，几乎随意选了 K，后来被 Linear 的命令菜单、Notion / 飞书的搜索跳转和 AI 万能框抄走。VS Code：Ctrl+K 是和弦前缀，如 Ctrl+K Ctrl+S。Cursor：Cmd+K 用在 Inline Edit 与终端 AI 提示的和弦领袖位置。本站：Cmd/Ctrl+K 打开搜索。键帽停在 Slack 一行。" model="应用、键位与含义按文中编辑器命令面板、Cmd+K 两节和模式表的写法。最后一行描述的是本站搜索，不是文中论断。" -->
+
 ## 设计词汇：你其实一直在背同一门语法
 
 ### 修饰键层

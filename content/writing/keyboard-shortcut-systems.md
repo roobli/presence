@@ -109,6 +109,8 @@ Sources: Ben’s answer on [UX Stack Exchange](https://ux.stackexchange.com/ques
 
 Conflict map today: same physical key means link, jump, chord leader, or AI prompt depending on app. Standardization follows **popularity paths**, not a conflict-free ideal table.
 
+<!-- interactive:conflict-map title="Conflict map for K" caption="the tags beside each app: one physical K means link, jump, chord leader or AI prompt, and on the last row the same chord opens this site's search." alt="Five rows, one per context, with a K keycap beside the selected row. Word-class apps: Ctrl+K inserts a hyperlink. Slack: Cmd/Ctrl+K opens Quick Switcher, an in-app Jump, picked nearly arbitrarily at a 2014 hack day because common chords were taken and carried to Linear's command menu, Notion and Lark search jumpers, and AI omniboxes. VS Code: Ctrl+K is the first half of a chord such as Ctrl+K Ctrl+S. Cursor: Cmd+K is often a chord leader for inline AI and terminal prompts. This site: Cmd/Ctrl+K opens search. The keycap rests on Slack." model="Apps, chords and meanings as the essay prints them in its editor palette and Cmd+K sections and its pattern table. The last row describes this site's search, not a claim from the essay." -->
+
 ## Design vocabulary: one grammar under many skins
 
 ### Modifier layers

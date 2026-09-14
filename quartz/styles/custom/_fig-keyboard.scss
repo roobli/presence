@@ -1,1 +1,270 @@
 // Figures of the keyboard-shortcut-systems essay. Owned by the keyboard essay team.
+// Both stages are "group" stages built from HTML (plus one SVG overlay in
+// Fig. 2). Colour comes only from tokens, so a theme switch needs no script.
+// Narrow rules query the stage (the essay-fig-stage container) at the same
+// 560px break as the shell's data-size. Paragraph rules carry .essay-fig so
+// they outrank the article's paragraph margins.
+
+/* ---------- Fig. 1: conflict-map ---------- */
+
+.kcm {
+  --kcm-pad: 16px;
+  --kcm-band: 24px;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  // Fill the height the box reserves, so the status sits at its foot.
+  min-height: inherit;
+  padding: var(--kcm-band) var(--kcm-pad) 16px;
+  font-family: var(--fig-ui-font, var(--font-interface));
+  color: var(--ink-color);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.kcm__grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.kcm__row {
+  display: grid;
+  grid-template-columns: 30% 56px minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 52px;
+  // The selection band runs to the stage edges.
+  margin-inline: calc(-1 * var(--kcm-pad));
+  padding: 8px var(--kcm-pad);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &[aria-checked="true"],
+  &.is-pressed {
+    background: var(--surface-color);
+  }
+}
+
+// The stage clips, so the ring is drawn inside the row.
+.essay-fig .kcm__row:focus-visible {
+  outline-offset: -2px;
+}
+
+.kcm__who {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.kcm__app {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-color);
+}
+
+.kcm__chord {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  font-family: var(--font-code);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-muted-color);
+  white-space: nowrap;
+}
+
+.kcm__aside {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-muted-color);
+}
+
+// Keeps the keycap column clear for the whole height of the row. Only the
+// Slack row has a second line (its note), so only it spans two.
+.kcm__slot {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: stretch;
+}
+
+.kcm__row[data-row="slack"] .kcm__slot {
+  grid-row: 1 / span 2;
+}
+
+.kcm__what {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+}
+
+.kcm__meaning {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-muted-color);
+}
+
+.kcm__tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.kcm__tag {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 20px;
+  padding: 0 8px;
+  border: 1px solid var(--line-color);
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--ink-muted-color);
+  white-space: nowrap;
+}
+
+.kcm__row.is-hit {
+  .kcm__meaning,
+  .kcm__tag {
+    color: var(--ink-color);
+  }
+}
+
+.essay-fig .kcm__note {
+  grid-column: 3;
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-muted-color);
+  text-wrap: pretty;
+}
+
+.essay-fig .kcm__status {
+  margin: auto 0 0;
+  padding-top: 12px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ink-color);
+  text-wrap: pretty;
+}
+
+.essay-fig .kcm__hint {
+  position: absolute;
+  top: 4px;
+  right: var(--kcm-pad);
+  left: var(--kcm-pad);
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: right;
+  color: var(--ink-muted-color);
+  visibility: hidden;
+}
+
+.essay-fig[data-keys="figure"] .kcm__hint {
+  visibility: visible;
+}
+
+// The one accent element of the figure.
+.kcm__key {
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--accent-color);
+  border-bottom-width: 2px;
+  border-radius: 8px;
+  background: var(--canvas-color);
+  color: var(--accent-color);
+  font-family: var(--font-code);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+  appearance: none;
+
+  // Ctrl+K in VS Code: the keycap holds its press while it waits.
+  &.is-waiting {
+    box-shadow: inset 0 0 0 2px var(--accent-color);
+  }
+}
+
+@container essay-fig-stage (width < 560px) {
+  .kcm {
+    --kcm-pad: 20px;
+    // The English hint takes two lines in a narrow stage.
+    --kcm-band: 40px;
+  }
+
+  .kcm:lang(zh) {
+    --kcm-band: 24px;
+  }
+
+  .kcm__row {
+    grid-template-columns: 52px minmax(0, 1fr);
+    align-items: start;
+    align-content: center;
+    row-gap: 4px;
+    min-height: 64px;
+    padding-block: 10px;
+  }
+
+  .kcm__slot {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+
+  .kcm__row[data-row="slack"] .kcm__slot {
+    grid-row: 1 / span 3;
+  }
+
+  .kcm__who {
+    grid-column: 2;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 8px;
+  }
+
+  .kcm__what,
+  .essay-fig .kcm__note {
+    grid-column: 2;
+  }
+
+  .essay-fig .kcm__note {
+    margin-top: 0;
+  }
+}
+
+// A touch screen has no keys to hint at, so the hint and its band go.
+@media (hover: none) {
+  .essay-fig .kcm {
+    --kcm-band: 16px;
+  }
+
+  .essay-fig .kcm__hint {
+    display: none;
+  }
+}
