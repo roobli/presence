@@ -92,7 +92,9 @@ const css = `
 
 #tpl-width-toast {
   position: fixed;
-  left: 50%;
+  /* Centred on the track the text column sits in, not on the window, which
+     the sidebar shares on desktop. */
+  left: calc(var(--tpl-sidebar-width, 0px) + (100% - var(--tpl-sidebar-width, 0px)) / 2);
   bottom: 2.5rem;
   transform: translate(-50%, 6px);
   z-index: 99999;
@@ -116,6 +118,11 @@ const css = `
 @media (prefers-reduced-motion: reduce) {
   #tpl-width-toast {
     transition: none;
+  }
+}
+@media (max-width: 800px) {
+  #tpl-width-toast {
+    left: 50%;
   }
 }
 `

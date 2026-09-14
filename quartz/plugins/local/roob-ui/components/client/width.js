@@ -20,9 +20,11 @@ STRINGS.width = {
 var MODES = ["default", "wide", "full"]
 var STORAGE_KEY = prefs.modeKey
 var MOBILE_MAX = 800
-// The dial needs this much room right of the column; pinned, the panel needs
-// this much before it docks as a rail.
-var OUTLINE_MIN_GUTTER = 176
+// The dial needs this much room right of the column, enough for entries of
+// about 25 characters; below it the Outline button in the sidebar foot opens
+// the outline instead. Pinned, the panel needs this much before it docks as a
+// rail.
+var OUTLINE_MIN_GUTTER = 240
 var OUTLINE_DOCK_GUTTER = 304
 
 function readMode() {
@@ -94,6 +96,8 @@ function showToast(text) {
   if (!toast) {
     toast = document.createElement("div")
     toast.id = "tpl-width-toast"
+    // A polite live region, so the new width is read out as well as shown.
+    toast.setAttribute("role", "status")
     document.body.appendChild(toast)
   }
   toast.textContent = text
