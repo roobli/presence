@@ -296,6 +296,10 @@ document.addEventListener("click", function (event) {
   }
   if (control.id === "tpl-sidebar-collapse") {
     setSidebarCollapsed(!sidebarCollapsed())
+    // The panel, and this button with it, is display: none now. Focus moves to
+    // the button that brings it back, which sits in the same corner.
+    var reopen = sidebarCollapsed() && document.getElementById("tpl-sidebar-reopen")
+    if (reopen) reopen.focus({ preventScroll: true })
     return
   }
   var action = control.getAttribute("data-tpl-action")
