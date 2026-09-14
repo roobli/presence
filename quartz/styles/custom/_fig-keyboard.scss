@@ -1,0 +1,686 @@
+// Figures of the keyboard-shortcut-systems essay. Owned by the keyboard essay team.
+// Both stages are "group" stages built from HTML (plus one SVG overlay in
+// Fig. 2). Colour comes only from tokens, so a theme switch needs no script.
+// Narrow rules query the stage (the essay-fig-stage container) at the same
+// 560px break as the shell's data-size. Paragraph rules carry .essay-fig so
+// they outrank the article's paragraph margins.
+
+/* ---------- Fig. 1: conflict-map ---------- */
+
+.kcm {
+  --kcm-pad: 16px;
+  --kcm-band: 24px;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  // Fill the height the box reserves, so the status sits at its foot.
+  min-height: inherit;
+  padding: var(--kcm-band) var(--kcm-pad) 16px;
+  font-family: var(--fig-ui-font, var(--font-interface));
+  color: var(--ink-color);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.kcm__grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.kcm__row {
+  display: grid;
+  grid-template-columns: 30% 56px minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 52px;
+  // The selection band runs to the stage edges.
+  margin-inline: calc(-1 * var(--kcm-pad));
+  padding: 8px var(--kcm-pad);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &[aria-checked="true"],
+  &.is-pressed {
+    background: var(--surface-color);
+  }
+}
+
+// The stage clips, so the ring is drawn inside the row.
+.essay-fig .kcm__row:focus-visible {
+  outline-offset: -2px;
+}
+
+.kcm__who {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.kcm__app {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-color);
+}
+
+.kcm__chord {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  font-family: var(--font-code);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-muted-color);
+  white-space: nowrap;
+}
+
+.kcm__aside {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-muted-color);
+}
+
+// Keeps the keycap column clear for the whole height of the row. Only the
+// Slack row has a second line (its note), so only it spans two.
+.kcm__slot {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: stretch;
+}
+
+.kcm__row[data-row="slack"] .kcm__slot {
+  grid-row: 1 / span 2;
+}
+
+.kcm__what {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+}
+
+.kcm__meaning {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-muted-color);
+}
+
+.kcm__tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.kcm__tag {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 20px;
+  padding: 0 8px;
+  border: 1px solid var(--line-color);
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--ink-muted-color);
+  white-space: nowrap;
+}
+
+.kcm__row.is-hit {
+  .kcm__meaning,
+  .kcm__tag {
+    color: var(--ink-color);
+  }
+}
+
+.essay-fig .kcm__note {
+  grid-column: 3;
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-muted-color);
+  text-wrap: pretty;
+}
+
+.essay-fig .kcm__status {
+  margin: auto 0 0;
+  padding-top: 12px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ink-color);
+  text-wrap: pretty;
+}
+
+.essay-fig .kcm__hint {
+  position: absolute;
+  top: 4px;
+  right: var(--kcm-pad);
+  left: var(--kcm-pad);
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: right;
+  color: var(--ink-muted-color);
+  visibility: hidden;
+}
+
+.essay-fig[data-keys="figure"] .kcm__hint {
+  visibility: visible;
+}
+
+// The one accent element of the figure.
+.kcm__key {
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--accent-color);
+  border-bottom-width: 2px;
+  border-radius: 8px;
+  background: var(--canvas-color);
+  color: var(--accent-color);
+  font-family: var(--font-code);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+  appearance: none;
+
+  // Ctrl+K in VS Code: the keycap holds its press while it waits.
+  &.is-waiting {
+    box-shadow: inset 0 0 0 2px var(--accent-color);
+  }
+}
+
+@container essay-fig-stage (width < 560px) {
+  .kcm {
+    --kcm-pad: 20px;
+    // The English hint takes two lines in a narrow stage.
+    --kcm-band: 40px;
+  }
+
+  .kcm:lang(zh) {
+    --kcm-band: 24px;
+  }
+
+  .kcm__row {
+    grid-template-columns: 52px minmax(0, 1fr);
+    align-items: start;
+    align-content: center;
+    row-gap: 4px;
+    min-height: 64px;
+    padding-block: 10px;
+  }
+
+  .kcm__slot {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+
+  .kcm__row[data-row="slack"] .kcm__slot {
+    grid-row: 1 / span 3;
+  }
+
+  .kcm__who {
+    grid-column: 2;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 8px;
+  }
+
+  .kcm__what,
+  .essay-fig .kcm__note {
+    grid-column: 2;
+  }
+
+  .essay-fig .kcm__note {
+    margin-top: 0;
+  }
+}
+
+// A touch screen has no keys to hint at, so the hint and its band go.
+@media (hover: none) {
+  .essay-fig .kcm {
+    --kcm-band: 16px;
+  }
+
+  .essay-fig .kcm__hint {
+    display: none;
+  }
+}
+
+/* ---------- Fig. 2: prefix-tree ---------- */
+
+.pt {
+  --pt-band: 24px;
+  --pt-chip: 36px;
+  --pt-row: 48px;
+  --pt-row-2: 88px;
+  --pt-row-i3: 40px;
+  --pt-cols: 28% 12% 24% minmax(0, 1fr);
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  // Fill the height the box reserves, so the readout sits at its foot.
+  min-height: inherit;
+  padding: var(--pt-band) 16px 16px;
+  font-family: var(--fig-ui-font, var(--font-interface));
+  color: var(--ink-color);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.pt__head,
+.pt__row {
+  display: grid;
+  grid-template-columns: var(--pt-cols);
+  column-gap: 12px;
+  align-items: center;
+}
+
+// Column names sit on one line above the rows, even when one wraps.
+.pt__head {
+  align-items: end;
+  min-height: 32px;
+  padding-bottom: 6px;
+  box-sizing: border-box;
+  font-size: 12px;
+  line-height: 14px;
+  color: var(--ink-muted-color);
+}
+
+.pt__col--root {
+  text-align: center;
+}
+
+.pt__body {
+  position: relative;
+}
+
+// Spine, edges and token. Rows are positioned after it, so chips paint over
+// the lines and the token ring shows around the chip it marks.
+.pt__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.pt__spine {
+  stroke: var(--line-strong-color);
+  stroke-width: 1;
+}
+
+.pt__edge {
+  fill: none;
+  stroke: var(--line-color);
+  stroke-width: 1;
+
+  &.is-lit {
+    stroke: var(--ink-color);
+    stroke-width: 1.5;
+  }
+}
+
+// The one accent element of the figure.
+.pt__token {
+  fill: none;
+  stroke: var(--accent-color);
+  stroke-width: 2;
+}
+
+.pt__row {
+  position: relative;
+  min-height: var(--pt-row);
+}
+
+.pt__row[data-row="tmux"],
+.pt__row[data-row="vim"] {
+  min-height: var(--pt-row-2);
+}
+
+.pt__row[data-row="i3"] {
+  min-height: var(--pt-row-i3);
+}
+
+.pt__label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-self: stretch;
+  gap: 2px;
+  min-width: 0;
+}
+
+// Joins the two Emacs rows under one label.
+.pt__label--group {
+  padding-left: 8px;
+  border-left: 2px solid var(--line-color);
+}
+
+.pt__system {
+  font-size: 13px;
+  line-height: 16px;
+  color: var(--ink-color);
+}
+
+.pt__pattern {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-muted-color);
+}
+
+.pt__system:empty,
+.pt__pattern:empty {
+  display: none;
+}
+
+.pt__root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  min-width: 0;
+}
+
+.pt__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-muted-color);
+}
+
+.pt__row[data-row="i3"] .pt__dot {
+  background: var(--line-strong-color);
+}
+
+.pt__modes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pt__waiting,
+.pt__command {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pt__leaf {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+}
+
+// The reached mark after the chip, reserved on every leaf so reaching one
+// never moves the row.
+.pt__leaf::after {
+  content: "";
+  order: 1;
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-color);
+  visibility: hidden;
+}
+
+.pt__leaf-label {
+  order: 2;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-muted-color);
+}
+
+.pt__leaf.is-reached {
+  &::after {
+    visibility: visible;
+  }
+
+  .pt__leaf-label {
+    color: var(--ink-color);
+    font-weight: 600;
+  }
+}
+
+.pt__note {
+  grid-column: 3 / -1;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-muted-color);
+}
+
+.pt__chip {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  min-width: 36px;
+  max-width: 100%;
+  min-height: var(--pt-chip);
+  margin: 0;
+  padding: 0 8px;
+  border: 1px solid var(--line-color);
+  border-bottom: 2px solid var(--line-strong-color);
+  border-radius: 6px;
+  background: var(--canvas-color);
+  color: var(--ink-color);
+  font-family: var(--font-code);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 16px;
+  white-space: nowrap;
+  cursor: pointer;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &.is-pressed {
+    background: var(--surface-color);
+  }
+
+  // Muted ink stays above 4.5:1 on the canvas in both themes.
+  &[aria-disabled="true"] {
+    color: var(--ink-muted-color);
+    border-bottom-style: dashed;
+    cursor: default;
+  }
+}
+
+.pt__chip--unnamed {
+  border-style: dashed;
+  color: var(--ink-muted-color);
+}
+
+.pt__chip--mode[aria-pressed="true"] {
+  background: var(--surface-active-color);
+}
+
+@media (hover: hover) {
+  .pt__chip:not([aria-disabled="true"]):hover {
+    border-color: var(--line-strong-color);
+  }
+}
+
+.essay-fig .pt__hint {
+  position: absolute;
+  top: 4px;
+  right: 16px;
+  left: 16px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: right;
+  color: var(--ink-muted-color);
+  visibility: hidden;
+}
+
+.essay-fig[data-keys="figure"] .pt__hint {
+  visibility: visible;
+}
+
+.essay-fig .pt__readout {
+  margin: auto 0 0;
+  padding-top: 12px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ink-color);
+  text-wrap: pretty;
+}
+
+@media (pointer: coarse) {
+  .pt {
+    --pt-chip: 44px;
+    --pt-row: 52px;
+    --pt-row-2: 104px;
+    --pt-row-i3: 44px;
+  }
+
+  .pt__chip {
+    min-width: 44px;
+  }
+
+  // Taller rows need more room than the registry reserves for a fine pointer:
+  // measured 604px at a 768px touch width against 582px at 560 with a mouse.
+  // CSS alone, so the height is the same before and after scripts run.
+  .essay-fig[data-interactive="prefix-tree"] .essay-fig__box {
+    min-height: calc(var(--fig-min-h) + 44px);
+  }
+
+  @container essay-fig-stage (width < 560px) {
+    .essay-fig[data-interactive="prefix-tree"] .essay-fig__box {
+      min-height: var(--fig-min-h-narrow);
+    }
+  }
+}
+
+@container essay-fig-stage (width < 560px) {
+  .pt {
+    --pt-chip: 44px;
+    --pt-row: 52px;
+    --pt-row-2: 104px;
+    --pt-row-i3: 44px;
+    --pt-cols: 36% 28% minmax(0, 1fr);
+    padding-bottom: 12px;
+  }
+
+  .pt__head {
+    min-height: 28px;
+  }
+
+  .pt__col--label,
+  .pt__pattern,
+  .pt__leaf-label {
+    display: none;
+  }
+
+  // Label and root share the first column: the spine dot sits at its right
+  // edge, and vim's mode chips sit side by side under the label.
+  .pt__col--root {
+    text-align: right;
+  }
+
+  .pt__label,
+  .pt__root {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .pt__label {
+    padding-right: 16px;
+  }
+
+  .pt__label--group {
+    padding-left: 6px;
+  }
+
+  .pt__root {
+    justify-content: flex-end;
+  }
+
+  .pt__waiting {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .pt__command {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .pt__note {
+    grid-column: 2 / -1;
+  }
+
+  .pt__row[data-row="vim"] {
+    .pt__root {
+      grid-row: 2;
+      justify-content: flex-start;
+    }
+
+    .pt__waiting,
+    .pt__command {
+      grid-row: 1 / span 2;
+    }
+  }
+
+  .pt__modes {
+    flex-direction: row;
+    gap: 6px;
+    width: 100%;
+  }
+
+  // Chip text stays at 12px: the long palette chord wraps before +Shift into
+  // two 16px lines, which still fit the 44px chip.
+  .pt__chip {
+    min-width: 44px;
+    font-size: 12px;
+  }
+
+  .pt__chip--mode {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: 4px;
+  }
+}
+
+// Touch screens have no keys to hint at, so the hint and its band go.
+@media (hover: none) {
+  .essay-fig .pt {
+    --pt-band: 12px;
+  }
+
+  .essay-fig .pt__hint {
+    display: none;
+  }
+}

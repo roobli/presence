@@ -1,0 +1,55 @@
+// ---------------------------------------------------------------------------
+// Sidenotes (plugins/sidenote)
+//
+// The vault writes them as <span class="sidenote">...</span>; roob-ui numbers
+// them and inserts the in-text marker, exactly as the editor plugin does.
+// ---------------------------------------------------------------------------
+.tpl-sn-num {
+  user-select: none;
+
+  &::after {
+    content: attr(data-tpl-sn-index);
+    font-size: 0.7em;
+    position: relative;
+    top: -0.5em;
+    color: var(--accent-color);
+    font-weight: 600;
+    padding-left: 1px;
+  }
+}
+
+article .sidenote {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--quote-text-color);
+  vertical-align: baseline;
+  position: relative;
+
+  &::before {
+    content: attr(data-tpl-sn-index) ". ";
+    font-weight: 600;
+    color: var(--accent-color);
+    font-size: 0.78rem;
+  }
+}
+
+// Margin mode: the note floats into the reserve the wider layout set aside.
+.page[data-tpl-sidenotes="margin"] article .sidenote {
+  float: right;
+  clear: right;
+  display: block;
+  width: var(--tpl-sidenote-width);
+  margin-right: calc(-1 * var(--tpl-sidenote-offset));
+  margin-top: 0;
+  margin-bottom: 1rem;
+  border-left: 2px solid var(--border-color);
+  padding-left: 10px;
+}
+
+// Inline mode when prose plus one reserve cannot fit.
+.page:not([data-tpl-sidenotes="margin"]) article .sidenote {
+  padding: 0.1em 0.4em;
+  background: var(--quote-bg-color);
+  border-radius: 4px;
+  margin: 0 2px;
+}

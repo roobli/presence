@@ -47,7 +47,8 @@ configuration:
 plugins:
   - source: "./quartz/plugins/local/i18n-slug"
     enabled: true
-    order: 5
+    # After note-properties (5), which parses the frontmatter this plugin reads.
+    order: 6
   - source: "@quartz-community/created-modified-date"
     enabled: true
     options:
@@ -115,7 +116,12 @@ plugins:
     enabled: true
     options:
       enableInHtmlEmbed: false
-      enableCheckbox: true
+      # Task lists keep GFM's disabled checkboxes. OFM's toggles were enabled,
+      # unlabeled tab stops that only saved a tick in one browser.
+      enableCheckbox: false
+      # Drops OFM's bundled mermaid script and expand dialog. Fences stay
+      # code[data-language="mermaid"] for mermaid-paper.
+      mermaid: false
     order: 30
   - source: "@quartz-community/github-flavored-markdown"
     enabled: true
@@ -133,6 +139,10 @@ plugins:
     order: 60
   - source: "@quartz-community/description"
     enabled: true
+    order: 70
+  - source: "./quartz/plugins/local/presence-derive"
+    enabled: true
+    # After OFM's rehypeRaw (30) and the table of contents (50), which it reads.
     order: 70
   - source: "@quartz-community/latex"
     enabled: true
@@ -202,8 +212,11 @@ plugins:
   - source: "@quartz-community/content-index"
     enabled: true
     options:
-      enableSiteMap: true
-      enableRSS: true
+      # presence-feeds writes both, with translations and hreflang alternates.
+      enableSiteMap: false
+      enableRSS: false
+  - source: "./quartz/plugins/local/presence-feeds"
+    enabled: true
   - source: "@quartz-community/favicon"
     enabled: true
   - source: "@quartz-community/og-image"
@@ -215,9 +228,12 @@ plugins:
   - source: "@quartz-community/content-page"
     enabled: true
   - source: "@quartz-community/folder-page"
-    enabled: true
+    # presence-index serves this page type with the tag lists dropped from its
+    # rows; they linked to tag pages this site no longer builds.
+    enabled: false
   - source: "@quartz-community/tag-page"
-    enabled: true
+    # Tags stay in frontmatter for search and feeds; no thin tag pages.
+    enabled: false
   - source: "@quartz-community/explorer"
     enabled: true
     layout:
@@ -240,7 +256,8 @@ plugins:
       position: footer
       priority: 3
   - source: "@quartz-community/graph"
-    enabled: true
+    # Pulled d3 and pixi.js from jsdelivr on every page for a handful of notes.
+    enabled: false
     layout:
       position: afterBody
       priority: 20
@@ -257,27 +274,30 @@ plugins:
       groupOptions:
         grow: true
   - source: "@quartz-community/backlinks"
-    enabled: true
+    # The end matter lists the real relations between essays and works.
+    enabled: false
     layout:
       position: afterBody
       priority: 10
+  # breadcrumbs, article-title, lang-switch, content-meta and tag-list are all
+  # replaced by presence-header.
   - source: "@quartz-community/article-title"
-    enabled: true
+    enabled: false
     layout:
       position: beforeBody
       priority: 10
   - source: "./quartz/plugins/local/lang-switch"
-    enabled: true
+    enabled: false
     layout:
       position: beforeBody
       priority: 15
   - source: "@quartz-community/content-meta"
-    enabled: true
+    enabled: false
     layout:
       position: beforeBody
       priority: 20
   - source: "@quartz-community/tag-list"
-    enabled: true
+    enabled: false
     layout:
       position: beforeBody
       priority: 30
@@ -293,17 +313,38 @@ plugins:
       priority: 30
       group: toolbar
   - source: "@quartz-community/reader-mode"
-    enabled: true
+    # Its CSS fades the sidebar out. The roob-ui collapse button is the focus mode.
+    enabled: false
     layout:
       position: left
       priority: 35
       group: toolbar
   - source: "@quartz-community/breadcrumbs"
-    enabled: true
+    enabled: false
     layout:
       position: beforeBody
       priority: 5
       condition: not-index
+  - source: "./quartz/plugins/local/presence-header"
+    enabled: true
+    layout:
+      position: beforeBody
+      priority: 10
+  - source: "./quartz/plugins/local/presence-index"
+    enabled: true
+    layout:
+      position: beforeBody
+      priority: 20
+  - source: "./quartz/plugins/local/presence-end"
+    enabled: true
+    layout:
+      position: afterBody
+      priority: 10
+  - source: "./quartz/plugins/local/presence-colophon"
+    enabled: true
+    layout:
+      position: footer
+      priority: 50
   - source: "@quartz-community/comments"
     enabled: false
     options:
@@ -319,7 +360,8 @@ plugins:
       position: footer
       priority: 99
   - source: "@quartz-community/footer"
-    enabled: true
+    # Replaced by presence-colophon.
+    enabled: false
     options:
       links:
         RooB: https://github.com/lr00rl
@@ -329,7 +371,8 @@ plugins:
   - source: "@quartz-community/recent-notes"
     enabled: false
   - source: "@quartz-community/spacer"
-    enabled: true
+    # roob-ui rebuilds the mobile header without it; box positions checked at 375.
+    enabled: false
     options: {}
     order: 25
     layout:
@@ -376,13 +419,9 @@ layout:
       positions:
         right: []
     folder:
-      exclude:
-        - reader-mode
       positions:
         right: []
     tag:
-      exclude:
-        - reader-mode
       positions:
         right: []
     canvas: {}

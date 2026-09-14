@@ -1,0 +1,31 @@
+// ---------------------------------------------------------------------------
+// Folder listings
+// ---------------------------------------------------------------------------
+// /writing/ and /works/ list their pages as presence-index's derived rows,
+// which render above the article, so FolderPage's stock list stays hidden
+// there. Any other folder keeps the stock list below.
+body[data-slug="writing/index"] .page-listing,
+body[data-slug="works/index"] .page-listing {
+  display: none;
+}
+
+// Quartz lays a stock row out as fit-content(8em) 3fr 1fr: date, title, tags.
+// The tag lists are gone (presence-index drops them), so the title takes the
+// rest of the row.
+li.section-li > .section {
+  grid-template-columns: fit-content(8em) 1fr;
+  align-items: baseline;
+  row-gap: 0.15rem;
+}
+
+// On a narrow screen the date moves above the title instead of squeezing it.
+@media all and (max-width: 640px) {
+  li.section-li > .section {
+    grid-template-columns: 1fr;
+
+    > .meta,
+    > .desc {
+      grid-column: 1 / -1;
+    }
+  }
+}

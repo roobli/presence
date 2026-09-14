@@ -1,0 +1,171 @@
+@use "../variables" as *;
+
+// Layout tokens. The column below is built from these; roob-ui writes only
+// --tpl-sidebar-width (and --tpl-right-gutter, which the outline reads).
+:root {
+  --tpl-sidebar-ref: 280px;
+  --tpl-shell-gutter: 24px;
+  --tpl-write-padding: 32px;
+  --measure: 48em;
+  --measure-floor: 20em;
+  --header-h: 48px;
+  --progress-h: 2px;
+  --tpl-sidenote-reserve-active: 0px;
+  --tpl-sidebar-width: 280px;
+
+  @media all and ($mobile) {
+    --tpl-write-padding: 20px;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// The note column.
+//
+// The measure is 48em of the English body size, plus whatever the panel gives
+// up against its 280px reference. So the text's right edge stays put while
+// its left edge follows the sidebar handle 1:1. On a narrow window the 100%
+// term takes over, and the drag still changes the width 1:1 there. The em
+// basis is this element's own font size: set smaller text on children.
+//
+// Three text widths: default is that column, full is the whole track, and
+// wide sits halfway between them, so it follows the handle 1:1 as well.
+// ---------------------------------------------------------------------------
+@mixin note-column {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: none;
+  font-size: var(--size-body, clamp(17px, 16.296px + 0.1878vw, 19px));
+  --col-drag: calc(var(--tpl-sidebar-ref) - var(--tpl-sidebar-width));
+  --col-track: calc(100% - 2 * var(--tpl-shell-gutter));
+  --col-default: min(
+    var(--col-track),
+    max(
+      var(--measure-floor) + 2 * var(--tpl-write-padding),
+      var(--measure) + 2 * var(--tpl-write-padding) + var(--col-drag)
+    )
+  );
+  width: var(--col-default);
+  margin-inline: auto;
+
+  @media all and not ($mobile) {
+    // Folding the panel away keeps the measure rather than widening it.
+    html[data-tpl-sidebar="collapsed"] & {
+      --col-drag: 0px;
+    }
+
+    html[data-tpl-width="wide"] & {
+      width: calc((var(--col-default) + var(--col-track)) / 2);
+    }
+
+    html[data-tpl-width="full"] & {
+      width: var(--col-track);
+    }
+  }
+
+  @media all and ($mobile) {
+    width: 100%;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Window shell: a sidebar panel and a sheet of paper, as in the editor.
+// ---------------------------------------------------------------------------
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--canvas-color);
+}
+
+body {
+  font-family: var(--font-text);
+  color: var(--text-color);
+  background-color: var(--canvas-color);
+  line-height: 1.58;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+.page {
+  max-width: none;
+  margin: 0;
+}
+
+.page > #quartz-body {
+  @media all and not ($mobile) {
+    grid-template-columns: var(--tpl-sidebar-width) minmax(0, 1fr);
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      "grid-sidebar-left grid-header"
+      "grid-sidebar-left grid-center"
+      "grid-sidebar-left grid-footer";
+    column-gap: 0;
+    row-gap: 0;
+    min-height: 100vh;
+    // Quartz insets the grid by 1rem below its desktop breakpoint, the tablet
+    // band included. The panel stays flush with the window edge at every
+    // width that shows it, and the column's 100% is the whole track.
+    padding: 0;
+  }
+
+  > .sidebar.right {
+    display: none;
+  }
+
+  > .center {
+    grid-area: grid-center;
+  }
+
+  > footer {
+    grid-area: grid-footer;
+  }
+
+  // #typora-sidebar
+  > .sidebar.left {
+    background-color: var(--side-bar-bg-color);
+    font-family: var(--font-interface);
+    gap: 0;
+    padding: 1.5rem 0 1.5rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    @media all and not ($mobile) {
+      border-right: 1px solid var(--line-color);
+      height: 100vh;
+    }
+
+    @media all and ($mobile) {
+      padding: 1.25rem 1rem 0;
+    }
+  }
+}
+
+// .center carries #write's own side padding inside the column box.
+.page > #quartz-body > .center {
+  @include note-column;
+  padding: 0 var(--tpl-write-padding) 104px;
+  padding-right: calc(var(--tpl-write-padding) + var(--tpl-sidenote-reserve-active));
+
+  @media all and ($mobile) {
+    padding: 0 20px 84px;
+  }
+
+  > .page-header {
+    margin-top: 2.6rem;
+
+    @media all and ($mobile) {
+      margin-top: 1.25rem;
+    }
+  }
+}
+
+.page > #quartz-body > footer {
+  @include note-column;
+  padding: 0 var(--tpl-write-padding) 2.5rem;
+  font-family: var(--font-interface);
+  color: var(--ink-muted-color);
+  border-top: 0;
+
+  ul {
+    gap: 0.8rem;
+  }
+}

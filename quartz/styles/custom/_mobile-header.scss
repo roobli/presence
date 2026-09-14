@@ -1,0 +1,259 @@
+@use "../variables" as *;
+
+// ---------------------------------------------------------------------------
+// The narrow-screen header
+//
+// One opaque 48px row that never hides: menu, wordmark, then outline (on
+// essays) and search against the right edge. Theme moves into the drawer;
+// width, collapse and the tree's own actions have no place on one column.
+// The reading progress bar runs along the bottom edge.
+// ---------------------------------------------------------------------------
+.tpl-bar-actions {
+  display: none;
+}
+
+@media all and ($mobile) {
+  // Anchor and outline jumps land a little below the bar rather than under it.
+  html {
+    scroll-padding-top: calc(var(--header-h) + 12px);
+  }
+
+  // Quartz insets the whole grid on narrow screens; the header bar and the
+  // paper carry their own padding instead, so the bar can span the screen.
+  .page > #quartz-body {
+    padding: 0;
+  }
+
+  // The column's own z-indexes (the code copy button sits at 10) stay inside
+  // it, so nothing in the article paints over the bar as it scrolls under.
+  .page > #quartz-body > .center {
+    isolation: isolate;
+  }
+
+  .page > #quartz-body > .sidebar.left {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-sizing: border-box;
+    height: var(--header-h);
+    padding: 0;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--line-color);
+    background-color: var(--side-bar-bg-color);
+  }
+
+  .page > #quartz-body > .sidebar.left .page-title {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: none;
+    margin: 0 0 0 4px;
+    font-family: var(--font-text);
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0;
+    white-space: nowrap;
+    overflow: visible;
+
+    // The link is the 44px target, as tall as the buttons beside it, and cuts
+    // a squeezed name itself: a clip on the title would cut the target too.
+    // Padding around the title's own 1.3 line keeps the name on its pixel.
+    // The side padding, cancelled by the margin, gives the focus ring room
+    // inside the bar, inset like the buttons' rings. It reaches under the
+    // menu button, which stacks above it and keeps its own taps.
+    a {
+      display: block;
+      padding: calc((44px - 1.3em) / 2) 8px;
+      margin-inline: -8px;
+      border-radius: var(--radius-block);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--ink-strong-color);
+      text-decoration: none;
+      background-image: none;
+
+      &:focus-visible {
+        outline-offset: -2px;
+      }
+    }
+  }
+
+  // Until roob-ui builds the row (data-tpl-nav="ready") the sidebar holds
+  // Quartz's stock children, the whole outline and tree among them. The bar
+  // keeps its height and shows only the wordmark, where the built row puts
+  // it, so the article never moves. Without scripting nothing rebuilds it and
+  // this stays the bar: search, theme, the tree and the outline all need the
+  // script, and the stock outline alone ran taller and wider than a phone.
+  .page > #quartz-body > .sidebar.left:not([data-tpl-nav="ready"]) {
+    overflow: hidden;
+
+    > :not(.page-title) {
+      display: none;
+    }
+
+    > .page-title {
+      align-self: center;
+      margin-left: calc(6px + 44px + 4px);
+    }
+  }
+
+  // No menu button arrives beside it, so the wordmark lines up with the
+  // article's text instead.
+  @media (scripting: none) {
+    .page > #quartz-body > .sidebar.left:not([data-tpl-nav="ready"]) > .page-title {
+      margin-left: 20px;
+    }
+  }
+
+  .tpl-nav-head {
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    padding: 0 6px;
+  }
+
+  .tpl-nav-top {
+    flex: 1 1 auto;
+    min-width: 0;
+    align-self: stretch;
+    align-items: center;
+    gap: 0;
+    padding: 0;
+  }
+
+  .tpl-nav-controls {
+    display: none;
+  }
+
+  .tpl-bar-actions {
+    display: flex;
+    align-items: center;
+    flex: none;
+    margin-left: auto;
+  }
+
+  #tpl-nav-toggle,
+  .tpl-bar-button {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-block);
+    background: transparent;
+    color: var(--ink-color);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+
+    &:active {
+      background: var(--item-hover-bg-color);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent-color);
+      outline-offset: -2px;
+    }
+
+    svg,
+    .tpl-nav-icon {
+      width: 20px;
+      height: 20px;
+      color: inherit;
+    }
+  }
+
+  @media (hover: hover) {
+    #tpl-nav-toggle:hover,
+    .tpl-bar-button:hover {
+      background: var(--item-hover-bg-color);
+    }
+  }
+
+  .tpl-bar-button[hidden] {
+    display: none;
+  }
+
+  // Above the drawer, which slides in under it, so a second tap mid-flight
+  // turns the drawer around. Open, it shows a cross.
+  #tpl-nav-toggle {
+    z-index: 3;
+
+    .tpl-toggle-close {
+      display: none;
+    }
+
+    &[aria-expanded="true"] {
+      > svg:first-child {
+        display: none;
+      }
+
+      .tpl-toggle-close {
+        display: block;
+      }
+    }
+  }
+
+  // Search's overlay lives inside Quartz's search host down here, so the host
+  // stays in the tree with nothing of its own on screen.
+  .page > #quartz-body > .sidebar.left > .tpl-nav-foot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+  }
+
+  .sidebar.left .tpl-nav-foot .search-button,
+  .sidebar.left .tpl-nav-foot .tpl-nav-foot-tools {
+    display: none;
+  }
+}
+
+// --- reading progress ------------------------------------------------------
+// One segment per h2 section, as wide as the section is tall; roob-ui fills
+// each through scaleX (progress.js).
+#tpl-progress {
+  display: none;
+}
+
+@media all and ($mobile) {
+  #tpl-progress {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    z-index: 1;
+    display: flex;
+    gap: 2px;
+    height: var(--progress-h);
+    pointer-events: none;
+  }
+}
+
+.tpl-progress-seg {
+  flex: 1 1 0;
+  min-width: 2px;
+  height: 100%;
+  overflow: hidden;
+  background: var(--line-color);
+}
+
+.tpl-progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent-color);
+  transform: scaleX(0);
+  transform-origin: left center;
+}

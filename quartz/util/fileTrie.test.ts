@@ -165,6 +165,35 @@ describe("FileTrie", () => {
       assert.strictEqual(trie.children[0].children.length, 1)
       assert.strictEqual(trie.children[0].children[0].data, sibling)
     })
+
+    const note = { title: "Note", slug: "writing/foo", filePath: "writing/foo.md" }
+    const nested = { title: "Nested", slug: "writing/foo/zh", filePath: "writing/foo.zh.md" }
+
+    for (const [label, order] of [
+      ["note first", [note, nested]],
+      ["nested page first", [nested, note]],
+    ] as const) {
+      test(`a note with a page nested under it keeps its own slug (${label})`, () => {
+        order.forEach((file) => trie.add(file))
+
+        const writing = trie.children[0]
+        assert.strictEqual(writing.slug, "writing/index")
+        assert.strictEqual(writing.children.length, 1)
+
+        const node = writing.children[0]
+        assert.strictEqual(node.isFolder, true)
+        assert.strictEqual(node.data, note)
+        assert.strictEqual(node.slug, "writing/foo")
+        assert.strictEqual(node.children[0].slug, "writing/foo/zh")
+        assert.deepStrictEqual(
+          trie
+            .ancestryChain(["writing", "foo", "zh"])
+            ?.slice(1)
+            .map((n) => n.slug),
+          ["writing/index", "writing/foo", "writing/foo/zh"],
+        )
+      })
+    }
   })
 
   describe("filter", () => {

@@ -1,0 +1,31 @@
+{
+  "name": "presence-header",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Page header: kicker, title, dek, meta line and language control",
+  "exports": {
+    ".": "./index.js",
+    "./components": "./components/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./index.js",
+  "quartz": {
+    "name": "presence-header",
+    "displayName": "Presence header",
+    "category": "component",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 50,
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "PageHeader": {
+        "displayName": "Page header",
+        "defaultPosition": "beforeBody",
+        "defaultPriority": 10
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+// ---------------------------------------------------------------------------
+// Math (KaTeX) and standalone figures
+// ---------------------------------------------------------------------------
+// katex.min.css sets .katex to 1.21em. Here math is sized against the prose
+// instead: display math one step up at 1.05em, inline math at text size.
+article .katex-display {
+  text-align: center;
+  margin: 1.15em auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+article .katex-display > .katex {
+  font-size: 1.05em;
+  text-align: center;
+}
+
+article .katex:not(.katex-display .katex) {
+  font-size: 1em;
+  line-height: 0;
+}
+
+// Image figures centre the picture and its caption. Code blocks are figures
+// too (rehype-pretty-code), so only figures that hold an image qualify.
+article figure:has(> img) {
+  margin-inline: auto;
+  text-align: center;
+}
+
+article figure > img {
+  display: block;
+  margin-inline: auto;
+  max-width: 100%;
+  height: auto;
+}

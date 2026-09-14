@@ -33,6 +33,19 @@ export default (() => {
         ? `https://${cfg.baseUrl}/`
         : joinSegments(url.toString(), fileData.slug!)
 
+    // Essays and works are articles. published_time is the frontmatter date as
+    // written (a YYYY-MM-DD date or an ISO 8601 timestamp); reading it through a
+    // Date in the build machine's time zone can move a day.
+    const kind = (fileData as { presence?: { kind?: string } }).presence?.kind
+    const isArticle = kind === "essay" || kind === "work"
+    const date = (fileData.frontmatter as Record<string, unknown> | undefined)?.date
+    const publishedTime =
+      isArticle &&
+      typeof date === "string" &&
+      /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})?)?$/.test(date.trim())
+        ? date.trim()
+        : undefined
+
     const usesCustomOgImage = ctx.cfg.plugins.emitters.some((e) => e.name === "CustomOgImages")
     const ogImageDefaultPath = `https://${cfg.baseUrl}/static/og-image.png`
 
@@ -62,9 +75,10 @@ export default (() => {
         <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        <meta name="og:site_name" content={cfg.pageTitle}></meta>
+        <meta property="og:site_name" content={cfg.pageTitle}></meta>
         <meta property="og:title" content={title} />
-        <meta property="og:type" content="website" />
+        <meta property="og:type" content={isArticle ? "article" : "website"} />
+        {publishedTime && <meta property="article:published_time" content={publishedTime} />}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
@@ -92,24 +106,6 @@ export default (() => {
         )}
 
         <link rel="icon" href={iconPath} />
-        {(() => {
-          const altRaw = fileData.frontmatter?.alt
-          if (typeof altRaw !== "string" || !altRaw.trim()) return null
-          const altPath = altRaw.trim().startsWith("/") ? altRaw.trim() : `/${altRaw.trim()}`
-          const lang = String(fileData.frontmatter?.lang ?? "en").toLowerCase()
-          const isZh = lang === "zh" || lang.startsWith("zh")
-          const selfUrl = socialUrl
-          const altUrl = `https://${cfg.baseUrl}${altPath}`
-          const enUrl = isZh ? altUrl : selfUrl
-          const zhUrl = isZh ? selfUrl : altUrl
-          return (
-            <>
-              <link rel="alternate" hrefLang="en" href={enUrl} />
-              <link rel="alternate" hrefLang="zh" href={zhUrl} />
-              <link rel="alternate" hrefLang="x-default" href={enUrl} />
-            </>
-          )
-        })()}
         <meta name="description" content={description} />
         <meta name="generator" content="Quartz" />
 

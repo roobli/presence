@@ -1,0 +1,8 @@
+{
+  "name": "curvature-comb",
+  "status": "live",
+  "stage": "group",
+  "railRows": 1,
+  "railRowsNarrow": 3,
+  "cites": ["2.53", "0.35", "1.8", "0.54"]
+}

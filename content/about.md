@@ -1,8 +1,7 @@
 ---
 title: About
+enableToc: false
 ---
-
-# About
 
 RoobLi’s public homepage. Selected works and deep writing only.
 

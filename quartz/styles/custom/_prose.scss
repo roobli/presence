@@ -1,0 +1,317 @@
+@use "../variables" as *;
+
+// ---------------------------------------------------------------------------
+// Prose
+// ---------------------------------------------------------------------------
+// Body type. The measure in _shell.scss is em of this size, so the column
+// keeps the English body size on every page; Chinese prose resizes the
+// article instead (_i18n.scss).
+body {
+  font-size: var(--size-body);
+  line-height: var(--lh-body);
+}
+
+article {
+  font-size: var(--size-body);
+  line-height: var(--lh-body);
+
+  // Ink links: the colour of the text they sit in, a hairline underline, and
+  // the accent on hover.
+  a {
+    font-weight: inherit;
+    color: inherit;
+    text-decoration-line: underline;
+    text-decoration-color: var(--link-underline-color);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+    text-decoration-skip-ink: auto;
+    transition:
+      color var(--dur-fade) ease-out,
+      text-decoration-color var(--dur-fade) ease-out;
+
+    &:hover {
+      color: var(--accent-color);
+      text-decoration-color: currentColor;
+    }
+
+    // Typora has no chip behind an internal link; it is ordinary link text.
+    &.internal {
+      background-color: transparent;
+      padding: 0;
+      border-radius: 0;
+      line-height: inherit;
+      text-decoration-line: underline;
+    }
+  }
+
+  // base.scss colours these elements directly, so a container's colour
+  // (blockquote, callout, notice) never reached its text.
+  p,
+  ul,
+  ol,
+  li,
+  tr,
+  td {
+    color: inherit;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    position: relative;
+    margin: 1.6em 0 0.5em;
+    font-family: var(--font-text);
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--heading-color);
+    letter-spacing: 0;
+  }
+
+  h1 {
+    font-size: var(--size-title);
+    line-height: var(--lh-title);
+    letter-spacing: -0.01em;
+    margin: 0.35em 0 0.5em;
+  }
+
+  h2 {
+    font-size: var(--size-h2);
+    line-height: var(--lh-head);
+    margin: 2.2em 0 0.6em;
+  }
+
+  h3 {
+    font-size: var(--size-h3);
+    line-height: var(--lh-h3);
+    margin: 1.8em 0 0.5em;
+  }
+
+  h4 {
+    font-size: 1.05em;
+  }
+
+  h5 {
+    font-size: 1em;
+  }
+
+  h6 {
+    font-family: var(--font-interface);
+    font-size: var(--size-ui);
+    letter-spacing: 0.02em;
+    color: var(--control-text-color);
+  }
+
+  p,
+  blockquote,
+  ul,
+  ol,
+  dl,
+  table {
+    margin: 0.74em 0;
+  }
+
+  p,
+  li {
+    line-height: var(--lh-body);
+  }
+
+  strong,
+  b {
+    font-family: inherit;
+    font-weight: 600;
+    color: var(--heading-color);
+    font-synthesis: weight;
+    letter-spacing: 0;
+  }
+
+  ul,
+  ol {
+    padding-left: 1.45rem;
+  }
+
+  li {
+    padding-left: 0.15rem;
+
+    > ol,
+    > ul {
+      margin: 0;
+    }
+
+    &::marker {
+      color: var(--control-text-color);
+    }
+  }
+
+  hr {
+    height: 1px;
+    padding: 0;
+    margin: 26px 0;
+    background-color: var(--border-color);
+    border: 0 none;
+    overflow: hidden;
+    box-sizing: content-box;
+    opacity: 0.75;
+  }
+
+  blockquote {
+    border-left: 2px solid var(--quote-border-color);
+    background-color: var(--quote-bg-color);
+    padding: 0.5rem 0.8rem 0.5rem 0.68rem;
+    color: var(--quote-text-color);
+    border-radius: var(--radius-inline);
+    line-height: 1.48;
+
+    > p {
+      margin: 0.4em 0;
+    }
+
+    > :first-child {
+      margin-top: 0;
+    }
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  // #write img
+  img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    outline: 1px solid var(--image-outline-color);
+    outline-offset: -1px;
+    border-radius: 0;
+  }
+
+  // .md-task-list-item
+  li:has(> input[type="checkbox"]) {
+    padding-left: 0;
+  }
+
+  input[type="checkbox"] {
+    accent-color: var(--accent-color);
+
+    &:not(:disabled) {
+      cursor: pointer;
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+  }
+
+  li:has(> input[type="checkbox"]:checked) {
+    color: var(--task-done-color);
+    text-decoration-color: var(--task-done-color);
+  }
+}
+
+// Essays: the block rhythm the Pass A frame gave apple-design-physics, now on
+// every essay.
+body[data-kind="essay"] article {
+  p,
+  li {
+    margin-block: 0.85em;
+  }
+
+  .katex-display {
+    margin-block: 1.4em;
+  }
+
+  .table-container {
+    margin-block: 1.5em;
+  }
+}
+
+// Home: the index.md body is the page's last section (About), after the
+// Writing and Works sections presence-index renders. Its h2 is a section label
+// there, so it takes the look and spacing of .idx-label and .idx + .idx
+// (_home.scss) instead of the content heading scale above, and the three
+// sections read as one index.
+body[data-kind="home"] article h2 {
+  margin: var(--space-8) 0 var(--space-5);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line-color);
+  font-family: var(--font-interface);
+  font-size: var(--size-ui);
+  line-height: var(--lh-ui);
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ink-muted-color);
+
+  @media all and ($mobile) {
+    margin-top: var(--space-7);
+  }
+
+  // The permalink icon is 18px on the baseline, which would stretch the 20px
+  // line past the other labels' height; at 1em it sits inside the line.
+  > a[role="anchor"] svg {
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
+  }
+}
+
+// --- edge fades --------------------------------------------------------------
+// Horizontal scrollers (code, tables, display math) fade out at an edge while
+// content is clipped there. The fade depth follows the scroll position through
+// a scroll-driven animation; a box that does not overflow has an inactive
+// timeline, so it gets no fade. Engines without scroll timelines get none.
+@property --fade-start {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --fade-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@keyframes edge-fade-start {
+  from {
+    --fade-start: 0px;
+  }
+
+  to {
+    --fade-start: 24px;
+  }
+}
+
+@keyframes edge-fade-end {
+  from {
+    --fade-end: 24px;
+  }
+
+  to {
+    --fade-end: 0px;
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  article pre > code,
+  article .table-container,
+  article .katex-display,
+  article .mermaid-paper {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 var(--fade-start),
+      #000 calc(100% - var(--fade-end)),
+      transparent
+    );
+    animation-name: edge-fade-start, edge-fade-end;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: scroll(self inline);
+    animation-range:
+      0 32px,
+      calc(100% - 32px) 100%;
+  }
+}

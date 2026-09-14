@@ -1,0 +1,77 @@
+// --- GitHub alerts / callouts ----------------------------------------------
+// Quartz renders these as .callout with --color/--border/--bg; re-point those
+// three at the theme's alert tokens and reshape the box like .md-alert.
+article .callout {
+  border: 0;
+  border-left: 3px solid var(--color);
+  background-color: var(--bg);
+  border-radius: var(--radius-block);
+  padding: 0.7rem 0.9rem;
+  margin: 0.9rem 0;
+  color: var(--text-color);
+  line-height: 1.56;
+
+  &[data-callout] {
+    --color: var(--alert-note-color);
+    --bg: var(--alert-note-surface);
+  }
+
+  &[data-callout="tip"],
+  &[data-callout="success"] {
+    --color: var(--alert-tip-color);
+    --bg: var(--alert-tip-surface);
+  }
+
+  &[data-callout="important"],
+  &[data-callout="question"],
+  &[data-callout="abstract"],
+  &[data-callout="example"] {
+    --color: var(--alert-important-color);
+    --bg: var(--alert-important-surface);
+  }
+
+  &[data-callout="warning"] {
+    --color: var(--alert-warning-color);
+    --bg: var(--alert-warning-surface);
+  }
+
+  &[data-callout="caution"],
+  &[data-callout="danger"],
+  &[data-callout="failure"],
+  &[data-callout="bug"] {
+    --color: var(--alert-caution-color);
+    --bg: var(--alert-caution-surface);
+  }
+
+  &[data-callout="quote"] {
+    --color: var(--quote-border-color);
+    --bg: var(--quote-bg-color);
+  }
+
+  .callout-title {
+    padding: 0 0 0.25rem;
+    gap: 0.15em;
+    align-items: center;
+    --icon-size: 15px;
+  }
+
+  .callout-title-inner {
+    font-family: var(--font-interface);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  p {
+    margin: 0.35em 0;
+  }
+
+  > .callout-content > :last-child {
+    margin-bottom: 0;
+  }
+
+  code {
+    background-color: var(--alert-inline-surface);
+    border-color: var(--alert-inline-border);
+  }
+}

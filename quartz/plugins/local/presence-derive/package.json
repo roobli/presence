@@ -1,0 +1,23 @@
+{
+  "name": "presence-derive",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Derive page kind, sections, figures, reading time and work relation into file.data.presence",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./index.js",
+  "quartz": {
+    "name": "presence-derive",
+    "displayName": "Presence derive",
+    "category": "transformer",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 70,
+    "defaultEnabled": true,
+    "defaultOptions": {}
+  }
+}

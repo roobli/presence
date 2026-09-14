@@ -1,0 +1,35 @@
+// 转载署名条。由笔记库的 publish 注入到导出正文里，不是站点组件，所以这里只管样子。
+// 它必须一眼看出"这不是站主写的"，但又不能抢正文的注意力，所以走的是低饱和的
+// 侧栏引注质感：左侧一道重音色细线，底色比正文纸面略沉，字号小一档。
+.reprint-notice {
+  margin: 0 0 2rem;
+  padding: 0.9rem 1.1rem;
+  border-left: 3px solid var(--accent-color);
+  border-radius: 0 var(--radius-block, 6px) var(--radius-block, 6px) 0;
+  background: color-mix(in srgb, var(--accent-color) 5%, var(--surface-subtle-color));
+  color: var(--ink-muted-color);
+  font-family: var(--font-interface, inherit);
+  font-size: 0.85rem;
+  line-height: 1.65;
+
+  p {
+    margin: 0;
+  }
+
+  p + p {
+    margin-top: 0.45rem;
+  }
+
+  a {
+    color: var(--accent-color);
+    word-break: break-all;
+  }
+}
+
+.reprint-notice-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--accent-color);
+  text-transform: uppercase;
+}

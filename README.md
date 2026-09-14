@@ -28,7 +28,7 @@ Secrets (repo Actions): `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`. Never c
 | What | Where |
 | --- | --- |
 | Fonts, colors, plugins | `quartz.config.yaml` |
-| Layout / chrome CSS | `quartz/styles/custom.scss` |
+| Layout / chrome CSS | `quartz/styles/custom/_*.scss`, listed in cascade order by `quartz/styles/custom.scss` |
 | Sidebar, TOC disk, width shortcuts | `quartz/plugins/local/roob-ui/` |
 | Theme tokens (generated) | `quartz/styles/claude-like-tokens.scss` + `node tools/sync-theme-tokens.mjs` |
 

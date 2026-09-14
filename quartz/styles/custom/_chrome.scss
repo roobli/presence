@@ -1,0 +1,45 @@
+// ---------------------------------------------------------------------------
+// Popovers, selection, scrollbars and print
+// ---------------------------------------------------------------------------
+.popover > .popover-inner {
+  font-family: var(--font-text);
+  border: 1px solid var(--line-color);
+  background-color: var(--canvas-color);
+  border-radius: var(--radius-block);
+  box-shadow: 0 8px 20px var(--overlay-shadow-color);
+}
+
+::selection {
+  background: var(--select-text-bg-color);
+  color: inherit;
+}
+
+// Thin scrollbars only where a mouse drives them. On touch screens a styled
+// scrollbar stops being an overlay: the page scrollbar (styled through body)
+// then reserves its width, and a phone's layout viewport grows past the screen.
+@media (hover: hover) and (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@media print {
+  html {
+    font-size: 13px;
+  }
+
+  pre {
+    page-break-inside: avoid;
+    word-wrap: break-word;
+  }
+}

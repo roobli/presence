@@ -1,0 +1,392 @@
+@use "../variables" as *;
+
+// ---------------------------------------------------------------------------
+// Page outline
+//
+// A dial in the top right rather than a section in the sidebar, which used to
+// shove the tree down the panel whenever a note had a long outline. At rest it
+// shows a few lines around the one being read: that line level, solid and a
+// touch larger, its neighbours dimmer, softer and tilted off it, so the set
+// sits on a shallow arc that closes toward the right edge. Pointing at it
+// opens the whole outline, upright and opaque, over the article if it must be.
+//
+// It stands in the gutter right of the column, sized from the gutter roob-ui
+// measures (--tpl-right-gutter), and only where html[data-tpl-outline] says
+// the gutter can carry it.
+// ---------------------------------------------------------------------------
+#tpl-outline {
+  --tpl-outline-row: 26px;
+
+  position: fixed;
+  top: 96px;
+  right: 18px;
+  z-index: 12;
+  box-sizing: border-box;
+  width: clamp(150px, calc(var(--tpl-right-gutter, 220px) - 26px), 300px);
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-family: var(--font-interface);
+  // No backdrop at rest. It used to carry a canvas-coloured wash so text
+  // underneath would fade out, but the dial now keeps to the gutter, and
+  // that wash cut a pale strip through anything tinted it happened to cross.
+  background: transparent;
+  transition:
+    background-color 200ms ease-out,
+    border-color 200ms ease-out,
+    box-shadow 200ms ease-out;
+
+  // Width glides only when roob-ui asks for it: a text width mode change, or
+  // the dial opening and closing. A gutter measured after a resize snaps.
+  &.tpl-outline-morph {
+    transition:
+      width 260ms cubic-bezier(0.22, 0.61, 0.36, 1),
+      background-color 200ms ease-out,
+      border-color 200ms ease-out,
+      box-shadow 200ms ease-out;
+  }
+
+  // The spine. The lines hang off it, which is what turns a stack of text
+  // into a dial; it fades out at both ends so it never reads as a border.
+  &::after {
+    content: "";
+    position: absolute;
+    top: 14px;
+    bottom: 14px;
+    right: 6px;
+    width: 1px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      var(--line-strong-color) 22%,
+      var(--line-strong-color) 78%,
+      transparent
+    );
+    pointer-events: none;
+    transition: opacity 200ms ease-out;
+  }
+
+  // The needle, level with the line being read. It never moves: the strip
+  // slides past it, the way a dial turns under its mark.
+  &::before {
+    content: "";
+    position: absolute;
+    right: 3px;
+    top: calc(var(--tpl-outline-row) * 3.5 - 1px);
+    width: 7px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--accent-color);
+    pointer-events: none;
+    transition: opacity 200ms ease-out;
+  }
+
+  &[hidden] {
+    display: none;
+  }
+
+  // One column has no gutter; the mobile header carries the outline there.
+  @media all and ($mobile) {
+    display: none;
+  }
+
+  // The gutter is too narrow to carry the dial without covering the text.
+  html[data-tpl-outline="off"] & {
+    display: none;
+  }
+}
+
+.tpl-outline-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 0;
+  padding: 0 12px;
+  opacity: 0;
+  overflow: hidden;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--ink-muted-color);
+  transition:
+    height 200ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 160ms ease-out;
+}
+
+.tpl-outline-count {
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+.tpl-outline-pin {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-inline);
+  background: transparent;
+  color: var(--ink-muted-color);
+  cursor: pointer;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    color: var(--accent-color);
+  }
+
+  &[aria-pressed="true"] {
+    color: var(--accent-color);
+    background: var(--item-hover-bg-color);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: -1px;
+  }
+}
+
+.tpl-outline-body {
+  position: relative;
+  height: calc(var(--tpl-outline-row) * 7);
+  overflow: hidden;
+  // The edges dissolve instead of being cut, in both states.
+  mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 80%, transparent);
+  transition: height 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.tpl-outline-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  // The active line is parked on the fourth row; the strip slides under it.
+  transform: translateY(calc((3 - var(--tpl-outline-active, 0)) * var(--tpl-outline-row)));
+  transition: transform 380ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.tpl-outline-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: var(--tpl-outline-row);
+  padding: 0 16px 0 12px;
+  box-sizing: border-box;
+  opacity: 0;
+  pointer-events: none;
+  // The arc closes to the right, so that edge is what the lines pivot on.
+  transform-origin: 100% 50%;
+  transition:
+    opacity 260ms ease-out,
+    filter 260ms ease-out,
+    transform 320ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.tpl-outline-link {
+  display: block;
+  max-width: 100%;
+  font-size: 12.5px;
+  line-height: 1.3;
+  font-weight: 400;
+  text-align: right;
+  color: var(--ink-muted-color);
+  text-decoration: none;
+  background-image: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 1px;
+    border-radius: var(--radius-inline);
+  }
+}
+
+// The three steps the reader actually sees. The tilt grows in shrinking
+// increments, which is what makes the set read as an arc rather than a fan.
+// Every line is a link, so the first neighbour on each side keeps the muted
+// ink at full strength and no blur (4.5:1 or better in both themes); only the
+// lines beyond it fade.
+.tpl-outline-item[data-rel="0"] {
+  opacity: 1;
+  filter: none;
+  transform: rotate(0deg) scale(1.06);
+  pointer-events: auto;
+
+  .tpl-outline-link {
+    color: var(--ink-strong-color);
+    font-weight: 500;
+  }
+}
+
+.tpl-outline-item[data-rel="-1"] {
+  opacity: 1;
+  filter: none;
+  transform: rotate(2deg);
+}
+
+.tpl-outline-item[data-rel="1"] {
+  opacity: 1;
+  filter: none;
+  transform: rotate(-2deg);
+}
+
+.tpl-outline-item[data-rel="-2"] {
+  opacity: 0.28;
+  filter: blur(0.75px);
+  transform: rotate(3.4deg);
+}
+
+.tpl-outline-item[data-rel="2"] {
+  opacity: 0.28;
+  filter: blur(0.75px);
+  transform: rotate(-3.4deg);
+}
+
+.tpl-outline-item[data-rel="-3"] {
+  opacity: 0.13;
+  filter: blur(1.1px);
+  transform: rotate(4.4deg);
+}
+
+.tpl-outline-item[data-rel="3"] {
+  opacity: 0.13;
+  filter: blur(1.1px);
+  transform: rotate(-4.4deg);
+}
+
+// --- opened -----------------------------------------------------------------
+#tpl-outline[data-state="open"] {
+  width: clamp(250px, calc(var(--tpl-right-gutter, 250px) + 140px), 340px);
+
+  // Open, it is a list rather than a dial, so the spine and needle go.
+  &::after,
+  &::before {
+    opacity: 0;
+  }
+
+  border-color: var(--line-color);
+  // Opaque on purpose: this sits over the article, and article text showing
+  // through the outline would be worse than covering it.
+  background: var(--surface-subtle-color);
+  box-shadow:
+    0 2px 6px var(--overlay-shadow-color),
+    0 18px 44px var(--overlay-shadow-color);
+
+  .tpl-outline-head {
+    height: 30px;
+    opacity: 1;
+  }
+
+  .tpl-outline-body {
+    height: min(62vh, calc(var(--tpl-outline-row) * 20));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    mask-image: linear-gradient(to bottom, transparent, #000 5%, #000 95%, transparent);
+  }
+
+  .tpl-outline-list {
+    transform: none;
+  }
+
+  .tpl-outline-item {
+    justify-content: flex-start;
+    padding-right: 12px;
+    opacity: 1;
+    filter: none;
+    transform: none;
+    pointer-events: auto;
+
+    &[data-depth="1"] {
+      padding-left: 24px;
+    }
+
+    &[data-depth="2"] {
+      padding-left: 36px;
+    }
+
+    &[data-depth="3"] {
+      padding-left: 48px;
+    }
+  }
+
+  .tpl-outline-link {
+    text-align: left;
+    color: var(--ink-color);
+
+    &:hover {
+      color: var(--accent-color);
+    }
+  }
+
+  .tpl-outline-item[data-rel="0"] .tpl-outline-link {
+    color: var(--accent-color);
+    font-weight: 500;
+  }
+}
+
+// --- docked ------------------------------------------------------------------
+// Pinned in a gutter wide enough to hold it (data-tpl-outline="dock"), the
+// outline stops being an overlay and stands in the gutter as a rail, at the
+// dial's own width, so nothing of the article is underneath it. That lets it
+// drop the card treatment the overlay needed, the opaque fill and the drop
+// shadow, and keep the spine, which docked reads as the rail's own edge.
+#tpl-outline.tpl-outline-docked {
+  width: clamp(150px, calc(var(--tpl-right-gutter, 220px) - 26px), 300px);
+
+  &[data-state="open"] {
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+
+    &::after {
+      opacity: 1;
+    }
+
+    .tpl-outline-body {
+      height: min(74vh, calc(100vh - 190px));
+      // A proportional fade is fine on the short overlay; on a rail this tall
+      // it swallowed the first two lines, and one of those is often the line
+      // being read. Fixed edges instead.
+      mask-image: linear-gradient(
+        to bottom,
+        transparent,
+        #000 14px,
+        #000 calc(100% - 20px),
+        transparent
+      );
+    }
+
+    .tpl-outline-item {
+      padding-right: 20px;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #tpl-outline,
+  #tpl-outline.tpl-outline-morph,
+  .tpl-outline-head,
+  .tpl-outline-body,
+  .tpl-outline-list,
+  .tpl-outline-item {
+    transition: none;
+  }
+
+  .tpl-outline-item {
+    filter: none !important;
+    transform: none !important;
+  }
+}
+
+// Quartz still renders its own outline and its script still binds to it; the
+// dial above is built from that markup, so the original just stays out of view.
+.tpl-toc-source {
+  display: none;
+}

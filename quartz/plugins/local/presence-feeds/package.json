@@ -1,0 +1,23 @@
+{
+  "name": "presence-feeds",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Write sitemap.xml with translation alternates and an RSS feed of writing and works",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./index.js",
+  "quartz": {
+    "name": "presence-feeds",
+    "displayName": "Presence feeds",
+    "category": "emitter",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 50,
+    "defaultEnabled": true,
+    "defaultOptions": {}
+  }
+}

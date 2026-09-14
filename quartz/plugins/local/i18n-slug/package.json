@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "Map sibling *.zh.md files to /zh/<path> URLs and mark them unlisted for explorer",
+  "description": "Map sibling *.zh.md files to /<path>/zh, derive translation pairs, and emit language head tags",
   "exports": {
     ".": "./index.js",
     "./package.json": "./package.json"
@@ -16,7 +16,7 @@
     "version": "1.0.0",
     "quartzVersion": ">=5.0.0",
     "dependencies": [],
-    "defaultOrder": 5,
+    "defaultOrder": 6,
     "defaultEnabled": true,
     "defaultOptions": {}
   }

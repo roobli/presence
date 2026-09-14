@@ -1,0 +1,118 @@
+@use "../variables" as *;
+
+// --- resize and collapse ---------------------------------------------------
+// The grab strip is wider than the line it draws and sits inside the panel.
+// .tpl-nav-body keeps its scrollbar clear of the strip by the same amount.
+:root {
+  --tpl-resize-hit: 12px;
+
+  @media (pointer: coarse) {
+    --tpl-resize-hit: 20px;
+  }
+}
+
+.tpl-nav-resize {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--tpl-resize-hit);
+  height: 100%;
+  cursor: col-resize;
+  z-index: 3;
+  touch-action: none;
+
+  // The line over the panel's edge. It is fixed rather than absolute because
+  // past the widest setting it stretches out beyond the panel, which clips
+  // its own overflow. roob-ui moves it through --tpl-resize-offset.
+  &::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: calc(var(--tpl-sidebar-width) - 2px);
+    width: 2px;
+    background: var(--accent-color);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(var(--tpl-resize-offset, 0px));
+  }
+
+  &:hover::after,
+  &.tpl-resize-settling::after,
+  html.tpl-resizing &::after {
+    opacity: 1;
+  }
+
+  // Inset, or the panel's own clipping would cut the ring off.
+  &:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: -2px;
+  }
+
+  @media all and ($mobile) {
+    display: none;
+  }
+}
+
+// The strip runs the full height of the panel, so the buttons at either end
+// that reach into it stay on top of it.
+.tpl-nav-controls,
+.tpl-nav-foot-tools {
+  position: relative;
+  z-index: 4;
+}
+
+html.tpl-resizing,
+html.tpl-resizing * {
+  cursor: col-resize;
+  user-select: none;
+}
+
+// Collapsing is a desktop state. On one column the sidebar is the header bar,
+// and neither the collapse nor the reopen button exists there to undo it.
+@media all and not ($mobile) {
+  html[data-tpl-sidebar="collapsed"] .page > #quartz-body > .sidebar.left {
+    display: none;
+  }
+}
+
+// Sits exactly where the collapse control was, so the panel folds away and
+// comes back from the same spot instead of swapping corners.
+#tpl-sidebar-collapse[aria-pressed="true"] {
+  color: var(--accent-color);
+  background: var(--item-hover-bg-color);
+}
+
+@media all and ($mobile) {
+  #tpl-sidebar-collapse {
+    display: none;
+  }
+}
+
+#tpl-sidebar-reopen {
+  display: none;
+  position: fixed;
+  top: 13px;
+  left: 12px;
+  z-index: 20;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid var(--line-color);
+  border-radius: var(--radius-block);
+  background: var(--surface-subtle-color);
+  color: var(--ink-muted-color);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+  }
+
+  @media all and not ($mobile) {
+    html[data-tpl-sidebar="collapsed"] & {
+      display: grid;
+    }
+  }
+}
