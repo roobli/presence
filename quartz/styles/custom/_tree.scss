@@ -145,6 +145,9 @@ $mark-ext: (
     font-family: inherit;
   }
 
+  // A flex container never draws an ellipsis for its own text, so roob-ui
+  // puts the name in .tpl-tree-label (tree.js). The label is the box that is
+  // cut; the row only clips.
   .folder-title,
   a.nav-file-title {
     display: flex;
@@ -152,6 +155,12 @@ $mark-ext: (
     min-width: 0;
     font-size: 13.5px;
     line-height: 1.3;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .tpl-tree-label {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
