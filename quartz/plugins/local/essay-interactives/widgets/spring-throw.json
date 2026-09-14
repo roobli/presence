@@ -1,0 +1,10 @@
+{
+  "name": "spring-throw",
+  "status": "live",
+  "stage": "group",
+  "minHeight": 372,
+  "minHeightNarrow": 352,
+  "railRows": 1,
+  "railRowsNarrow": 2,
+  "cites": ["250"]
+}

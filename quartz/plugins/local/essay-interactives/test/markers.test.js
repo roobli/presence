@@ -258,20 +258,18 @@ test("markers in frontmatter are ignored", () => {
   assert.equal(markers.length, 0)
 })
 
-test("registry: pre-shell widgets use the adapter; fixtures need the flag; stage defaults to img", () => {
+test("registry: the apple figures mount on the fig API; fixtures need the flag; stage defaults to img", () => {
   const plain = loadRegistry(undefined, false)
-  for (const name of ["spring-zeta"]) {
+  for (const name of ["spring-throw", "zeta-triptych", "curvature-comb"]) {
     assert.equal(plain.get(name)?.status, "live", name)
-    assert.equal(plain.get(name)?.adapter, "root", name)
-    assert.equal(plain.get(name)?.stage, "img", name)
-  }
-  for (const name of ["zeta-triptych", "curvature-comb"]) {
     assert.equal(plain.get(name)?.adapter, null, name)
     assert.equal(plain.get(name)?.stage, "group", name)
   }
-  assert.equal(plain.has("squircle-compare"), false)
+  for (const name of ["spring-zeta", "squircle-compare"]) {
+    assert.equal(plain.has(name), false, name)
+  }
   assert.equal(plain.get("hinge-diagram")?.status, "strip")
-  assert.ok(plain.get("spring-zeta").cites.includes("320"))
+  assert.deepEqual(plain.get("spring-throw").cites, ["250"])
   assert.equal(plain.has("fixture"), false)
   const fixtures = loadRegistry(undefined, true)
   assert.equal(fixtures.get("fixture")?.status, "live")

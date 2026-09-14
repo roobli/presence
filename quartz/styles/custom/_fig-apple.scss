@@ -4,6 +4,268 @@
 // so a sidebar drag or a width mode reflows them. Colors come from the site
 // tokens, so a theme switch needs no repaint. One accent meaning per figure.
 
+/* ---------- Fig. 1 spring-throw ---------- */
+
+// Lanes, trace and key inside the reserved box (372px wide, 352px narrow).
+// The key wraps to as many lines as its words need at the column width and in
+// either language, and the trace takes the height that is left (about 170px
+// wide and 134px at 375). Cards move by transform only.
+.spring-throw {
+  --throw-card-w: 56px;
+  --throw-card-h: 44px;
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 136px minmax(0, 1fr) auto;
+  row-gap: 12px;
+  padding: 12px 20px;
+  font-family: var(--font-interface);
+  color: var(--ink-muted-color);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+@container essay-fig-stage (width < 560px) {
+  .spring-throw {
+    --throw-card-w: 48px;
+    --throw-card-h: 40px;
+    grid-template-rows: 120px minmax(0, 1fr) auto;
+    row-gap: 8px;
+  }
+}
+
+.spring-throw__lanes {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  row-gap: 8px;
+  border-radius: 6px;
+  touch-action: pan-y;
+  cursor: grab;
+  -webkit-tap-highlight-color: transparent;
+
+  &.is-held {
+    cursor: grabbing;
+  }
+}
+
+.spring-throw__lane {
+  position: relative;
+  border: 1px solid var(--line-color);
+  border-radius: 6px;
+}
+
+.spring-throw__label {
+  position: absolute;
+  top: 5px;
+  left: 8px;
+  font-size: 12px;
+  line-height: 14px;
+  color: var(--ink-muted-color);
+  pointer-events: none;
+}
+
+// The Spring label's rule shares the accent meaning with the spring line.
+.spring-throw__lane--spring .spring-throw__label {
+  padding-bottom: 1px;
+  border-bottom: 3px solid var(--accent-color);
+}
+
+.spring-throw__home {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 50%;
+  border-left: 1px dashed var(--line-strong-color);
+}
+
+.spring-throw__card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+  width: var(--throw-card-w);
+  height: var(--throw-card-h);
+  margin: calc(var(--throw-card-h) / -2) 0 0 calc(var(--throw-card-w) / -2);
+  border: 1px solid var(--line-color);
+  border-radius: 4px;
+  background: var(--surface-color);
+  will-change: transform;
+}
+
+.spring-throw__finger-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border: 2px solid var(--ink-color);
+  border-radius: 50%;
+  opacity: 0.4;
+  pointer-events: none;
+
+  &.is-down {
+    background: var(--ink-color);
+  }
+}
+
+.spring-throw__trace-wrap {
+  position: relative;
+  min-width: 0;
+}
+
+.spring-throw__axis-line {
+  fill: none;
+  stroke: var(--line-strong-color);
+  stroke-width: 1;
+}
+
+.spring-throw__tick,
+.spring-throw__event-num {
+  font-family: var(--font-code);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--ink-muted-color);
+  text-anchor: middle;
+}
+
+.spring-throw__axis-title {
+  font-size: 12px;
+  fill: var(--ink-muted-color);
+  text-anchor: end;
+}
+
+.spring-throw__home-line {
+  stroke: var(--line-color);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.spring-throw__event {
+  stroke: var(--line-strong-color);
+  stroke-width: 1;
+}
+
+// While the finger holds, the rows sit exactly on it, so a 1px finger line
+// would vanish under them; a soft band marks the held stretches instead, and it
+// separates from the rows only where travel past a lane end is resisted.
+.spring-throw__path--finger {
+  fill: none;
+  stroke: var(--ink-color);
+  stroke-opacity: 0.16;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.spring-throw__path--tween {
+  fill: none;
+  stroke: var(--ink-muted-color);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+}
+
+// The one accent meaning: the spring line, with the Spring label's rule.
+.spring-throw__path--spring {
+  fill: none;
+  stroke: var(--accent-color);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+// A live episode draws over the recorded example, dimmed to 35%.
+.spring-throw[data-episode="live"] .spring-throw__recorded,
+.spring-throw[data-episode="live"] .spring-throw__ticks {
+  opacity: 0.35;
+}
+
+.spring-throw__key {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  align-items: center;
+  gap: 2px 14px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--ink-muted-color);
+}
+
+// Both tag texts share one grid cell (the other one hidden), so the key keeps
+// its width, and the trace its height, when an episode starts or ends.
+.spring-throw__tag {
+  display: inline-grid;
+  font-weight: 600;
+  color: var(--ink-color);
+
+  > span,
+  &::after {
+    grid-area: 1 / 1;
+  }
+
+  &::after {
+    content: attr(data-other);
+    visibility: hidden;
+  }
+}
+
+.essay-fig .spring-throw__events,
+.essay-fig .spring-throw__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    line-height: 18px;
+  }
+}
+
+.spring-throw__num {
+  font-family: var(--font-code);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-color);
+}
+
+// Room for the finger band's round caps.
+.spring-throw__swatch {
+  flex: none;
+  margin-inline: 3px;
+  overflow: visible;
+}
+
+.spring-throw__keyhelp {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Two 18px lines fit one 36px rail row (see the zeta readout).
+.essay-fig .spring-throw__hint {
+  flex: 1 1 260px;
+  min-width: 0;
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-muted-color);
+}
+
 /* ---------- Fig. 2 zeta-triptych ---------- */
 
 // Legend, plot and cost strip at the spec's heights; the registry reserves the
@@ -258,12 +520,14 @@
   }
 }
 
+// Two 18px lines fit one 36px rail row, so a wrapped readout never grows the
+// reserved rail at mount.
 .zeta-triptych__readout {
   flex: 1 1 260px;
   min-width: 0;
   font-family: var(--font-code);
   font-size: 13px;
-  line-height: 20px;
+  line-height: 18px;
   font-variant-numeric: tabular-nums;
   color: var(--ink-color);
 }
@@ -537,15 +801,19 @@
   stroke-opacity: 0.6;
 }
 
+// 18px lines, values included, so two wrapped lines fit one 36px rail row.
 .curvature-comb__readout {
   flex: 1 1 240px;
   min-width: 0;
   font-size: 13px;
-  line-height: 20px;
+  line-height: 18px;
   color: var(--ink-color);
 }
 
+// Top-aligned, so the mono face's own ascent cannot make a line taller.
 .curvature-comb__v {
   font-family: var(--font-code);
   font-variant-numeric: tabular-nums;
+  line-height: 18px;
+  vertical-align: top;
 }

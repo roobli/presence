@@ -164,3 +164,98 @@ test("zeta-triptych: readout and value text at the acceptance settings", () => {
   assert.equal(say(1.5, true), "ζ 1.50, no overshoot, settles 88 percent later than ζ 1")
   assert.equal(say(1, true), "ζ 1.00, no overshoot, the fastest settle that never overshoots")
 })
+
+/* ---------- spring-throw ---------- */
+
+test("spring-throw: the recorded episode matches the replayed numbers", () => {
+  const run = load("spring-throw.js")
+  const at = (t) => run(`throwSample(${t})`)
+  near(at(0.5358).spring, 0.2417, 1e-3, "spring peak")
+  const gap = at(0.5471)
+  near(gap.spring - gap.tween, 0.1913, 1e-3, "largest gap")
+  near(at(0.515).spring, 0.2204, 1e-3, "spring at 0.515 s")
+  near(at(0.515).tween, 0.0729, 1e-3, "tween at 0.515 s")
+  near(at(0.59).spring, 0.181, 1e-3, "spring at the catch")
+  near(at(0.59).tween, 0.0218, 1e-3, "tween at the catch")
+  near(at(0.49).spring, 0.1, 1e-9, "spring at the release")
+  near(at(0.49).tween, 0.1, 1e-9, "tween at the release")
+  near(at(0.35).finger, -0.9, 1e-9, "finger at 0.35 s")
+  near(at(0.38).finger, -0.78, 1e-9, "finger at 0.38 s")
+  for (const t of [0.05, 0.52, 0.8, 1.2]) {
+    assert.ok(Number.isNaN(at(t).finger), `the finger is lifted at ${t} s`)
+  }
+  const scan = run(`(() => {
+    let previous = Infinity, rising = 0, over = 0, below = 0, peak = -Infinity, peakT = 0
+    for (let ms = 490; ms <= 1600; ms++) {
+      const s = throwSample(ms / 1000)
+      if (s.tween > previous + 1e-12) rising++
+      if (s.tween > 0.1 + 1e-12) over++
+      if (ms >= 780 && s.spring < 0) below++
+      if (s.spring > peak) { peak = s.spring; peakT = ms / 1000 }
+      previous = s.tween
+    }
+    return { rising, over, below, peakT }
+  })()`)
+  assert.equal(scan.rising, 0, "the tween never rises after the release")
+  assert.equal(scan.over, 0, "the tween never exceeds 0.10 H")
+  assert.equal(scan.below, 0, "the spring never crosses home after 0.78 s")
+  near(scan.peakT, 0.5358, 1.5e-3, "the peak comes 46 ms after letting go")
+  assert.ok(Math.abs(at(0.59).spring - at(0.59 - 1 / 60).spring) <= 0.03, "no jump at the catch")
+})
+
+test("spring-throw: release speed, keyboard throw, rest times and edge resistance", () => {
+  const run = load("spring-throw.js")
+  const speed = run(`(() => {
+    const tracker = createVelocityTracker({})
+    for (let i = 0; i <= 6; i++) {
+      const t = 0.49 - (6 - i) / 60
+      tracker.add(t * 1000, throwFinger(t), 0)
+    }
+    return tracker.velocity(490).x
+  })()`)
+  near(speed, 8, 1e-6, "100 ms least-squares slope of the 60 Hz flick")
+  const omega = Math.sqrt(320)
+  near(run("springAt(0, 8, 1, THROW_OMEGA, 1 / THROW_OMEGA)"), 8 / (Math.E * omega), 1e-12, "peak")
+  near(8 / (Math.E * omega), 0.1645, 1e-4, "the keyboard throw peaks at 0.1645 H")
+  near(1000 / omega, 55.9, 0.05, "56 ms after the key")
+  const rest = (y0, v0, h) =>
+    run(`(() => {
+      let continuous = 0
+      for (let t = 0; t < 2; t += 1e-4) {
+        const y = springAt(${y0}, ${v0}, 1, THROW_OMEGA, t)
+        const v = springVelocityAt(${y0}, ${v0}, 1, THROW_OMEGA, t)
+        if (!(Math.abs(y) * ${h} < 0.5 && Math.abs(v) * ${h} < 5)) continuous = t
+      }
+      const state = { x: ${y0}, v: ${v0}, target: 0 }
+      let stepped = 0
+      while (stepped < 2) {
+        stepped += 1 / 60
+        if (stepSpring(state, THROW_SPRING, 1 / 60, 0.5 / ${h}, 5 / ${h})) break
+      }
+      return { continuous, stepped }
+    })()`)
+  for (const [h, expected] of [
+    [143.5, 0.408],
+    [350, 0.467],
+  ]) {
+    const r = rest(0, 8, h)
+    near(r.continuous, expected, 0.003, `the keyboard throw rests at H ${h}`)
+    assert.ok(r.stepped >= r.continuous && r.stepped <= r.continuous + 1 / 60 + 1e-4, `H ${h}`)
+  }
+  const caught = run("springAt(0.1, 8, 1, THROW_OMEGA, 0.1)")
+  for (const [h, expected] of [
+    [143.5, 1.137],
+    [350, 1.195],
+  ]) {
+    near(0.78 + rest(caught, 0, h).continuous, expected, 0.003, `recorded rest at H ${h}`)
+  }
+  near(run("throwResist(1.5)"), 1.2157, 1e-4, "1.5 H of travel shows 1.2157 H")
+  near(run("throwResist(1.2)"), 1.0991, 1e-4, "1.2 H of travel shows 1.0991 H")
+  near(run("throwResist(-1.5)"), -1.2157, 1e-4, "the left end resists the same way")
+  assert.equal(run("throwResist(0.7)"), 0.7)
+  for (const u of [-3, -1.4, -0.2, 0.9, 1.01, 2.5]) {
+    near(run(`throwUnresist(throwResist(${u}))`), u, 1e-9, `round trip at ${u}`)
+  }
+  near(run("throwTween(0.1, 0.025)"), 0.0729, 1e-4, "tween 25 ms after the release")
+  assert.equal(run("throwTween(0.4, 0.25)"), 0)
+})

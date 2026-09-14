@@ -24,7 +24,7 @@ What people feel, when motion is wrong, is a tiny lie about mass. The card eases
 
 Feel it once more without equations. Drag a list past its end and keep your finger down — the interface resists progressively, still tracking. Lift, and elasticity pulls content home. Mid-flight, grab again: a good system does not teleport or pause; it retargets. That interruptible overscroll is the sensory claim. Everything below is how you get there.
 
-<!-- interactive:spring-zeta -->
+<!-- interactive:spring-throw title="Throw the card, catch it, let it go" caption="the moment of letting go. The spring line keeps travelling the way the finger threw it before it turns home; the tween line turns home on the spot." alt="Two rows, a spring and a 250 ms tween, follow the same recorded finger: dragged left, flicked right, let go just past home, caught on the way back, let go again. Right after the first release the spring line keeps rising before it turns home, while the tween line turns down at once. Neither line jumps when caught." model="Both rows start from where the finger lets go, and both can be caught mid-flight. The spring row starts with the finger's speed. The tween row runs a fixed 250 ms ease-out toward home and ignores that speed. Stiffness, the ease-out curve and the edge resistance are illustrative." -->
 
 The dimensionless knob that separates those feels is the damping ratio $\zeta$. Three regimes cover most of what product UI needs:
 
