@@ -13,7 +13,6 @@ function el(tag, attrs, kids) {
   if (attrs) {
     Object.keys(attrs).forEach(function (k) {
       if (k === "text") node.textContent = attrs[k]
-      else if (k === "html") node.innerHTML = attrs[k]
       else if (attrs[k] != null) node.setAttribute(k, attrs[k])
     })
   }
