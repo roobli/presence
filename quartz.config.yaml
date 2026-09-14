@@ -116,7 +116,9 @@ plugins:
     enabled: true
     options:
       enableInHtmlEmbed: false
-      enableCheckbox: true
+      # Task lists keep GFM's disabled checkboxes. OFM's toggles were enabled,
+      # unlabeled tab stops that only saved a tick in one browser.
+      enableCheckbox: false
       # Drops OFM's bundled mermaid script and expand dialog. Fences stay
       # code[data-language="mermaid"] for mermaid-paper.
       mermaid: false
