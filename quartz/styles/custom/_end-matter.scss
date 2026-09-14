@@ -1,0 +1,41 @@
+// ---------------------------------------------------------------------------
+// End matter (presence-end): Related work and More writing under an essay,
+// Essays about this work and More writing under a work. The rows themselves
+// are the homepage's (_home.scss).
+// ---------------------------------------------------------------------------
+
+// The block draws its own rule, so the frame's <hr> before the footer slot
+// goes away on pages that have end matter, and the slot adds no margin.
+.page > #quartz-body > .center {
+  > hr:has(+ .page-footer > .end) {
+    display: none;
+  }
+
+  > .page-footer:has(> .end) {
+    margin-top: 0;
+  }
+}
+
+.end {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--line-color);
+
+  > section + section {
+    margin-top: var(--space-7);
+  }
+
+  .idx-list {
+    margin-top: var(--space-4);
+  }
+}
+
+.end-label {
+  margin: 0;
+  font-family: var(--font-interface);
+  font-size: var(--size-ui);
+  line-height: var(--lh-ui);
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ink-muted-color);
+}

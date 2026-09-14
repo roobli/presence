@@ -1,58 +1,201 @@
+@use "../variables" as *;
+
 // ---------------------------------------------------------------------------
-// Page header: title, date, tags, breadcrumbs
+// Page header (presence-header): kicker, title, dek, then the meta line with
+// the language control. It sits in .page-header inside the note column, so it
+// moves with the sidebar drag. On Chinese pages _i18n.scss swaps the text face
+// and the --size-* tokens under .ph.
+//
+// The mixins below are shared with the homepage rows, the end matter and the
+// colophon, which load after this partial.
 // ---------------------------------------------------------------------------
-.breadcrumb-container {
+
+// A link in an interface line: ink text on a hairline underline, accent on
+// hover. base.scss gives every link weight 600 and --secondary.
+@mixin ui-link {
+  color: var(--ink-color);
+  font-weight: inherit;
+  text-decoration-line: underline;
+  text-decoration-color: var(--link-underline-color);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  transition:
+    color var(--dur-fade) ease-out,
+    text-decoration-color var(--dur-fade) ease-out;
+
+  &:hover {
+    color: var(--accent-color);
+    text-decoration-color: currentColor;
+  }
+}
+
+// Link text that reads as text until hover: titles and the kicker.
+@mixin quiet-link {
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: none;
+  transition: color var(--dur-fade) ease-out;
+
+  &:hover {
+    color: var(--accent-color);
+  }
+}
+
+@mixin focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+// A 44px hit box on touch and narrow screens for a link in a 20px line. The
+// padding makes the box and the matching negative margin keeps the line
+// height, so nothing around the link moves.
+@mixin touch-target {
+  @media (pointer: coarse), #{$mobile} {
+    display: inline-block;
+    padding-block: 12px;
+    margin-block: -12px;
+  }
+}
+
+.ph {
+  padding-bottom: var(--space-5);
+  margin-bottom: var(--space-6);
+  border-bottom: 1px solid var(--line-color);
+}
+
+.ph-kicker {
+  margin: 0 0 var(--space-3);
   font-family: var(--font-interface);
-  font-size: 0.76rem;
+  font-size: var(--size-ui);
+  line-height: var(--lh-ui);
+  font-weight: 600;
   color: var(--ink-muted-color);
-  margin: 0 0 0.9rem;
 
   a {
-    color: var(--ink-muted-color);
-    font-weight: 400;
-    background-color: transparent;
-    text-decoration: none;
-
-    &:hover {
-      color: var(--accent-color);
-    }
+    @include quiet-link;
+    @include focus-ring;
+    @include touch-target;
   }
 }
 
-.page > #quartz-body .article-title {
-  font-family: var(--font-text);
-  font-size: 1.84em;
-  line-height: 1.16;
-  font-weight: 600;
-  color: var(--heading-color);
-  letter-spacing: 0;
-  margin: 0 0 0.5rem;
-}
-
-.content-meta {
-  font-family: var(--font-interface);
-  font-size: 0.76rem;
-  color: var(--ink-muted-color);
+.ph .ph-title {
   margin: 0;
+  font-family: var(--font-text);
+  font-size: var(--size-title);
+  line-height: var(--lh-title);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink-strong-color);
+  overflow-wrap: break-word;
 }
 
-.tag-list {
-  margin: 0.6rem 0 0;
-  gap: 0.4rem;
+.ph-dek {
+  margin: var(--space-3) 0 0;
+  font-family: var(--font-text);
+  font-size: var(--size-dek);
+  line-height: var(--lh-dek);
+  color: var(--ink-muted-color);
+}
 
-  li > a {
-    font-family: var(--font-interface);
-    font-size: 0.72rem;
-    font-weight: 400;
-    padding: 1px 7px;
-    border-radius: var(--radius-inline);
-    background-color: var(--surface-color);
-    border: 1px solid var(--line-color);
-    color: var(--ink-muted-color);
+.ph-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-4);
+  font-family: var(--font-interface);
+  font-size: var(--size-ui);
+  line-height: var(--lh-ui);
+  color: var(--ink-muted-color);
+  font-variant-numeric: tabular-nums;
+}
 
-    &:hover {
-      color: var(--accent-color);
-      border-color: var(--accent-color);
-    }
+.ph-facts,
+.ph-links {
+  margin: 0;
+  color: inherit;
+  line-height: inherit;
+}
+
+.ph-links a {
+  @include ui-link;
+  @include focus-ring;
+  @include touch-target;
+}
+
+// English | 中文
+.ph-lang {
+  display: inline-flex;
+  margin-inline-start: auto;
+  border: 1px solid var(--line-color);
+  border-radius: 6px;
+}
+
+.ph-lang-seg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  line-height: 20px;
+  font-weight: 400;
+  color: var(--ink-muted-color);
+  text-decoration: none;
+
+  &:first-child {
+    border-start-start-radius: 5px;
+    border-end-start-radius: 5px;
   }
+
+  &:last-child {
+    border-start-end-radius: 5px;
+    border-end-end-radius: 5px;
+  }
+
+  &[aria-current] {
+    background-color: var(--surface-active-color);
+    color: var(--ink-color);
+  }
+}
+
+a.ph-lang-seg {
+  transition: color var(--dur-fade) ease-out;
+
+  &:hover {
+    color: var(--ink-color);
+  }
+
+  @include focus-ring;
+}
+
+// A narrow header gives the control a row of its own, with full-height targets.
+@media (max-width: 519px) {
+  .ph-facts,
+  .ph-links {
+    flex-basis: 100%;
+  }
+
+  .ph-lang {
+    margin-inline-start: 0;
+  }
+
+  .ph-lang-seg {
+    min-height: 44px;
+  }
+}
+
+// Work pages: the screenshot at column width.
+.ph-shot {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  margin: var(--space-5) 0 0;
+  outline: 1px solid var(--image-outline-color);
+  outline-offset: -1px;
+  border-radius: var(--radius-block);
 }
