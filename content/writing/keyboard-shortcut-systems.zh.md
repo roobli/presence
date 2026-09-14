@@ -107,6 +107,8 @@ Word 等软件里，Ctrl+K 长期是「插入超链接」。另一条完全不�
 
 所以今天你会看到冲突地图：同一物理键，在文档里是链接，在协作工具里是跳转，在 VS Code 里是和弦前缀，在 Cursor 里又可能是 AI。标准化从来不是一张无冲突的表，而是**传播路径**的结果。
 
+<!-- interactive:conflict-map title="K 的冲突图" caption="每个应用旁的标签：同一个物理 K 键，意思分别是链接、跳转、和弦领袖、AI 入口；到最后一行，同一个组合键打开的是本站搜索。" alt="五行，每行一个场景，K 键帽停在选中的一行旁边。Word 等软件：Ctrl+K 插入超链接。Slack：Cmd/Ctrl+K 打开 Quick Switcher，即应用内 Jump；2014 年 hack day 上常用键被占光，几乎随意选了 K，后来被 Linear 的命令菜单、Notion / 飞书的搜索跳转和 AI 万能框抄走。VS Code：Ctrl+K 是和弦前缀，如 Ctrl+K Ctrl+S。Cursor：Cmd+K 用在 Inline Edit 与终端 AI 提示的和弦领袖位置。本站：Cmd/Ctrl+K 打开搜索。键帽停在 Slack 一行。" model="应用、键位与含义按文中编辑器命令面板、Cmd+K 两节和模式表的写法。最后一行描述的是本站搜索，不是文中论断。" -->
+
 ## 设计词汇：你其实一直在背同一门语法
 
 ### 修饰键层
@@ -155,15 +157,7 @@ Nielsen Norman Group 把快捷键定位为 **accelerator**：它是专家的并�
 
 把 i3、tmux、vim、Emacs 放在一起看，会发现它们和 Cmd+K 产品其实同构：都在维护一棵**命令前缀树**。
 
-```mermaid
-flowchart TD
-  Root[命名空间根]
-  Root --> Ex[Emacs C-x / C-c / M-x]
-  Root --> Vm[vim 模式 + operator]
-  Root --> Tm[tmux prefix]
-  Root --> I3n[i3 $mod / mode]
-  Root --> Pal[Command Palette / Cmd+K]
-```
+<!-- interactive:prefix-tree title="根不同，结构相同" caption="「等待中」一列：Ctrl+K、C-x、M-x、Ctrl-b 和命令面板都停在这里等下一键，Cmd+S 从不停留，vim 则从 Normal 出发，而不是从根出发。" alt="挂在同一个命名空间根上的几行，分成「等待中」「命令」两列。Cmd+S 直接到命令。VS Code 的 Ctrl+K 再 Ctrl+S、Emacs 的 C-x 再 C-s、Emacs 的 M-x 再输入名字、tmux 的 Ctrl-b 再按命令键、命令面板再输入名字，都先停在「等待中」。tmux 连按两次 Ctrl-b 送出字面 Ctrl-b。vim 从 Normal 出发，d 再 w、c 再 $ 都先停在「等待中」。i3 一行列出 $mod + 字母和 binding modes。标记停在 VS Code 的 Ctrl+K 上，等第二键。" model="键位与模式取自文中的模式表、Emacs、vim、tmux 各段和前缀树一条。虚线键是文中没有点名的键，图中不出现文中没有给出的命令名。" -->
 
 - **tmux**：默认 prefix 是 Ctrl-b（避开 Screen 的 Ctrl-a，也避开 Emacs/readline 的 Ctrl-a 行首）。连按两次 prefix 才送出字面 Ctrl-b。见 [tmux Getting Started](https://github.com/tmux/tmux/wiki/Getting-Started)。
 - **i3 / sway**：`$mod` + 字母；可用 binding modes 临时换一张键表（resize 等）。默认还常接 dmenu，那就是迷你命令面板。见 [i3 userguide](https://i3wm.org/docs/userguide.html)。

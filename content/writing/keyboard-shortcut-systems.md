@@ -109,6 +109,8 @@ Sources: Ben’s answer on [UX Stack Exchange](https://ux.stackexchange.com/ques
 
 Conflict map today: same physical key means link, jump, chord leader, or AI prompt depending on app. Standardization follows **popularity paths**, not a conflict-free ideal table.
 
+<!-- interactive:conflict-map title="Conflict map for K" caption="the tags beside each app: one physical K means link, jump, chord leader or AI prompt, and on the last row the same chord opens this site's search." alt="Five rows, one per context, with a K keycap beside the selected row. Word-class apps: Ctrl+K inserts a hyperlink. Slack: Cmd/Ctrl+K opens Quick Switcher, an in-app Jump, picked nearly arbitrarily at a 2014 hack day because common chords were taken and carried to Linear's command menu, Notion and Lark search jumpers, and AI omniboxes. VS Code: Ctrl+K is the first half of a chord such as Ctrl+K Ctrl+S. Cursor: Cmd+K is often a chord leader for inline AI and terminal prompts. This site: Cmd/Ctrl+K opens search. The keycap rests on Slack." model="Apps, chords and meanings as the essay prints them in its editor palette and Cmd+K sections and its pattern table. The last row describes this site's search, not a claim from the essay." -->
+
 ## Design vocabulary: one grammar under many skins
 
 ### Modifier layers
@@ -155,15 +157,7 @@ Semantic transfer (save, copy, command box) is robust; physical modifiers (Mac C
 
 i3, tmux, vim, and Emacs are isomorphic to Cmd+K products at one level: they maintain a **command prefix tree**.
 
-```mermaid
-flowchart TD
-  Root[Namespace root]
-  Root --> Ex[Emacs C-x / C-c / M-x]
-  Root --> Vm[vim modes + operators]
-  Root --> Tm[tmux prefix]
-  Root --> I3n[i3 $mod / modes]
-  Root --> Pal[Command Palette / Cmd+K]
-```
+<!-- interactive:prefix-tree title="Different roots, one structure" caption="the Waiting column: Ctrl+K, C-x, M-x, Ctrl-b and the palette all stop there for the next key, Cmd+S never does, and vim starts from Normal rather than the root." alt="Rows that hang off one namespace root, in columns for Waiting and Command. Cmd+S goes straight to a command. VS Code Ctrl+K then Ctrl+S, Emacs C-x then C-s, Emacs M-x then a name, tmux Ctrl-b then a command, and the Command Palette then a name all stop in Waiting first. Pressing tmux Ctrl-b twice sends a literal Ctrl-b. vim starts from Normal, where d then w and c then $ stop in Waiting. The i3 row lists $mod + letter and binding modes. The marker rests on VS Code Ctrl+K, waiting for the second key." model="Keys and patterns come from the pattern table, the Emacs, vim and tmux notes and the prefix tree list. Dashed keys are ones the essay does not name, and no command name appears that the essay does not give." -->
 
 - **tmux**: default prefix Ctrl-b (avoids Screen’s Ctrl-a and Emacs/readline Ctrl-a). Double prefix sends a literal Ctrl-b ([Getting Started](https://github.com/tmux/tmux/wiki/Getting-Started)).
 - **i3 / sway**: `$mod` + letter; binding modes swap temporary maps; dmenu is a mini palette ([i3 guide](https://i3wm.org/docs/userguide.html)).
