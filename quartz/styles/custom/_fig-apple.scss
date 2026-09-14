@@ -1,0 +1,819 @@
+// Figures of the apple-design-physics essay. Owned by the apple essay team.
+// Heights and layouts switch on the stage width (the essay-fig-stage container
+// at the shell's 560px break, the same break as data-size), never the viewport,
+// so a sidebar drag or a width mode reflows them. Colors come from the site
+// tokens, so a theme switch needs no repaint. One accent meaning per figure.
+
+/* ---------- Fig. 1 spring-throw ---------- */
+
+// Lanes, trace and key inside the reserved box (372px wide, 352px narrow).
+// The key wraps to as many lines as its words need at the column width and in
+// either language, and the trace takes the height that is left (about 170px
+// wide and 134px at 375). Cards move by transform only.
+.spring-throw {
+  --throw-card-w: 56px;
+  --throw-card-h: 44px;
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 136px minmax(0, 1fr) auto;
+  row-gap: 12px;
+  padding: 12px 20px;
+  font-family: var(--font-interface);
+  color: var(--ink-muted-color);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+@container essay-fig-stage (width < 560px) {
+  .spring-throw {
+    --throw-card-w: 48px;
+    --throw-card-h: 40px;
+    grid-template-rows: 120px minmax(0, 1fr) auto;
+    row-gap: 8px;
+  }
+}
+
+.spring-throw__lanes {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  row-gap: 8px;
+  border-radius: 6px;
+  touch-action: pan-y;
+  cursor: grab;
+  -webkit-tap-highlight-color: transparent;
+
+  &.is-held {
+    cursor: grabbing;
+  }
+}
+
+.spring-throw__lane {
+  position: relative;
+  border: 1px solid var(--line-color);
+  border-radius: 6px;
+}
+
+.spring-throw__label {
+  position: absolute;
+  top: 5px;
+  left: 8px;
+  font-size: 12px;
+  line-height: 14px;
+  color: var(--ink-muted-color);
+  pointer-events: none;
+}
+
+// The Spring label's rule shares the accent meaning with the spring line.
+.spring-throw__lane--spring .spring-throw__label {
+  padding-bottom: 1px;
+  border-bottom: 3px solid var(--accent-color);
+}
+
+.spring-throw__home {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 50%;
+  border-left: 1px dashed var(--line-strong-color);
+}
+
+.spring-throw__card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+  width: var(--throw-card-w);
+  height: var(--throw-card-h);
+  margin: calc(var(--throw-card-h) / -2) 0 0 calc(var(--throw-card-w) / -2);
+  border: 1px solid var(--line-color);
+  border-radius: 4px;
+  background: var(--surface-color);
+  will-change: transform;
+}
+
+.spring-throw__finger-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border: 2px solid var(--ink-color);
+  border-radius: 50%;
+  opacity: 0.4;
+  pointer-events: none;
+
+  &.is-down {
+    background: var(--ink-color);
+  }
+}
+
+.spring-throw__trace-wrap {
+  position: relative;
+  min-width: 0;
+}
+
+.spring-throw__axis-line {
+  fill: none;
+  stroke: var(--line-strong-color);
+  stroke-width: 1;
+}
+
+.spring-throw__tick,
+.spring-throw__event-num {
+  font-family: var(--font-code);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--ink-muted-color);
+  text-anchor: middle;
+}
+
+.spring-throw__axis-title {
+  font-size: 12px;
+  fill: var(--ink-muted-color);
+  text-anchor: end;
+}
+
+.spring-throw__home-line {
+  stroke: var(--line-color);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.spring-throw__event {
+  stroke: var(--line-strong-color);
+  stroke-width: 1;
+}
+
+// While the finger holds, the rows sit exactly on it, so a 1px finger line
+// would vanish under them; a soft band marks the held stretches instead, and it
+// separates from the rows only where travel past a lane end is resisted.
+.spring-throw__path--finger {
+  fill: none;
+  stroke: var(--ink-color);
+  stroke-opacity: 0.16;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.spring-throw__path--tween {
+  fill: none;
+  stroke: var(--ink-muted-color);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+}
+
+// The one accent meaning: the spring line, with the Spring label's rule.
+.spring-throw__path--spring {
+  fill: none;
+  stroke: var(--accent-color);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+// A live episode draws over the recorded example, dimmed to 35%.
+.spring-throw[data-episode="live"] .spring-throw__recorded,
+.spring-throw[data-episode="live"] .spring-throw__ticks {
+  opacity: 0.35;
+}
+
+.spring-throw__key {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  align-items: center;
+  gap: 2px 14px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--ink-muted-color);
+}
+
+// Both tag texts share one grid cell (the other one hidden), so the key keeps
+// its width, and the trace its height, when an episode starts or ends.
+.spring-throw__tag {
+  display: inline-grid;
+  font-weight: 600;
+  color: var(--ink-color);
+
+  > span,
+  &::after {
+    grid-area: 1 / 1;
+  }
+
+  &::after {
+    content: attr(data-other);
+    visibility: hidden;
+  }
+}
+
+.essay-fig .spring-throw__events,
+.essay-fig .spring-throw__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    line-height: 18px;
+  }
+}
+
+.spring-throw__num {
+  font-family: var(--font-code);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-color);
+}
+
+// Room for the finger band's round caps.
+.spring-throw__swatch {
+  flex: none;
+  margin-inline: 3px;
+  overflow: visible;
+}
+
+.spring-throw__keyhelp {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Two 18px lines fit one 36px rail row (see the zeta readout).
+.essay-fig .spring-throw__hint {
+  flex: 1 1 260px;
+  min-width: 0;
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-muted-color);
+}
+
+/* ---------- Fig. 2 zeta-triptych ---------- */
+
+// Legend, plot and cost strip at the spec's heights; the registry reserves the
+// box (428px wide, 400px narrow) and the rows share what is left over.
+.zeta-triptych {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: 24px 220px 150px;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: space-between;
+  padding: 12px 20px;
+  font-family: var(--font-interface);
+  color: var(--ink-muted-color);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+@container essay-fig-stage (width < 560px) {
+  .zeta-triptych {
+    grid-template-rows: 44px 190px 140px;
+  }
+}
+
+// Two classes outrank the essay prose rhythm on list items.
+.essay-fig .zeta-triptych__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 4px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ink-muted-color);
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    line-height: 20px;
+  }
+}
+
+.zeta-triptych__swatch {
+  flex: none;
+  overflow: visible;
+}
+
+.zeta-triptych__plot-wrap {
+  position: relative;
+  min-width: 0;
+}
+
+.zeta-triptych__ref--05 {
+  fill: none;
+  stroke: var(--ink-muted-color);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 3;
+}
+
+.zeta-triptych__ref--1 {
+  fill: none;
+  stroke: var(--ink-color);
+  stroke-width: 1.5;
+}
+
+.zeta-triptych__ref--15 {
+  fill: none;
+  stroke: var(--ink-color);
+  stroke-width: 1.5;
+  stroke-dasharray: 7 5;
+}
+
+// The one accent meaning: the reader's own ζ (trace, dot, handle line, knob).
+.zeta-triptych__live,
+.zeta-triptych__swatch-live {
+  fill: none;
+  stroke: var(--accent-color);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.zeta-triptych__rest,
+.zeta-triptych__zero {
+  stroke: var(--line-color);
+  stroke-width: 1;
+}
+
+.zeta-triptych__guide {
+  stroke: var(--line-color);
+  stroke-width: 1.5;
+  stroke-dasharray: 1.5 3;
+}
+
+.zeta-triptych__axis-line {
+  fill: none;
+  stroke: var(--line-strong-color);
+  stroke-width: 1;
+}
+
+.zeta-triptych__tick {
+  font-family: var(--font-code);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--ink-muted-color);
+}
+
+.zeta-triptych__axis-title,
+.zeta-triptych__row-label,
+.zeta-triptych__oscillates,
+.zeta-triptych__tick-label,
+.zeta-triptych__direct {
+  font-size: 12px;
+  fill: var(--ink-muted-color);
+}
+
+// Labels the ζ = 1 guide or a trace passes behind keep a halo in the stage color.
+.zeta-triptych__row-label,
+.zeta-triptych__tick-label,
+.zeta-triptych__direct {
+  paint-order: stroke;
+  stroke: var(--canvas-color);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.zeta-triptych__direct {
+  fill: var(--ink-color);
+}
+
+.zeta-triptych__oscillates {
+  font-style: italic;
+}
+
+.zeta-triptych__tick--0825 {
+  stroke: var(--ink-muted-color);
+  stroke-width: 1;
+}
+
+.zeta-triptych__cost-os,
+.zeta-triptych__cost-time {
+  fill: none;
+  stroke: var(--ink-color);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.zeta-triptych__playhead {
+  stroke: var(--ink-muted-color);
+  stroke-width: 1;
+}
+
+.zeta-triptych__dot {
+  fill: var(--ink-color);
+  stroke: var(--canvas-color);
+  stroke-width: 1.5;
+}
+
+.zeta-triptych__dot--05 {
+  fill: var(--ink-muted-color);
+}
+
+.zeta-triptych__dot--live {
+  fill: var(--accent-color);
+}
+
+// The strip is the drag lane (pan-y); the knob is its 44px wide hit box.
+.zeta-triptych__strip {
+  position: relative;
+  min-width: 0;
+  touch-action: pan-y;
+  cursor: pointer;
+}
+
+.zeta-triptych__knob {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 44px;
+  cursor: grab;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.zeta-triptych__strip.is-held .zeta-triptych__knob {
+  cursor: grabbing;
+}
+
+// The handle marks ζ on both cost rows and breaks for the time row's label.
+.zeta-triptych__handle {
+  position: absolute;
+  top: 14px;
+  left: 21.25px;
+  width: 1.5px;
+  height: 124px;
+  background: linear-gradient(
+    var(--accent-color) 0 50px,
+    transparent 50px 70px,
+    var(--accent-color) 70px
+  );
+}
+
+// The dot sits on the ζ axis like a slider thumb.
+.zeta-triptych__knob-dot {
+  position: absolute;
+  top: 130px;
+  left: 14px;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--canvas-color);
+}
+
+@container essay-fig-stage (width < 560px) {
+  .zeta-triptych__handle {
+    height: 110px;
+    background: linear-gradient(
+      var(--accent-color) 0 46px,
+      transparent 46px 76px,
+      var(--accent-color) 76px
+    );
+  }
+
+  .zeta-triptych__knob-dot {
+    top: 116px;
+  }
+}
+
+.essay-fig .zeta-triptych__knob:focus-visible {
+  outline: none;
+}
+
+.zeta-triptych__knob:focus-visible .zeta-triptych__knob-dot {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 3px;
+}
+
+.zeta-triptych__strip.is-held .zeta-triptych__knob-dot {
+  transform: scale(1.15);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .zeta-triptych__knob-dot {
+    transition: transform 120ms ease-out;
+  }
+}
+
+// Two 18px lines fit one 36px rail row, so a wrapped readout never grows the
+// reserved rail at mount.
+.zeta-triptych__readout {
+  flex: 1 1 260px;
+  min-width: 0;
+  font-family: var(--font-code);
+  font-size: 13px;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-color);
+}
+
+/* ---------- Fig. 3 curvature-comb ---------- */
+
+.essay-fig[data-interactive="curvature-comb"] .essay-fig__box {
+  aspect-ratio: auto;
+  min-height: calc(min(400px, 50cqi) + 24px);
+}
+
+.curvature-comb {
+  --comb-size: min(400px, 50cqi);
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: var(--comb-size) minmax(0, 1fr);
+  align-items: start;
+  column-gap: 20px;
+  padding: 12px 20px 12px 0;
+  font-family: var(--font-interface);
+  color: var(--ink-muted-color);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.curvature-comb__corner {
+  position: relative;
+  width: var(--comb-size);
+  height: var(--comb-size);
+}
+
+.curvature-comb__side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  height: var(--comb-size);
+}
+
+.curvature-comb__strip-wrap {
+  position: relative;
+  flex: 0 1 200px;
+  min-height: 96px;
+}
+
+@container essay-fig-stage (width < 560px) {
+  .essay-fig[data-interactive="curvature-comb"] .essay-fig__box {
+    min-height: calc(min(100cqi - 40px, 360px) + 156px);
+  }
+
+  .curvature-comb {
+    --comb-size: min(100cqi - 40px, 360px);
+    grid-template-columns: var(--comb-size);
+    grid-template-rows: var(--comb-size) 120px;
+    justify-content: center;
+    row-gap: 12px;
+    padding: 12px 0;
+  }
+
+  .curvature-comb__side {
+    height: 120px;
+  }
+
+  .curvature-comb__strip-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}
+
+.curvature-comb__plate {
+  fill: var(--surface-color);
+}
+
+.curvature-comb__arc {
+  fill: none;
+  stroke: var(--ink-muted-color);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+.curvature-comb__teeth {
+  fill: none;
+  stroke: var(--ink-muted-color);
+  stroke-width: 1;
+  stroke-opacity: 0.6;
+}
+
+.curvature-comb__arc-env {
+  fill: none;
+  stroke: var(--ink-muted-color);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.curvature-comb__cont {
+  fill: none;
+  stroke: var(--ink-color);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.curvature-comb__cont-env {
+  fill: none;
+  stroke: var(--ink-color);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.curvature-comb__join {
+  stroke: var(--accent-color);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+// The knob rides the top edge at the arc's tangent point. Only its 44px hit
+// box refuses page panning.
+.curvature-comb__knob {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: 50%;
+  touch-action: none;
+  cursor: grab;
+  -webkit-tap-highlight-color: transparent;
+
+  &.is-held {
+    cursor: grabbing;
+  }
+}
+
+.curvature-comb__knob-dot {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--canvas-color);
+}
+
+.essay-fig .curvature-comb__knob:focus-visible {
+  outline: none;
+}
+
+.curvature-comb__knob:focus-visible .curvature-comb__knob-dot {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 3px;
+}
+
+.curvature-comb__knob.is-held .curvature-comb__knob-dot {
+  transform: scale(1.15);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .curvature-comb__knob-dot {
+    transition: transform 120ms ease-out;
+  }
+}
+
+.curvature-comb__strip-base {
+  stroke: var(--line-strong-color);
+  stroke-width: 1;
+}
+
+.curvature-comb__strip-grid {
+  stroke: var(--line-color);
+  stroke-width: 1;
+}
+
+.curvature-comb__strip-tick {
+  font-family: var(--font-code);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--ink-muted-color);
+  text-anchor: end;
+}
+
+.curvature-comb__strip-title {
+  font-size: 12px;
+  fill: var(--ink-muted-color);
+}
+
+.curvature-comb__strip-cont {
+  fill: none;
+  stroke: var(--ink-color);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.curvature-comb__strip-arc {
+  fill: none;
+  stroke: var(--ink-muted-color);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+// A halo in the stage color keeps the label legible where the arc's plateau
+// passes behind it at the smallest radii.
+.curvature-comb__peak {
+  font-family: var(--font-code);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--ink-color);
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--canvas-color);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+// Two classes outrank the essay prose rhythm (body[data-kind="essay"] article
+// li), which would otherwise space legend rows like paragraphs.
+.essay-fig .curvature-comb__legend {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-interface);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-muted-color);
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    line-height: 18px;
+  }
+}
+
+.essay-fig__rail .curvature-comb__legend {
+  flex: 1 1 100%;
+  flex-flow: row wrap;
+  gap: 4px 16px;
+}
+
+.curvature-comb__swatch {
+  flex: none;
+  margin-top: 3px;
+  overflow: visible;
+}
+
+.curvature-comb__swatch-cont {
+  fill: none;
+  stroke: var(--ink-color);
+  stroke-width: 2;
+}
+
+.curvature-comb__swatch-arc {
+  fill: none;
+  stroke: var(--ink-muted-color);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+.curvature-comb__swatch-teeth {
+  fill: none;
+  stroke: var(--ink-muted-color);
+  stroke-width: 1;
+  stroke-opacity: 0.6;
+}
+
+// 18px lines, values included, so two wrapped lines fit one 36px rail row.
+.curvature-comb__readout {
+  flex: 1 1 240px;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-color);
+}
+
+// Top-aligned, so the mono face's own ascent cannot make a line taller.
+.curvature-comb__v {
+  font-family: var(--font-code);
+  font-variant-numeric: tabular-nums;
+  line-height: 18px;
+  vertical-align: top;
+}

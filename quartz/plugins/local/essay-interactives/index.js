@@ -112,11 +112,20 @@ function normalizeEntry(raw, name, file) {
     warn(`widgets/${file}: cites must be a list of non-empty strings`)
   }
 
+  // "img" (default): a display-only stage named by alt. "group": a stage that
+  // holds controls or focusable chips, labelled by the figure title and
+  // described by alt; the client shell sets the group attributes at mount.
+  let stage = "img"
+  if (raw.stage === "group") stage = "group"
+  else if (raw.stage != null && raw.stage !== "img")
+    warn(`widgets/${file}: stage must be "img" or "group"`)
+
   return {
     name,
     status: raw.status,
     // "root": the widget still takes mount(root); the client shell adapts it.
     adapter: raw.adapter === "root" ? "root" : null,
+    stage,
     style: vars.map(([key, value]) => `${key}:${value}`).join(";"),
     cites,
   }
@@ -211,24 +220,32 @@ export function scanMarkers(src) {
   return { lines, markers, loose }
 }
 
+/**
+ * The figure frame, one CommonMark HTML block with no blank line inside, so
+ * remark never parses marker text ($, [32], 「」) as markdown or math.
+ * div.essay-fig__box reserves the stage height (aspect or minHeight, switched
+ * by a container query on the stage) before and after the widget mounts. The
+ * label spans carry the gap as a margin, so no space text node follows them.
+ */
 export function renderFigure(marker, n, entry, locale = LOCALES.en) {
   const { title, caption, alt, model } = marker.attrs
   const style = entry.style ? ` style="${escapeHtml(entry.style)}"` : ""
+  const stageMode = entry.stage === "group" ? ` data-stage="group"` : ""
   const stageName = alt ? ` role="img" aria-label="${escapeHtml(alt)}"` : ""
   const fallback = alt ? `${escapeHtml(alt)} ` : ""
   return [
-    `<figure class="essay-fig" id="fig-${n}" data-interactive="${marker.name}" data-figure="${n}"${style}>`,
+    `<figure class="essay-fig" id="fig-${n}" data-interactive="${marker.name}" data-figure="${n}"${stageMode}${style}>`,
     `<div class="essay-fig__head"><span class="essay-fig__num">${escapeHtml(locale.figure(n))}</span>` +
       (title ? `<span class="essay-fig__title">${escapeHtml(title)}</span>` : "") +
       `</div>`,
-    `<div class="essay-fig__stage"${stageName}><p class="essay-fig__fallback">${fallback}` +
-      `<span class="essay-fig__nojs">${escapeHtml(locale.nojs)}</span></p></div>`,
+    `<div class="essay-fig__stage"${stageName}><div class="essay-fig__box"><p class="essay-fig__fallback">${fallback}` +
+      `<span class="essay-fig__nojs">${escapeHtml(locale.nojs)}</span></p></div></div>`,
     `<div class="essay-fig__rail"></div>`,
     caption
-      ? `<figcaption class="essay-fig__caption"><span class="essay-fig__look">${escapeHtml(locale.look)}</span> ${escapeHtml(caption)}</figcaption>`
+      ? `<figcaption class="essay-fig__caption"><span class="essay-fig__look">${escapeHtml(locale.look)}</span>${escapeHtml(caption)}</figcaption>`
       : "",
     model
-      ? `<p class="essay-fig__model"><span class="essay-fig__model-label">${escapeHtml(locale.model)}</span> ${escapeHtml(model)}</p>`
+      ? `<p class="essay-fig__model"><span class="essay-fig__model-label">${escapeHtml(locale.model)}</span>${escapeHtml(model)}</p>`
       : "",
     `</figure>`,
   ]

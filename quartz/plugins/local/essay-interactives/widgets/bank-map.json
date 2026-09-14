@@ -1,0 +1,9 @@
+{
+  "name": "bank-map",
+  "status": "live",
+  "minHeight": 402,
+  "minHeightNarrow": 442,
+  "railRows": 3,
+  "railRowsNarrow": 4,
+  "cites": ["0", "1", "4", "31", "32", "33", "36", "32×", "1 / 32"]
+}

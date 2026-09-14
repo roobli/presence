@@ -1,9 +1,10 @@
 {
   "name": "curvature-comb",
   "status": "live",
-  "adapter": "root",
-  "minHeight": 334,
+  "stage": "group",
+  "minHeight": 422,
+  "minHeightNarrow": 491,
   "railRows": 1,
-  "railRowsNarrow": 2,
-  "cites": []
+  "railRowsNarrow": 3,
+  "cites": ["2.53", "0.35", "1.8", "0.54"]
 }

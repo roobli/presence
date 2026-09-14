@@ -1,9 +1,0 @@
-{
-  "name": "spring-zeta",
-  "status": "live",
-  "adapter": "root",
-  "minHeight": 288,
-  "railRows": 2,
-  "railRowsNarrow": 4,
-  "cites": ["0.70", "320"]
-}

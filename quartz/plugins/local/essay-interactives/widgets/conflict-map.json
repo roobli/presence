@@ -1,0 +1,10 @@
+{
+  "name": "conflict-map",
+  "status": "live",
+  "stage": "group",
+  "minHeight": 498,
+  "minHeightNarrow": 582,
+  "railRows": 1,
+  "railRowsNarrow": 1,
+  "cites": ["2014"]
+}

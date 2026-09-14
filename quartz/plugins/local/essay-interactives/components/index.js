@@ -4,8 +4,8 @@ import { FIXTURES, REGISTRY } from "../index.js"
 /**
  * Client script for the essay figures, assembled at import time from plain
  * browser files into one IIFE:
- *   runtime/  core, locale, motion, drag and shell in that order, then any other
- *             shared helper; these share the outer scope
+ *   runtime/  core, locale, motion, drag, ruler and shell in that order, then
+ *             any other shared helper; these share the outer scope
  *   widgets/  one file per widget, each in its own function scope, registering
  *             WIDGETS["NAME"] = function (fig) { ...; return { destroy: fn } }
  * Files starting with "_" are test fixtures and ship only when the build runs
@@ -14,7 +14,7 @@ import { FIXTURES, REGISTRY } from "../index.js"
 
 const RUNTIME_DIR = new URL("./runtime/", import.meta.url)
 const WIDGETS_DIR = new URL("./widgets/", import.meta.url)
-const RUNTIME_ORDER = ["core.js", "locale.js", "motion.js", "drag.js", "shell.js"]
+const RUNTIME_ORDER = ["core.js", "locale.js", "motion.js", "drag.js", "ruler.js", "shell.js"]
 
 function listScripts(dir) {
   return readdirSync(dir)

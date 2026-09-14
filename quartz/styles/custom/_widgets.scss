@@ -1,11 +1,12 @@
 // ===========================================================================
 // Instrument shell: the frame around every live figure. The transformer in
-// essay-interactives writes figure.essay-fig; its client shell fills the stage
-// and the rail. Figures fill the article column. At 800px and below the stage
-// bleeds to the screen edges while the head, rail and caption keep the gutter.
-// Narrow height reservation follows the figure's own width (container query at
-// the same 560px break as the shell's data-size), never the viewport, because a
-// sidebar drag changes the column without changing the window.
+// essay-interactives writes figure.essay-fig; its client shell fills the box
+// inside the stage, and the rail. Figures fill the article column. At 800px and
+// below the stage bleeds to the screen edges while the head, rail and caption
+// keep the gutter.
+// Heights switch on the figure's own width (container queries at the same
+// 560px break as the shell's data-size), never the viewport, because a sidebar
+// drag or a width mode changes the column without changing the window.
 // ===========================================================================
 
 .essay-fig {
@@ -48,17 +49,34 @@
   font-variant-numeric: tabular-nums;
 }
 
+// The stage is the size container for everything inside it: widget partials
+// write @container (width < 560px) and cqi units against it.
 .essay-fig__stage {
   position: relative;
   box-sizing: border-box;
-  aspect-ratio: var(--fig-aspect, auto);
-  min-height: var(--fig-min-h, 0px);
+  container: essay-fig-stage / inline-size;
   border: 1px solid var(--line-color);
   border-radius: var(--radius-block, 6px);
   background: var(--canvas-color);
   overflow: hidden;
   // Page scroll and pinch zoom stay native; drag handles set their own.
   touch-action: pan-y pinch-zoom;
+}
+
+// The box reserves the stage height from the registry (aspect or minHeight)
+// before scripts run and keeps it after the widget mounts into it.
+.essay-fig__box {
+  position: relative;
+  box-sizing: border-box;
+  aspect-ratio: var(--fig-aspect, auto);
+  min-height: var(--fig-min-h, 0px);
+}
+
+@container essay-fig-stage (width < 560px) {
+  .essay-fig__box {
+    aspect-ratio: var(--fig-aspect-narrow, var(--fig-aspect, auto));
+    min-height: var(--fig-min-h-narrow, var(--fig-min-h, 0px));
+  }
 }
 
 .essay-fig__fallback {
@@ -119,14 +137,22 @@
   color: var(--ink-color);
 }
 
-@container essay-fig (max-width: 559.98px) {
-  .essay-fig__stage {
-    aspect-ratio: var(--fig-aspect-narrow, var(--fig-aspect, auto));
-    min-height: var(--fig-min-h-narrow, var(--fig-min-h, 0px));
+// The rail sits outside the stage, so its narrow rows read the figure's width
+// at the break where the box inside the stage crosses 560px: the figure less
+// the two stage borders above 800px, the figure plus the 40px bleed below.
+@media not all and (max-width: 800px) {
+  @container essay-fig (width < 562px) {
+    .essay-fig__rail {
+      --fig-rows: var(--fig-rail-rows-narrow, var(--fig-rail-rows, 1));
+    }
   }
+}
 
-  .essay-fig__rail {
-    --fig-rows: var(--fig-rail-rows-narrow, var(--fig-rail-rows, 1));
+@media (max-width: 800px) {
+  @container essay-fig (width < 520px) {
+    .essay-fig__rail {
+      --fig-rows: var(--fig-rail-rows-narrow, var(--fig-rail-rows, 1));
+    }
   }
 }
 
@@ -176,6 +202,7 @@
 .essay-fig__rail input[type="range"] {
   --fig-fill: 50%;
   --fig-thumb: 16px;
+  --fig-ink: var(--ink-color);
   flex: 1 1 120px;
   min-width: 96px;
   max-width: 280px;
@@ -192,7 +219,7 @@
     border-radius: 2px;
     background: linear-gradient(
       to right,
-      var(--ink-color) var(--fig-fill),
+      var(--fig-ink) var(--fig-fill),
       var(--line-strong-color) var(--fig-fill)
     );
   }
@@ -202,7 +229,7 @@
     width: var(--fig-thumb);
     height: var(--fig-thumb);
     margin-top: calc((4px - var(--fig-thumb)) / 2);
-    border: 2px solid var(--ink-color);
+    border: 2px solid var(--fig-ink);
     border-radius: 50%;
     background: var(--canvas-color);
     appearance: none;
@@ -218,20 +245,27 @@
   &::-moz-range-progress {
     height: 4px;
     border-radius: 2px;
-    background: var(--ink-color);
+    background: var(--fig-ink);
   }
 
   &::-moz-range-thumb {
     box-sizing: border-box;
     width: var(--fig-thumb);
     height: var(--fig-thumb);
-    border: 2px solid var(--ink-color);
+    border: 2px solid var(--fig-ink);
     border-radius: 50%;
     background: var(--canvas-color);
   }
+
+  &:disabled {
+    --fig-ink: var(--ink-muted-color);
+    cursor: default;
+  }
 }
 
-.essay-fig__rail button {
+// Rail buttons, and buttons a widget places in its stage with the same class.
+.essay-fig__rail button,
+.essay-fig .essay-fig__button {
   box-sizing: border-box;
   height: 32px;
   margin: 0;
@@ -241,23 +275,29 @@
   background: transparent;
   color: var(--ink-color);
   font: inherit;
+  font-family: var(--fig-ui-font);
   white-space: nowrap;
   cursor: pointer;
   appearance: none;
 
-  &:hover {
+  &:hover:not(:disabled) {
     border-color: var(--line-strong-color);
   }
 
   &:disabled {
-    opacity: 0.5;
+    color: var(--ink-muted-color);
     cursor: default;
   }
 
   &[aria-pressed="true"],
-  &[aria-checked="true"] {
+  &[aria-checked="true"],
+  &.is-pressed {
     border-color: var(--ink-color);
     background: color-mix(in srgb, var(--ink-color) 7%, transparent);
+  }
+
+  &:disabled[aria-checked="true"] {
+    border-color: var(--ink-muted-color);
   }
 }
 
@@ -307,6 +347,25 @@
     border-color: var(--ink-color);
     background-color: var(--ink-color);
   }
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:disabled:checked {
+    border-color: var(--ink-muted-color);
+    background-color: var(--ink-muted-color);
+  }
+}
+
+// setDisabled on any control: muted ink, same size, no pointer affordance.
+.essay-fig__control.is-disabled {
+  color: var(--ink-muted-color);
+  cursor: default;
+
+  .essay-fig__value {
+    color: var(--ink-muted-color);
+  }
 }
 
 // Outranks the rail button reset so Reset holds the right end of its row.
@@ -321,12 +380,144 @@
 }
 
 @media (pointer: coarse), (max-width: 800px) {
-  .essay-fig__rail button {
+  .essay-fig__rail button,
+  .essay-fig .essay-fig__button {
     height: 44px;
   }
 }
 
-/* ---------- caption, model line, live region ---------- */
+/* ---------- ruler (fig.ruler) ---------- */
+
+.essay-fig__ruler {
+  flex: 1 1 100%;
+  flex-wrap: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.essay-fig__ruler-track {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: var(--ruler-max, none);
+  height: 56px;
+  touch-action: pan-y;
+  cursor: pointer;
+}
+
+// Narrow figures give the ruler the whole rail width, label above.
+.essay-fig[data-size="narrow"] {
+  .essay-fig__ruler {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+
+  .essay-fig__ruler-track {
+    flex-basis: 100%;
+    max-width: none;
+  }
+}
+
+.essay-fig__ruler-line {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  left: 22px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--line-strong-color);
+}
+
+.essay-fig__ruler-tick {
+  position: absolute;
+  top: 30px;
+  left: calc(22px + (100% - 44px) * var(--i) / (var(--ruler-n) - 1));
+  transform: translateX(-50%);
+  font-family: var(--font-code, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
+  font-size: 12px;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--ink-muted-color);
+  pointer-events: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    width: 1px;
+    height: 6px;
+    background: var(--line-strong-color);
+  }
+
+  &.is-pressed {
+    color: var(--ink-color);
+  }
+}
+
+.essay-fig__ruler-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 56px;
+  touch-action: none;
+  cursor: grab;
+  outline: none;
+
+  &.is-held {
+    cursor: grabbing;
+  }
+}
+
+.essay-fig__ruler-dot {
+  position: absolute;
+  top: 19px;
+  left: 50%;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  background: var(--ink-color);
+}
+
+.essay-fig__ruler-handle:focus-visible .essay-fig__ruler-dot {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .essay-fig__ruler-dot {
+    transition: transform 120ms ease-out;
+  }
+
+  .essay-fig__ruler-handle.is-held .essay-fig__ruler-dot {
+    transform: scale(1.12);
+  }
+}
+
+@media (pointer: coarse) {
+  .essay-fig__ruler-dot {
+    width: 24px;
+    height: 24px;
+    margin: -12px 0 0 -12px;
+  }
+}
+
+.essay-fig__ruler.is-disabled {
+  .essay-fig__ruler-track,
+  .essay-fig__ruler-handle {
+    cursor: default;
+  }
+
+  .essay-fig__ruler-dot {
+    background: var(--ink-muted-color);
+  }
+}
+
+/* ---------- caption, model line, hidden text ---------- */
 
 .essay-fig__caption {
   margin-top: 12px;
@@ -336,6 +527,7 @@
   color: var(--ink-muted-color);
 }
 
+// The margin is the whole gap: the markup has no space after the label.
 .essay-fig__look {
   margin-right: 6px;
   font-family: var(--fig-ui-font);
@@ -357,7 +549,9 @@
   color: var(--ink-color);
 }
 
+// The live region, and the description a "group" stage points at.
 .essay-fig__live,
+.essay-fig__desc,
 .essay-interactive__live {
   position: absolute;
   width: 1px;
