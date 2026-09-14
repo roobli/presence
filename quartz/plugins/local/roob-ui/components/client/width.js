@@ -83,6 +83,8 @@ function applyLayout() {
   if (treeEl) scheduleGuides(treeEl)
   syncWidthButton()
   syncOutlineDock()
+  // The column may have moved under an open outline sheet.
+  placeOutlineSheet()
 }
 
 var toastTimer = 0
