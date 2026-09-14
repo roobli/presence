@@ -1,1 +1,287 @@
 // Figures of the apple-design-physics essay. Owned by the apple essay team.
+// Heights and layouts switch on the stage width (the essay-fig-stage container
+// at the shell's 560px break, the same break as data-size), never the viewport,
+// so a sidebar drag or a width mode reflows them. Colors come from the site
+// tokens, so a theme switch needs no repaint. One accent meaning per figure.
+
+/* ---------- Fig. 3 curvature-comb ---------- */
+
+.essay-fig[data-interactive="curvature-comb"] .essay-fig__box {
+  aspect-ratio: auto;
+  min-height: calc(min(400px, 50cqi) + 24px);
+}
+
+.curvature-comb {
+  --comb-size: min(400px, 50cqi);
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: var(--comb-size) minmax(0, 1fr);
+  align-items: start;
+  column-gap: 20px;
+  padding: 12px 20px 12px 0;
+  font-family: var(--font-interface);
+  color: var(--ink-muted-color);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.curvature-comb__corner {
+  position: relative;
+  width: var(--comb-size);
+  height: var(--comb-size);
+}
+
+.curvature-comb__side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  height: var(--comb-size);
+}
+
+.curvature-comb__strip-wrap {
+  position: relative;
+  flex: 0 1 200px;
+  min-height: 96px;
+}
+
+@container essay-fig-stage (width < 560px) {
+  .essay-fig[data-interactive="curvature-comb"] .essay-fig__box {
+    min-height: calc(min(100cqi - 40px, 360px) + 156px);
+  }
+
+  .curvature-comb {
+    --comb-size: min(100cqi - 40px, 360px);
+    grid-template-columns: var(--comb-size);
+    grid-template-rows: var(--comb-size) 120px;
+    justify-content: center;
+    row-gap: 12px;
+    padding: 12px 0;
+  }
+
+  .curvature-comb__side {
+    height: 120px;
+  }
+
+  .curvature-comb__strip-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}
+
+.curvature-comb__plate {
+  fill: var(--surface-color);
+}
+
+.curvature-comb__arc {
+  fill: none;
+  stroke: var(--ink-muted-color);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+.curvature-comb__teeth {
+  fill: none;
+  stroke: var(--ink-muted-color);
+  stroke-width: 1;
+  stroke-opacity: 0.6;
+}
+
+.curvature-comb__arc-env {
+  fill: none;
+  stroke: var(--ink-muted-color);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.curvature-comb__cont {
+  fill: none;
+  stroke: var(--ink-color);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.curvature-comb__cont-env {
+  fill: none;
+  stroke: var(--ink-color);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.curvature-comb__join {
+  stroke: var(--accent-color);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+// The knob rides the top edge at the arc's tangent point. Only its 44px hit
+// box refuses page panning.
+.curvature-comb__knob {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: 50%;
+  touch-action: none;
+  cursor: grab;
+  -webkit-tap-highlight-color: transparent;
+
+  &.is-held {
+    cursor: grabbing;
+  }
+}
+
+.curvature-comb__knob-dot {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--canvas-color);
+}
+
+.essay-fig .curvature-comb__knob:focus-visible {
+  outline: none;
+}
+
+.curvature-comb__knob:focus-visible .curvature-comb__knob-dot {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 3px;
+}
+
+.curvature-comb__knob.is-held .curvature-comb__knob-dot {
+  transform: scale(1.15);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .curvature-comb__knob-dot {
+    transition: transform 120ms ease-out;
+  }
+}
+
+.curvature-comb__strip-base {
+  stroke: var(--line-strong-color);
+  stroke-width: 1;
+}
+
+.curvature-comb__strip-grid {
+  stroke: var(--line-color);
+  stroke-width: 1;
+}
+
+.curvature-comb__strip-tick {
+  font-family: var(--font-code);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--ink-muted-color);
+  text-anchor: end;
+}
+
+.curvature-comb__strip-title {
+  font-size: 12px;
+  fill: var(--ink-muted-color);
+}
+
+.curvature-comb__strip-cont {
+  fill: none;
+  stroke: var(--ink-color);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.curvature-comb__strip-arc {
+  fill: none;
+  stroke: var(--ink-muted-color);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+// A halo in the stage color keeps the label legible where the arc's plateau
+// passes behind it at the smallest radii.
+.curvature-comb__peak {
+  font-family: var(--font-code);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--ink-color);
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--canvas-color);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+// Two classes outrank the essay prose rhythm (body[data-kind="essay"] article
+// li), which would otherwise space legend rows like paragraphs.
+.essay-fig .curvature-comb__legend {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-interface);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-muted-color);
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    line-height: 18px;
+  }
+}
+
+.essay-fig__rail .curvature-comb__legend {
+  flex: 1 1 100%;
+  flex-flow: row wrap;
+  gap: 4px 16px;
+}
+
+.curvature-comb__swatch {
+  flex: none;
+  margin-top: 3px;
+  overflow: visible;
+}
+
+.curvature-comb__swatch-cont {
+  fill: none;
+  stroke: var(--ink-color);
+  stroke-width: 2;
+}
+
+.curvature-comb__swatch-arc {
+  fill: none;
+  stroke: var(--ink-muted-color);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+.curvature-comb__swatch-teeth {
+  fill: none;
+  stroke: var(--ink-muted-color);
+  stroke-width: 1;
+  stroke-opacity: 0.6;
+}
+
+.curvature-comb__readout {
+  flex: 1 1 240px;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ink-color);
+}
+
+.curvature-comb__v {
+  font-family: var(--font-code);
+  font-variant-numeric: tabular-nums;
+}

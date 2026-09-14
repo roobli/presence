@@ -260,11 +260,14 @@ test("markers in frontmatter are ignored", () => {
 
 test("registry: pre-shell widgets use the adapter; fixtures need the flag; stage defaults to img", () => {
   const plain = loadRegistry(undefined, false)
-  for (const name of ["spring-zeta", "zeta-triptych", "squircle-compare", "curvature-comb"]) {
+  for (const name of ["spring-zeta", "zeta-triptych"]) {
     assert.equal(plain.get(name)?.status, "live", name)
     assert.equal(plain.get(name)?.adapter, "root", name)
     assert.equal(plain.get(name)?.stage, "img", name)
   }
+  assert.equal(plain.get("curvature-comb")?.adapter, null)
+  assert.equal(plain.get("curvature-comb")?.stage, "group")
+  assert.equal(plain.has("squircle-compare"), false)
   assert.equal(plain.get("hinge-diagram")?.status, "strip")
   assert.ok(plain.get("spring-zeta").cites.includes("320"))
   assert.equal(plain.has("fixture"), false)
