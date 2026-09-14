@@ -38,7 +38,7 @@
     top: 0;
     z-index: 10;
     box-sizing: border-box;
-    height: auto;
+    height: var(--header-h);
     padding: 0;
     overflow: visible;
     border-right: 0;
@@ -67,27 +67,30 @@
     }
   }
 
-  @media (scripting: enabled) {
-    .page > #quartz-body > .sidebar.left {
-      height: var(--header-h);
+  // Until roob-ui builds the row (data-tpl-nav="ready") the sidebar holds
+  // Quartz's stock children, the whole outline and tree among them. The bar
+  // keeps its height and shows only the wordmark, where the built row puts
+  // it, so the article never moves. Without scripting nothing rebuilds it and
+  // this stays the bar: search, theme, the tree and the outline all need the
+  // script, and the stock outline alone ran taller and wider than a phone.
+  .page > #quartz-body > .sidebar.left:not([data-tpl-nav="ready"]) {
+    overflow: hidden;
+
+    > :not(.page-title) {
+      display: none;
     }
 
-    // Until roob-ui builds the row (data-tpl-nav="ready") the sidebar holds
-    // Quartz's stock children, the whole outline and tree among them. The
-    // bar keeps its height and shows only the wordmark, where the built row
-    // puts it, so the article never moves. Without scripting nothing rebuilds
-    // it, and the stock sidebar keeps its own height.
-    .page > #quartz-body > .sidebar.left:not([data-tpl-nav="ready"]) {
-      overflow: hidden;
+    > .page-title {
+      align-self: center;
+      margin-left: calc(6px + 44px + 4px);
+    }
+  }
 
-      > :not(.page-title) {
-        display: none;
-      }
-
-      > .page-title {
-        align-self: center;
-        margin-left: calc(6px + 44px + 4px);
-      }
+  // No menu button arrives beside it, so the wordmark lines up with the
+  // article's text instead.
+  @media (scripting: none) {
+    .page > #quartz-body > .sidebar.left:not([data-tpl-nav="ready"]) > .page-title {
+      margin-left: 20px;
     }
   }
 
