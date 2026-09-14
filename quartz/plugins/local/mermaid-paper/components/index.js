@@ -188,6 +188,7 @@ function mermaidPaper() {
     for (var j = 0; j < batch.length; j++) {
       var item = batch[j]
       var res = results[j]
+      if (!res) showSource(item)
       if (!res || !item.el.isConnected) continue
       if (!item.box) {
         item.box = document.createElement("div")
@@ -220,7 +221,17 @@ function mermaidPaper() {
       })
       .catch(function (err) {
         console.error("mermaid-paper: render pass failed", err)
+        if (gen === generation) batch.forEach(showSource)
       })
+  }
+
+  // A fence waiting for its diagram keeps its space with the source hidden
+  // (_mermaid.scss). Only mount() sets the mark, so with JavaScript off the
+  // source shows as written; a failed import or render takes the mark off.
+  var PENDING = "data-mermaid-pending"
+
+  function showSource(item) {
+    if (item.el !== item.box) item.el.removeAttribute(PENDING)
   }
 
   function unmount() {
@@ -244,6 +255,7 @@ function mermaidPaper() {
       var source = code.textContent.trim()
       if (!source) continue
       var el = code.closest("figure[data-rehype-pretty-code-figure]") || code.closest("pre") || code
+      el.setAttribute(PENDING, "")
       items.push({ el: el, source: source, box: null })
       found = true
     }

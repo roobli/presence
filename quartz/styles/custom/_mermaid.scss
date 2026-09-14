@@ -25,6 +25,13 @@ article .mermaid-paper {
   }
 }
 
+/* A fence the renderer has taken on keeps its space, but its source stays out
+   of sight, focus and the accessibility tree until the diagram swaps in. The
+   renderer sets the mark and takes it off again if the render fails. */
+article [data-mermaid-pending] {
+  visibility: hidden;
+}
+
 /* Width: Mermaid's width="100%" and inline max-width (the viewBox width), and
    the renderer's inline min-width. */
 article .mermaid-paper > svg {
