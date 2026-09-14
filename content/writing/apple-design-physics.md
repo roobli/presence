@@ -24,7 +24,7 @@ What people feel, when motion is wrong, is a tiny lie about mass. The card eases
 
 Feel it once more without equations. Drag a list past its end and keep your finger down — the interface resists progressively, still tracking. Lift, and elasticity pulls content home. Mid-flight, grab again: a good system does not teleport or pause; it retargets. That interruptible overscroll is the sensory claim. Everything below is how you get there.
 
-<!-- interactive:spring-zeta -->
+<!-- interactive:spring-throw title="Throw the card, catch it, let it go" caption="the moment of letting go. The spring line keeps travelling the way the finger threw it before it turns home; the tween line turns home on the spot." alt="Two rows, a spring and a 250 ms tween, follow the same recorded finger: dragged left, flicked right, let go just past home, caught on the way back, let go again. Right after the first release the spring line keeps rising before it turns home, while the tween line turns down at once. Neither line jumps when caught." model="Both rows start from where the finger lets go, and both can be caught mid-flight. The spring row starts with the finger's speed. The tween row runs a fixed 250 ms ease-out toward home and ignores that speed. Stiffness, the ease-out curve and the edge resistance are illustrative." -->
 
 The dimensionless knob that separates those feels is the damping ratio $\zeta$. Three regimes cover most of what product UI needs:
 
@@ -34,7 +34,7 @@ The dimensionless knob that separates those feels is the damping ratio $\zeta$. 
 | $\zeta = 1$ | Critically damped | Fastest approach to rest with no oscillation | Navigation transitions, app open/close, system sheets |
 | $\zeta > 1$ | Overdamped | Heavy, sluggish crawl toward the target | Avoid for high-frequency UI; reads as lag |
 
-<!-- interactive:zeta-triptych -->
+<!-- interactive:zeta-triptych title="Same pull, three damping ratios" caption="where both cost rows reach zero. Below ζ = 1 the spring pays in overshoot; above it, it pays in time." alt="Three responses to the same pull on a 1.2 s axis: ζ 0.5 dips below rest and swings back, ζ 1 arrives without crossing rest, ζ 1.5 approaches slowly. Below them, two cost curves over ζ from 0.3 to 2: overshoot falls to zero at ζ = 1, and extra settle time rises from zero at ζ = 1. A tick marks 0.825, the SwiftUI default." model="Computed from the essay's spring equation with m = 1 and an illustrative stiffness k = 320. ζ 0.5 and 1.5 are illustrative picks for the table's rows. Settled means staying within 1% of the pull; overshoot and extra settle time do not depend on k. Settle times below ζ = 1 are not drawn, because whether they beat ζ = 1 depends on ζ and on the tolerance." -->
 
 Why $\zeta = 1$ for most navigation? Critical damping is the **fastest settle that still refuses to oscillate**. Any $\zeta < 1$ spends energy on overshoot; any $\zeta > 1$ spends time crawling. Navigation is a trust surface: push a sheet up, open an app, pop a stack. The user's motor system expects the destination to arrive and stay arrived. Oscillation there is not "delight." It is a lie about whether the transition finished.
 
@@ -96,9 +96,7 @@ A critically damped interruptible spring is a short idea in code: integrate $a =
 
 Open a home-screen grid dense with icons. At every classical rounded-rect join — where a straight edge meets a circular arc — the eye catches a faint hard fold, a subtle optical kink. Pack dozens of those joins into one glance and the grid feels faintly noisy even when every radius token matches. Specular hardware bezels make the same jump louder under grazing light. People call the better silhouette "soft" or "expensive calm." The claim underneath is narrower: remove the curvature discontinuity, and the kink goes away.
 
-<!-- interactive:squircle-compare -->
-
-<!-- interactive:curvature-comb -->
+<!-- interactive:curvature-comb title="One corner, two constructions" caption="the comb where the straight edge meets the arc. Its teeth jump to full length in one step at every radius, even where the two outlines lie on top of each other." alt="One corner drawn two ways and overlaid: the essay's three-segment continuous corner as a solid line, and a circular arc whose apex touches it, dashed. The outlines differ by at most 0.02 r, yet the comb teeth on the arc start at full length at both joins, while the continuous corner's comb envelope rises from zero to a peak on the diagonal. A strip below plots curvature: a flat plateau between two vertical steps for the arc, and a hill peaking at 2.53/r, with two small steps, for the continuous corner." model="Curvature is how sharply the outline turns at each point; comb teeth grow with it, on one scale for both curves. r is where the continuous corner leaves each straight edge, not a cornerRadius value. The continuous corner is the essay's control-point table, a public reconstruction that is G2-ish, not Apple's internal path, shown as a top-left corner. The arc radius runs from 0.35 r to 1.8 r and starts at 0.54 r, where the apexes touch. The 2.53/r peak and every readout value are computed from that table." -->
 
 A continuous corner replaces the jump with a gradual curvature ramp: $\kappa$ rises from $0$, peaks, then falls back. Gaze can slide along the silhouette without hitting a geometric discontinuity. PaintCode's public writeup on iOS 7 rounded rectangles called out exactly the pre-iOS-7 artifact — a subtle but noticeable optical kink at the G1 joins. Zebra-stripe and curvature-comb diagnostics in CAD exist because the eye is sensitive to curvature discontinuities even when position and tangent look fine.
 
