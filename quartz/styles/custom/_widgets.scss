@@ -79,7 +79,9 @@
   }
 }
 
-.essay-fig__fallback {
+// Scoped like __model below, so the prose rhythm cannot add block margins that
+// shrink this inset: 0 panel.
+.essay-fig .essay-fig__fallback {
   position: absolute;
   inset: 0;
   display: flex;
@@ -535,7 +537,9 @@
   color: var(--ink-color);
 }
 
-.essay-fig__model {
+// .essay-fig in front outranks the essay prose rhythm (body[data-kind="essay"]
+// article p, margin-block 0.85em), which would otherwise set this margin.
+.essay-fig .essay-fig__model {
   margin: 4px 0 0;
   font-family: var(--fig-ui-font);
   font-size: var(--size-ui-sm, 12.5px);

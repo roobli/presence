@@ -660,6 +660,8 @@
     width: 100%;
   }
 
+  // Chip text stays at 12px: the long palette chord wraps before +Shift into
+  // two 16px lines, which still fit the 44px chip.
   .pt__chip {
     min-width: 44px;
     font-size: 12px;
@@ -669,11 +671,6 @@
     flex: 1 1 0;
     min-width: 0;
     padding-inline: 4px;
-  }
-
-  .pt__chip[data-chip="palette:open"] {
-    font-size: 11px;
-    line-height: 14px;
   }
 }
 
