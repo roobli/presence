@@ -57,10 +57,16 @@
     line-height: 1.3;
     letter-spacing: 0;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow: visible;
 
+    // The link is the 44px target, as tall as the buttons beside it, and cuts
+    // a squeezed name itself: a clip on the title would cut the target too.
+    // Padding around the title's own 1.3 line keeps the name on its pixel.
     a {
+      display: block;
+      padding-block: calc((44px - 1.3em) / 2);
+      overflow: hidden;
+      text-overflow: ellipsis;
       color: var(--ink-strong-color);
       text-decoration: none;
       background-image: none;
