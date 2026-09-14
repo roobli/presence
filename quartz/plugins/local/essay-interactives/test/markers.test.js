@@ -264,6 +264,11 @@ test("registry: the apple figures are live group stages; fixtures need the flag;
   }
   assert.equal(plain.get("hinge-diagram")?.status, "strip")
   assert.deepEqual(plain.get("spring-throw").cites, ["250"])
+  // _fig-apple.scss sizes the comb's box from the stage width, so no px pair can describe it.
+  assert.ok(
+    !plain.get("curvature-comb").style.includes("--fig-min-h"),
+    "curvature-comb declares no registry heights",
+  )
   assert.equal(plain.has("fixture"), false)
   const fixtures = loadRegistry(undefined, true)
   assert.equal(fixtures.get("fixture")?.status, "live")
