@@ -233,7 +233,7 @@
   background-image: none;
   color: var(--ink-color);
   font-family: var(--font-interface);
-  font-size: 13.5px;
+  font-size: var(--size-ui);
   font-weight: 400;
   line-height: 1.4;
   text-align: left;
@@ -403,7 +403,7 @@
   background: var(--side-bar-bg-color);
   color: var(--ink-strong-color);
   font-family: var(--font-interface);
-  font-size: 13.5px;
+  font-size: var(--size-ui);
   font-weight: 500;
   text-align: left;
   cursor: pointer;
