@@ -184,6 +184,13 @@
     transition: none;
   }
 
+  // The explorer gives an open folder's list visibility: visible, which
+  // escapes the closed sheet's hidden visibility and leaves those rows in the
+  // tab order, off screen. A closed drawer hides everything inside it.
+  html:not(.tpl-drawer-shown) #tpl-drawer * {
+    visibility: hidden;
+  }
+
   .sidebar.left .explorer .explorer-toggle.mobile-explorer {
     display: none;
   }
