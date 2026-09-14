@@ -3,10 +3,18 @@
 // document language follows the page after each navigation.
 //
 // A switch through the header's language control keeps the reading position.
-// The click records which h2 or h3 section the reader is in and how far
-// through it; the next page, when it has the same number of h2 and h3
-// headings, opens at the same point instead of the top.
+// The click records where the link goes, which h2 or h3 section the reader is
+// in and how far through it; the next page, when it is that destination and
+// has the same number of h2 and h3 headings, opens at the same point instead
+// of the top.
 var JUMP_KEY = "presence-lang-jump"
+
+// Mermaid diagrams, live figures and late fonts render after the navigation
+// and change section heights under the restored position. Until the reader
+// scrolls, taps, clicks or types, or HOLD_MS passes, every change in the
+// article's size puts the position back.
+var HOLD_MS = 4000
+var TAKEOVER_EVENTS = ["wheel", "touchstart", "pointerdown", "keydown"]
 
 // Headings are read against the top of the viewport, below the sticky mobile
 // header when there is one (roob-ui sets scroll-padding-top to its height).
@@ -30,7 +38,11 @@ function sectionSpan(article, headings, index) {
   return { top: top, height: Math.max(1, end - top) }
 }
 
-function recordPosition() {
+function samePath(a, b) {
+  return a.replace(/\/$/, "") === b.replace(/\/$/, "")
+}
+
+function recordPosition(link) {
   var article = pageArticle()
   var headings = headingsIn(article)
   var line = readingLine()
@@ -46,6 +58,7 @@ function recordPosition() {
     sessionStorage.setItem(
       JUMP_KEY,
       JSON.stringify({
+        path: new URL(link.href, location.href).pathname,
         count: headings.length,
         index: index,
         ratio: Math.min(1, (line - span.top) / span.height),
@@ -60,15 +73,39 @@ function restorePosition() {
     saved = JSON.parse(sessionStorage.getItem(JUMP_KEY) || "null")
     sessionStorage.removeItem(JUMP_KEY)
   } catch (e) {}
-  if (!saved) return
+  // A switch that never arrived (another navigation was in flight) must not
+  // move whichever page comes next.
+  if (!saved || typeof saved.path !== "string" || !samePath(saved.path, location.pathname)) return
   var article = pageArticle()
-  var headings = headingsIn(article)
-  if (headings.length !== saved.count || !headings[saved.index]) return
-  var span = sectionSpan(article, headings, saved.index)
-  window.scrollTo({
-    top: window.scrollY + span.top + saved.ratio * span.height - readingLine(),
-    behavior: "instant",
+  if (headingsIn(article).length !== saved.count) return
+
+  function place() {
+    var headings = headingsIn(article)
+    if (headings.length !== saved.count || !headings[saved.index]) return
+    var span = sectionSpan(article, headings, saved.index)
+    var offset = span.top + saved.ratio * span.height - readingLine()
+    if (Math.abs(offset) >= 1) {
+      window.scrollTo({ top: window.scrollY + offset, behavior: "instant" })
+    }
+  }
+
+  place()
+  if (typeof ResizeObserver !== "function") return
+
+  var observer = new ResizeObserver(place)
+  var timer = setTimeout(release, HOLD_MS)
+  function release() {
+    observer.disconnect()
+    clearTimeout(timer)
+    TAKEOVER_EVENTS.forEach(function (type) {
+      window.removeEventListener(type, release, true)
+    })
+  }
+  observer.observe(article)
+  TAKEOVER_EVENTS.forEach(function (type) {
+    window.addEventListener(type, release, { capture: true, passive: true })
   })
+  window.addCleanup(release)
 }
 
 document.addEventListener("nav", function () {
@@ -84,7 +121,8 @@ document.addEventListener("nav", function () {
       return
     }
     var target = event.target
-    if (target instanceof Element && target.closest(".page-header .ph-lang a")) recordPosition()
+    var link = target instanceof Element ? target.closest(".page-header .ph-lang a") : null
+    if (link) recordPosition(link)
   }
   document.addEventListener("click", onClick)
   window.addCleanup(function () {
