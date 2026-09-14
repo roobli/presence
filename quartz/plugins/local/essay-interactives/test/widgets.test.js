@@ -52,16 +52,9 @@ test("model functions declared in a widget file run in node:vm", () => {
   assert.equal(overshoot(1), 0)
 })
 
-// Pre-shell widgets that still mount through the adapter keep their old strings
-// until they are rebuilt; every widget written on the fig API is checked.
-test("no string in a fig API widget file contains an en or em dash", () => {
-  const registry = loadRegistry(undefined, true)
+test("no string in a widget file contains an en or em dash", () => {
   for (const file of readdirSync(WIDGETS_DIR).filter((name) => name.endsWith(".js"))) {
     const text = read(WIDGETS_DIR, file)
-    const context = vm.createContext({ WIDGETS: {} })
-    vm.runInContext(text, context)
-    const names = Object.keys(context.WIDGETS)
-    if (names.every((name) => registry.get(name)?.adapter === "root")) continue
     for (const match of text.matchAll(/"[^"\n]*"/g)) {
       assert.ok(!/[–—]/.test(match[0]), `${file}: ${match[0]}`)
     }

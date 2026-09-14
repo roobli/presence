@@ -123,8 +123,6 @@ function normalizeEntry(raw, name, file) {
   return {
     name,
     status: raw.status,
-    // "root": the widget still takes mount(root); the client shell adapts it.
-    adapter: raw.adapter === "root" ? "root" : null,
     stage,
     style: vars.map(([key, value]) => `${key}:${value}`).join(";"),
     cites,

@@ -5,8 +5,7 @@
  * The shell renders one polite live region per figure and one Reset button,
  * always last in the rail. Everything made through fig (controls, listeners,
  * surfaces, observers, loops, drags, key scopes, presses, rulers) is released on
- * SPA cleanup, then the widget's destroy runs. Widgets in ADAPTED_WIDGETS still
- * take mount(root) and go through mountAdapted until they are rebuilt on fig.
+ * SPA cleanup, then the widget's destroy runs.
  */
 
 var FIG_SVG_NS = "http://www.w3.org/2000/svg"
@@ -583,36 +582,8 @@ function buildFig(rec) {
   return api
 }
 
-/**
- * Compatibility adapter for widgets written as mount(root). The widget builds
- * its old card inside the box; its control rows move into the rail, its title
- * gives way to the figure head, and its own Reset gives way to the shell's.
- */
-function mountAdapted(rec) {
-  var handle = rec.mount(rec.box)
-  var card = rec.box.querySelector(".essay-interactive__card")
-  if (!card) return handle
-  var title = card.querySelector(".essay-interactive__title")
-  if (title) title.remove()
-  var controls = card.querySelector(".essay-interactive__controls")
-  if (controls) {
-    while (controls.firstElementChild) {
-      var row = controls.firstElementChild
-      row.classList.add("essay-fig__group")
-      rec.rail.insertBefore(row, rec.reset)
-    }
-    controls.remove()
-  }
-  var buttons = rec.rail.querySelectorAll("button")
-  for (var i = 0; i < buttons.length; i++) {
-    if (buttons[i] !== rec.reset && buttons[i].textContent.trim() === "Reset")
-      buttons[i].hidden = true
-  }
-  return handle
-}
-
 function mountWidget(rec) {
-  rec.handle = ADAPTED_WIDGETS[rec.name] ? mountAdapted(rec) : rec.mount(rec.fig)
+  rec.handle = rec.mount(rec.fig)
   // Nodes a widget put straight into the stage belong in the box, which holds
   // the reserved height; outside it they would add to that height.
   var kids = rec.stage.children

@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from "fs"
-import { FIXTURES, REGISTRY } from "../index.js"
+import { FIXTURES } from "../index.js"
 
 /**
  * Client script for the essay figures, assembled at import time from plain
@@ -31,17 +31,10 @@ const runtimeFiles = [
   ...listScripts(RUNTIME_DIR).filter((name) => !RUNTIME_ORDER.includes(name)),
 ]
 
-// Widgets still written as mount(root); the shell mounts them through its adapter.
-const adapted = {}
-for (const entry of REGISTRY.values()) {
-  if (entry.status === "live" && entry.adapter === "root") adapted[entry.name] = true
-}
-
 // Runtime files share the outer scope. Each widget file gets its own function
 // scope, so a helper declared in one widget cannot replace another's.
 const script = [
   "(function () {",
-  "var ADAPTED_WIDGETS = " + JSON.stringify(adapted) + ";",
   ...runtimeFiles.map((name) => readScript(RUNTIME_DIR, name)),
   ...listScripts(WIDGETS_DIR).map(
     (name) => ";(function () {\n" + readScript(WIDGETS_DIR, name) + "\n})()",

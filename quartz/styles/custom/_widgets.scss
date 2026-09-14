@@ -173,8 +173,7 @@
 
 /* ---------- rail controls ---------- */
 
-.essay-fig__control,
-.essay-fig__group {
+.essay-fig__control {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
@@ -551,8 +550,7 @@
 
 // The live region, and the description a "group" stage points at.
 .essay-fig__live,
-.essay-fig__desc,
-.essay-interactive__live {
+.essay-fig__desc {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -568,108 +566,4 @@
 .popover .essay-fig__rail,
 .popover .essay-fig__nojs {
   display: none;
-}
-
-/* ---------- pre-shell widgets ---------- */
-
-// Content classes still drawn by spring-zeta, zeta-triptych, squircle-compare
-// and curvature-comb, which mount through the shell's adapter. Delete this
-// block when the last of them is rebuilt on the fig API.
-.essay-interactive__canvas {
-  display: block;
-  box-sizing: border-box;
-  width: 100%;
-  height: auto;
-}
-
-.essay-interactive__svg,
-.essay-interactive__kappa {
-  display: block;
-  box-sizing: border-box;
-  width: 100%;
-  height: auto;
-  margin-top: 0.35rem;
-  margin-inline: auto;
-  overflow: hidden;
-}
-
-.essay-interactive__svg--stage {
-  max-height: min(300px, 45vw);
-}
-
-.essay-interactive__kappa {
-  max-height: 120px;
-}
-
-.essay-interactive__shape {
-  fill: var(--surface-color);
-  stroke: var(--ink-color);
-  stroke-width: 1.4;
-}
-
-.essay-interactive__shape--g1 {
-  fill: color-mix(in srgb, var(--accent-color) 8%, var(--surface-color));
-}
-
-.essay-interactive__shape--cont {
-  fill: color-mix(in srgb, var(--ink-color) 4%, var(--surface-color));
-}
-
-.essay-interactive__caption {
-  fill: var(--ink-muted-color);
-  font-family: var(--fig-ui-font);
-  font-size: 12px;
-}
-
-.essay-interactive__kappa-frame {
-  fill: var(--canvas-color);
-  stroke: var(--line-color);
-  stroke-width: 1;
-}
-
-.essay-interactive__kappa-g1 {
-  stroke: var(--accent-color);
-  stroke-width: 1.4;
-}
-
-.essay-interactive__kappa-g2 {
-  stroke: var(--ink-color);
-  stroke-width: 1.4;
-}
-
-.essay-interactive__footnote {
-  margin: 8px 12px;
-  font-family: var(--fig-ui-font);
-  font-size: var(--size-ui-sm, 12.5px);
-  line-height: 1.4;
-  color: var(--ink-muted-color);
-}
-
-.essay-fig__rail .essay-interactive__label,
-.essay-fig__rail .essay-interactive__check {
-  color: var(--ink-muted-color);
-}
-
-.essay-fig__rail .essay-interactive__check {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: var(--fig-row);
-  cursor: pointer;
-}
-
-.essay-fig__rail .essay-interactive__value {
-  min-width: 5ch;
-  font-family: var(--font-code, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
-.essay-fig__rail .essay-interactive__regime {
-  padding: 0 8px;
-  border: 1px solid var(--line-color);
-  border-radius: 999px;
-  font-size: var(--size-ui-sm, 12.5px);
-  color: var(--ink-muted-color);
 }

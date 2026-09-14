@@ -23,7 +23,6 @@ const registry = new Map([
     {
       name: "demo",
       status: "live",
-      adapter: null,
       stage: "img",
       style: "--fig-aspect:16 / 7",
       cites: ["320"],
@@ -34,13 +33,12 @@ const registry = new Map([
     {
       name: "chips",
       status: "live",
-      adapter: null,
       stage: "group",
       style: "--fig-min-h:320px",
       cites: [],
     },
   ],
-  ["gone", { name: "gone", status: "strip", adapter: null, stage: "img", style: "", cites: [] }],
+  ["gone", { name: "gone", status: "strip", stage: "img", style: "", cites: [] }],
 ])
 
 const essay = [
@@ -258,15 +256,11 @@ test("markers in frontmatter are ignored", () => {
   assert.equal(markers.length, 0)
 })
 
-test("registry: the apple figures mount on the fig API; fixtures need the flag; stage defaults to img", () => {
+test("registry: the apple figures are live group stages; fixtures need the flag; stage defaults to img", () => {
   const plain = loadRegistry(undefined, false)
   for (const name of ["spring-throw", "zeta-triptych", "curvature-comb"]) {
     assert.equal(plain.get(name)?.status, "live", name)
-    assert.equal(plain.get(name)?.adapter, null, name)
     assert.equal(plain.get(name)?.stage, "group", name)
-  }
-  for (const name of ["spring-zeta", "squircle-compare"]) {
-    assert.equal(plain.has(name), false, name)
   }
   assert.equal(plain.get("hinge-diagram")?.status, "strip")
   assert.deepEqual(plain.get("spring-throw").cites, ["250"])
