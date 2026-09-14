@@ -114,6 +114,26 @@ $mark-ext: (
     }
   }
 
+  // Keyboard focus takes the site's ring, drawn inside the row: the tree's
+  // lists clip their overflow, and a ring outside the row would be cut.
+  a.nav-file-title:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: -2px;
+  }
+
+  // A folder's link covers only its name, so the ring goes round the whole
+  // row, the shape a file row's ring takes.
+  @supports selector(:has(*)) {
+    .folder-container:has(.folder-button:focus-visible) {
+      outline: 2px solid var(--accent-color);
+      outline-offset: -2px;
+    }
+
+    .folder-button:focus-visible {
+      outline: none;
+    }
+  }
+
   // A folder row is icon plus label; a file row is the label itself, so only
   // the folder row becomes a flex line. Truncation needs a block box.
   .folder-container {
