@@ -44,6 +44,19 @@
   overflow: hidden; // the body scrolls; the panel itself never does
 }
 
+// Until roob-ui builds the panel (data-tpl-nav="ready") the sidebar holds
+// Quartz's stock children. On a cold load their raw toolbar row and the whole
+// outline showed for about a second, the theme icon cut at the panel's edge.
+// The wordmark and the tree stay, since the built panel keeps both. Without
+// scripting nothing rebuilds the panel, and the stock sidebar stays whole.
+@media (scripting: enabled) {
+  @media all and not ($mobile) {
+    .page > #quartz-body > .sidebar.left:not([data-tpl-nav="ready"]) > :is(.flex-component, .toc) {
+      display: none;
+    }
+  }
+}
+
 .tpl-nav-head {
   flex: none;
   display: flex;
