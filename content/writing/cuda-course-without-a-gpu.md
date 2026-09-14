@@ -178,8 +178,3 @@ You are not done with CUDA. You are done pretending syntax was the course.
 - Source: [github.com/lr00rl/cuda-cpp-course](https://github.com/lr00rl/cuda-cpp-course)
 
 This page lives on the RoobLi presence site — one markdown source, deployed as the public surface. Channels get excerpts. The course repo remains the demo; this essay remains the argument.
-
-
----
-
-Related work: [[works/cuda-cpp-course|CUDA C++ Course]] · live demo [lr00rl.github.io/cuda-cpp-course](https://lr00rl.github.io/cuda-cpp-course/).
