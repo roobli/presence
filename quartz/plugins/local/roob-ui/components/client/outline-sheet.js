@@ -172,6 +172,20 @@ function paintOutlineSheet() {
 function sizeOutlineSheet() {
   sheetViewport = sheetViewportHeight()
   sheetEl.style.height = sheetViewport + "px"
+  placeOutlineSheet()
+}
+
+/** Beside a column the sheet sits under the note column. Its left edge and
+ *  width go to the stylesheet, which centres a sheet of at most 420px on them
+ *  and ignores them on one column. Runs on open, on resize, and from
+ *  applyLayout, which also covers a text width change while the sheet is up. */
+function placeOutlineSheet() {
+  if (!sheetEl || sheetEl.hidden) return
+  var center = document.querySelector(".page > #quartz-body > .center")
+  if (!center) return
+  var rect = center.getBoundingClientRect()
+  sheetEl.style.setProperty("--tpl-os-column-left", rect.left.toFixed(2) + "px")
+  sheetEl.style.setProperty("--tpl-os-column-width", rect.width.toFixed(2) + "px")
 }
 
 /** Rows below the bottom of the screen at this detent can still scroll up. */

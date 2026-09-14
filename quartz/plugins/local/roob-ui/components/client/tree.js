@@ -356,22 +356,35 @@ function rowSlug(link) {
   return href.replace(/[?#].*$/, "").replace(/^\/+/, "")
 }
 
+/** The row's name in a box of its own. A row is a flex line of mark and name,
+ *  and a flex container never draws an ellipsis for its own text, so a long
+ *  name was cut mid-letter. The explorer sets each name as the row's text. */
+function treeRowLabel(row) {
+  var only = row.childNodes.length === 1 ? row.firstChild : null
+  if (only && only.nodeType === 1 && only.classList.contains("tpl-tree-label")) return only
+  var label = el("span", "tpl-tree-label", row.textContent || "")
+  row.textContent = ""
+  row.appendChild(label)
+  return label
+}
+
 /**
  * A note's row always carries its full title. Any other name that fits is
  * already on screen, and a tooltip repeating it is noise: it covers the rows
  * below, arrives late, and says nothing new. Those rows get one only when the
  * panel had to cut the name, so it depends on the panel's current width and
- * is re-decided when that changes.
+ * is re-decided when that changes. Every row's name goes in its label first.
  */
 function titleTreeRows(explorer) {
   requestFullTitles()
   var rows = explorer.querySelectorAll(".folder-title, a.nav-file-title")
   for (var i = 0; i < rows.length; i += 1) {
     var row = rows[i]
+    var label = treeRowLabel(row)
     var full =
       fullTitles && row.classList.contains("nav-file-title") ? fullTitles[rowSlug(row)] : null
     var text = typeof full === "string" ? full : ""
-    if (!text && row.scrollWidth > row.clientWidth + 1) text = (row.textContent || "").trim()
+    if (!text && label.scrollWidth > label.clientWidth + 1) text = (label.textContent || "").trim()
     if (text) {
       if (row.title !== text) row.title = text
     } else if (row.title) {

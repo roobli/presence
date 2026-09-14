@@ -1,10 +1,14 @@
+@use "../variables" as *;
+
 // ---------------------------------------------------------------------------
 // The outline sheet (roob-ui outline-sheet.js)
 //
 // A bottom sheet over a scrim, with detents at half and nine tenths of the
 // window. roob-ui sizes it to the window, moves it with translateY and fades
-// the scrim with the height it shows. Beside a column it is centred and kept
-// to the width of a readable list.
+// the scrim with the height it shows. On one column it spans the screen up to
+// 640px. Beside a column it sits at the bottom of the note column, at most
+// 420px wide and centred on it. The column moves with the sidebar and the
+// text width, so roob-ui writes its left edge and width onto the sheet.
 // ---------------------------------------------------------------------------
 .tpl-os-scrim {
   position: fixed;
@@ -49,6 +53,20 @@
   @media (min-width: 641px) {
     border-left: 1px solid var(--line-color);
     border-right: 1px solid var(--line-color);
+  }
+}
+
+@media all and not ($mobile) {
+  .tpl-outline-sheet {
+    --tpl-os-width: min(420px, var(--tpl-os-column-width, 100vw));
+
+    left: calc(
+      var(--tpl-os-column-left, 0px) + (var(--tpl-os-column-width, 100vw) - var(--tpl-os-width)) / 2
+    );
+    right: auto;
+    width: var(--tpl-os-width);
+    max-width: none;
+    margin: 0;
   }
 }
 
