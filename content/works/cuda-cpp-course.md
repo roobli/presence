@@ -12,8 +12,6 @@ tags:
   - works
 ---
 
-# CUDA C++ Course
-
 Interactive CUDA C++ course: **15 lessons** in five stages, plus **four browser labs** that simulate the GPU execution model. You can finish the conceptual path without a local NVIDIA GPU. The `cuda/` directory has nine compilable samples for when you have a card.
 
 - Live: [lr00rl.github.io/cuda-cpp-course](https://lr00rl.github.io/cuda-cpp-course/) (Chinese: [/zh/](https://lr00rl.github.io/cuda-cpp-course/zh/))

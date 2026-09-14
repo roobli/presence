@@ -3,8 +3,6 @@ title: About
 enableToc: false
 ---
 
-# About
-
 RoobLi’s public homepage. Selected works and deep writing only.
 
 Internal notes (RooB) are **not** published from this repository. Content here is written for the public web, desensitized, and meant to stand on its own.
