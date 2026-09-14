@@ -31,9 +31,9 @@ STRINGS.nav = {
     lightMode: "亮色模式",
     readerMode: "阅读模式",
     outline: "目录",
-    reveal: "展开并滚动到当前笔记",
-    fold: "折叠所有目录",
-    help: "快捷键与用法",
+    reveal: "定位当前笔记",
+    fold: "折叠全部文件夹",
+    help: "快捷键",
     search: "搜索",
     searchPlaceholder: "搜索",
   },
@@ -187,8 +187,18 @@ function buildNav() {
 
   // Quartz's outline stays in the DOM out of sight: its own script binds to
   // it, and the dial in the top right is rebuilt from it on every page.
+  // Quartz numbers each plugin's lists from zero, so this list carries the
+  // Explorer's id, list-0, and its header points at a toc-N id that nothing
+  // has. Out of view neither is needed: the dial and the sheet find the
+  // list by class.
   var tocHost = el("div", "tpl-toc-source")
-  if (toc) tocHost.appendChild(toc)
+  if (toc) {
+    var tocList = toc.querySelector(".toc-content")
+    if (tocList) tocList.removeAttribute("id")
+    var tocHeader = toc.querySelector(".toc-header")
+    if (tocHeader) tocHeader.removeAttribute("aria-controls")
+    tocHost.appendChild(toc)
+  }
 
   var explorerToggle = explorer.querySelector(".explorer-toggle.desktop-explorer")
   if (explorerToggle) explorerToggle.remove()

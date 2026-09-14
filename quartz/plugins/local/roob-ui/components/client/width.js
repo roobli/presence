@@ -127,7 +127,7 @@ function syncWidthButton() {
   button.setAttribute("data-mode", mode)
   var mac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent || "")
   var keys = mac ? "⌘⌥[ / ⌘⌥]" : "Ctrl+Alt+[ / Ctrl+Alt+]"
-  button.title = t("width", "label", { mode: t("width", mode) }) + "  (" + keys + ")"
+  button.title = t("width", "label", { mode: t("width", mode) }) + " (" + keys + ")"
   button.setAttribute("aria-label", button.title)
 }
 
