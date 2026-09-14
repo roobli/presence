@@ -209,8 +209,8 @@ describe("components", () => {
     const html = render(PageHeader()(props(keyboard)))
     assert.match(html, /<p class="ph-kicker"><a href="\/writing\/">Writing<\/a><\/p>/)
     assert.match(html, /<h1 class="article-title ph-title">Keyboard shortcut systems<\/h1>/)
-    assert.match(html, /<nav class="ph-lang" aria-label="Language">/)
-    assert.match(html, /<span class="ph-lang-seg" aria-current="page" lang="en">English<\/span>/)
+    assert.match(html, /<p class="ph-facts">.*<span class="ph-lang"><a href="[^"]+" lang="zh-Hans" hreflang="zh-Hans" rel="alternate">中文<\/a><\/span><\/p>/)
+    assert.doesNotMatch(html, /aria-current|ph-lang-seg|<nav/)
   })
 
   test("page header on the translation uses zh chrome and the original's minutes", () => {
@@ -218,8 +218,7 @@ describe("components", () => {
     assert.match(html, /<a href="\/writing\/">文章<\/a>/)
     assert.match(html, /2026年9月11日/)
     assert.match(html, /约 8 分钟/)
-    assert.match(html, /aria-label="语言"/)
-    assert.match(html, /<a class="ph-lang-seg" href="\/writing\/keyboard" lang="en" hreflang="en" rel="alternate">English<\/a>/)
+    assert.match(html, /<span class="ph-lang"><a href="\/writing\/keyboard" lang="en" hreflang="en" rel="alternate">English<\/a><\/span>/)
   })
 
   test("page header: nothing on home, title only on a folder", () => {

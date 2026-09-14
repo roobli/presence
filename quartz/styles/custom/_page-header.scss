@@ -123,82 +123,24 @@
   line-height: inherit;
 }
 
-.ph-links a {
+// Work links and a translated page's link to its other language share one
+// link style on the meta line, the way the homepage rows offer 中文.
+.ph-links a,
+.ph-lang a {
   @include ui-link;
   @include focus-ring;
   @include touch-target;
 }
 
-// English | 中文
-.ph-lang {
-  display: inline-flex;
-  margin-inline-start: auto;
-  border: 1px solid var(--line-color);
-  border-radius: 6px;
-}
-
-.ph-lang-seg {
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 10px;
-  line-height: 20px;
-  font-weight: 400;
-  color: var(--ink-muted-color);
-  text-decoration: none;
-
-  &:first-child {
-    border-start-start-radius: 5px;
-    border-end-start-radius: 5px;
-  }
-
-  &:last-child {
-    border-start-end-radius: 5px;
-    border-end-end-radius: 5px;
-  }
-
-  &[aria-current] {
-    background-color: var(--surface-active-color);
-    color: var(--ink-color);
-  }
-}
-
-a.ph-lang-seg {
-  transition: color var(--dur-fade) ease-out;
-
-  &:hover {
-    color: var(--ink-color);
-  }
-
-  @include focus-ring;
-}
-
-// A narrow header gives the control a row of its own, with full-height targets.
-@media (max-width: 519px) {
-  .ph-facts,
-  .ph-links {
-    flex-basis: 100%;
-  }
-
-  .ph-lang {
-    margin-inline-start: 0;
-  }
-
-  .ph-lang-seg {
-    min-height: 44px;
-  }
-}
-
-// Work pages: the screenshot at its own size, scaled down with its proportions
-// kept only when the column is narrower than the image. The width and height
-// attributes hold its box before it loads.
+// Work pages: the screenshot at its own size, centred on its line, scaled down
+// with its proportions kept only when the column is narrower than the image.
+// The width and height attributes hold its box before it loads.
 .ph-shot {
   display: block;
   width: auto;
   max-width: 100%;
   height: auto;
-  margin: var(--space-5) 0 0;
+  margin: var(--space-5) auto 0;
   outline: 1px solid var(--image-outline-color);
   outline-offset: -1px;
   border-radius: var(--radius-block);

@@ -352,8 +352,13 @@ function mountReopenButton() {
     button.appendChild(icon("panel"))
     button.addEventListener("click", function () {
       setSidebarCollapsed(false)
+      // Focus returns to the control that folded the panel away.
+      var collapse = document.getElementById("tpl-sidebar-collapse")
+      if (collapse) collapse.focus({ preventScroll: true })
     })
-    document.body.appendChild(button)
+    // First in the document, so while the panel is hidden it is the first Tab
+    // stop rather than the last one after the whole article.
+    document.body.insertBefore(button, document.body.firstChild)
   }
   // The page's language can change under a button that outlives the page.
   button.title = t("resize", "show")
