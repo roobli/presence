@@ -1,1 +1,307 @@
 // Figures of the cuda-course-without-a-gpu essay. Owned by the CUDA essay team.
+// sector-stride (Fig. 1) and bank-map (Fig. 2) put display-only HTML (readouts,
+// code lines, a legend) in the stage box around one fig.svg. The heights below
+// add up to the registry minHeight, and to minHeightNarrow under 560px of stage
+// width, so mounting moves nothing. Colors are tokens, so a theme switch needs
+// no script. In both figures the accent marks the warp's 32 reads and nothing
+// else.
+
+.essay-fig[data-interactive="sector-stride"] .essay-fig__box,
+.essay-fig[data-interactive="bank-map"] .essay-fig__box {
+  padding-block: 16px;
+}
+
+// The 56px ruler track is not a whole number of rail rows, so railRows can only
+// approximate the rail before scripts run. Neither rail changes height with its
+// state (the disabled ruler keeps its size), so a mounted rail takes its content
+// height and the caption keeps its 12px gap instead of sitting under spare rows.
+.essay-fig[data-interactive="sector-stride"][data-fig-state="live"] .essay-fig__rail,
+.essay-fig[data-interactive="bank-map"][data-fig-state="live"] .essay-fig__rail {
+  min-height: 0;
+}
+
+// One focus ring on the ruler: the dot's. The figure-wide :focus-visible rule
+// would also outline the 44 x 56 hit box around it.
+.essay-fig[data-interactive="sector-stride"] .essay-fig__ruler-handle:focus-visible,
+.essay-fig[data-interactive="bank-map"] .essay-fig__ruler-handle:focus-visible {
+  outline: none;
+}
+
+/* ---------- sector-stride: 16 + band 44 + 12 + svg 198 + 8 + legend 18 + 16 ---------- */
+
+.essay-fig[data-interactive="sector-stride"] {
+  .ss-band {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0 28px;
+    box-sizing: border-box;
+    height: 44px;
+    margin: 0 16px 12px;
+    overflow: hidden;
+  }
+
+  .ss-stat {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .ss-stat__label {
+    font-family: var(--font-interface);
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--ink-muted-color);
+    white-space: nowrap;
+  }
+
+  .ss-stat__value {
+    font-family: var(--font-code);
+    font-size: 15px;
+    line-height: 28px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-color);
+    white-space: nowrap;
+  }
+
+  .ss-stat--eff .ss-stat__value {
+    font-size: 22px;
+  }
+
+  .ss-grid {
+    margin-bottom: 8px;
+  }
+
+  .ss-sector__box {
+    fill: none;
+    stroke: var(--line-color);
+    stroke-width: 1;
+    stroke-dasharray: 1 3;
+  }
+
+  .ss-sector.is-fetched .ss-sector__box {
+    fill: var(--surface-color);
+    stroke: var(--ink-muted-color);
+    stroke-dasharray: none;
+  }
+
+  .ss-sector__slots {
+    display: none;
+    fill: none;
+    stroke: var(--line-color);
+    stroke-width: 1;
+  }
+
+  .ss-sector.is-fetched .ss-sector__slots {
+    display: inline;
+  }
+
+  .ss-read {
+    fill: var(--accent-color);
+  }
+
+  .ss-bracket {
+    fill: none;
+    stroke: var(--ink-muted-color);
+    stroke-width: 1;
+    stroke-dasharray: 5 4;
+  }
+
+  .ss-bracket-label {
+    font-family: var(--font-interface);
+    font-size: 12px;
+    fill: var(--ink-muted-color);
+  }
+
+  .ss-index {
+    font-family: var(--font-code);
+    font-size: 12px;
+    fill: var(--ink-muted-color);
+  }
+
+  .ss-legend {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0 16px;
+    height: 18px;
+    margin: 0 16px;
+    overflow: hidden;
+    font-family: var(--font-interface);
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--ink-muted-color);
+    white-space: nowrap;
+  }
+
+  .ss-key::before {
+    content: "";
+    display: inline-block;
+    box-sizing: border-box;
+    width: 10px;
+    height: 10px;
+    margin-right: 6px;
+    border-radius: 2px;
+    vertical-align: -1px;
+  }
+
+  .ss-key--fetched::before {
+    border: 1px solid var(--ink-muted-color);
+    background: var(--surface-color);
+  }
+
+  .ss-key--read::before {
+    background: var(--accent-color);
+  }
+
+  .ss-key--idle::before {
+    border: 1px dotted var(--line-strong-color);
+  }
+}
+
+// Narrow: 16 + band 80 (two rows of two) + 12 + svg 288 + 8 + legend 18 + 16.
+@container essay-fig-stage (width < 560px) {
+  .essay-fig[data-interactive="sector-stride"] .ss-band {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 40px;
+    gap: 0 16px;
+    height: 80px;
+  }
+
+  .essay-fig[data-interactive="sector-stride"] .ss-stat__value {
+    line-height: 24px;
+  }
+}
+
+/* ---------- bank-map: 16 + band 64 + 12 + svg 294 + 16 ---------- */
+
+.essay-fig[data-interactive="bank-map"] {
+  .bm-band {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 40px 24px;
+    grid-template-areas:
+      "code stats"
+      "state state";
+    column-gap: 16px;
+    box-sizing: border-box;
+    height: 64px;
+    margin: 0 16px 12px;
+  }
+
+  .bm-code {
+    grid-area: code;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  // Article inline code draws a chip; these are plain code lines.
+  .bm-code code {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    font-family: var(--font-code);
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--ink-color);
+    white-space: pre;
+    overflow: hidden;
+  }
+
+  .bm-state {
+    grid-area: state;
+    align-self: end;
+    margin: 0;
+    font-family: var(--font-interface);
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--ink-color);
+  }
+
+  .bm-stats {
+    grid-area: stats;
+    display: flex;
+    gap: 24px;
+  }
+
+  .bm-stat {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bm-stat__label {
+    font-family: var(--font-interface);
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--ink-muted-color);
+    white-space: nowrap;
+  }
+
+  .bm-stat__value {
+    font-family: var(--font-code);
+    font-size: 22px;
+    line-height: 24px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-color);
+    white-space: nowrap;
+  }
+
+  // Conflict reads from stack height, the heavy baseline and the label, never
+  // from hue: bricks are the accent in every state.
+  .bm-brick {
+    fill: var(--accent-color);
+  }
+
+  .bm-base {
+    fill: var(--line-color);
+  }
+
+  .bm-base.is-conflict {
+    fill: var(--ink-color);
+  }
+
+  .bm-label {
+    font-family: var(--font-code);
+    font-size: 13px;
+    font-weight: 600;
+    fill: var(--ink-color);
+  }
+
+  .bm-axis {
+    font-family: var(--font-code);
+    font-size: 12px;
+    fill: var(--ink-muted-color);
+  }
+
+  // Pressed on pointerdown; the choice itself commits on click.
+  .essay-fig__options > button:active:not(:disabled) {
+    border-color: var(--ink-color);
+    background: color-mix(in srgb, var(--ink-color) 7%, transparent);
+  }
+}
+
+// Narrow: 16 + band 136 (code 40, state 40, stats 44, gaps 6 + 6) + 12 + svg 262 + 16.
+@container essay-fig-stage (width < 560px) {
+  .essay-fig[data-interactive="bank-map"] .bm-band {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 40px 40px 44px;
+    grid-template-areas:
+      "code"
+      "state"
+      "stats";
+    row-gap: 6px;
+    height: 136px;
+  }
+
+  .essay-fig[data-interactive="bank-map"] .bm-state {
+    align-self: start;
+  }
+
+  .essay-fig[data-interactive="bank-map"] .bm-stat__value {
+    line-height: 28px;
+  }
+}

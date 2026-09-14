@@ -7,6 +7,7 @@ tags:
   - teaching
   - systems
   - design
+work: works/cuda-cpp-course
 ---
 
 Most CUDA tutorials fail the same way: they teach launch syntax, hand you a vector-add, and leave you staring at a machine you don’t have. The hardware barrier is real — no NVIDIA card, driver fights, Colab quotas, cloud bills, “it compiles but I can’t run it.” So people either quit, or they rent a GPU before they know what they would measure on it.
@@ -87,6 +88,8 @@ The labs exist to turn abstractions into something you can drag. They are **fron
 
 **Why this cut:** coalescing is usually taught as a slogan (“make accesses contiguous”). The lab forces the arithmetic. Change stride; watch transaction count move. The course QA asserts a concrete case: stride `8` → **12.5%** efficiency. That is not a vibe. It is a checkable claim about the model the lab implements.
 
+<!-- interactive:sector-stride title="Sector transactions by stride" caption="At stride 8 every fetched 32 B sector holds a single 4 B read: 1024 B moved for 128 B used, which is where 12.5% comes from." alt="A grid of 32 device-memory sectors, 32 B each, split into 8 slots of 4 B. At stride 8 all 32 sectors are fetched and each holds one 4 B read. A dashed outline marks the first 4 sectors, all that stride 1 needs. Readouts: 12.5% bandwidth efficiency, 32 sector transactions, 1024 B moved, 128 B used." model="Ported from coalescing-lab.tsx in lr00rl/cuda-cpp-course. One warp of 32 threads reads 4 B floats at in[i * stride], offset 0, stride 1 to 8. Hardware fetches whole 32 B sectors, shown as sectors 0 to 31. Efficiency is bytes used over bytes moved: stride 1 gives 4 transactions and 100.0%; stride 8 gives 1024 B moved for 128 B used. The course lab also varies offset, access width, and stride up to 32. These are simulated transaction counts, not measured bandwidth." -->
+
 **What you should be able to say after:** why a warp that touches addresses with large stride burns sectors, and what “efficiency” means in *sector* terms — not “it felt faster.”
 
 ### 3. Bank conflict simulator
@@ -96,6 +99,8 @@ The labs exist to turn abstractions into something you can drag. They are **fron
 **Cuts:** compiler surprises, actual shared-memory throughput on a given architecture, bank conflicts mixed with irregular control flow.
 
 **Why this cut:** bank conflicts are invisible until you have a picture of the banks. The lab is that picture. The classic teaching move — `[32][32]` vs `[32][33]` — shows a many-way conflict collapsing when padding shifts the landing pattern. Course QA asserts that drop: from **32-way** conflict to **none** for that case.
+
+<!-- interactive:bank-map title="Where one warp lands on 32 banks" caption="At [32][32] all 32 reads stack on bank 0, a 32-way conflict. One step to [32][33] gives each read its own bank." alt="Thirty-two bank columns for __shared__ float tile[32][32] read by column. All 32 thread reads stack on bank 0 at 32 different addresses: a 32-way conflict, max conflict degree 32×, banks used 1 / 32." model="Ported from bank-conflict-lab.tsx in lr00rl/cuda-cpp-course: 32 threads and 32 banks of 4 B. Thread tid reads word tid * row width for a column read, tid * 32 + (0 ^ (tid & 31)) for XOR swizzle on tile[32][32], and word 0 for a same-address read; bank = word % 32. Stack height is the number of distinct addresses on a bank, the lab's conflict degree. Row width runs 32 to 36. The course lab also has linear stride and other tile sizes. The figure counts addresses and does not measure shared-memory throughput." -->
 
 **What you should be able to say after:** which shared-memory layout collides, why padding or swizzle changes the bank map, and when a “broadcast” is not a conflict.
 
