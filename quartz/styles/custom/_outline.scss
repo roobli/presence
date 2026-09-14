@@ -8,7 +8,7 @@
 // shows a few lines around the one being read: that line level, solid and a
 // touch larger, its neighbours dimmer, softer and tilted off it, so the set
 // sits on a shallow arc that closes toward the right edge. Pointing at it
-// opens the whole outline, upright and opaque, inside the same gutter.
+// opens the whole outline, upright and opaque, over the article if it must be.
 //
 // It stands in the gutter right of the column, sized from the gutter roob-ui
 // measures (--tpl-right-gutter), and only where html[data-tpl-outline] says
@@ -263,10 +263,7 @@
 
 // --- opened -----------------------------------------------------------------
 #tpl-outline[data-state="open"] {
-  // Open, it stays in the gutter, its left edge no further out than the
-  // dial's, so it never covers the ends of the lines beside it. Long headings
-  // end in an ellipsis and keep their full text as the link's title.
-  width: clamp(150px, calc(var(--tpl-right-gutter, 220px) - 26px), 340px);
+  width: clamp(250px, calc(var(--tpl-right-gutter, 250px) + 140px), 340px);
 
   // Open, it is a list rather than a dial, so the spine and needle go.
   &::after,
@@ -275,8 +272,8 @@
   }
 
   border-color: var(--line-color);
-  // Opaque on purpose: pinned, it may open over the article (below), and
-  // article text showing through the outline would be worse than covering it.
+  // Opaque on purpose: this sits over the article, and article text showing
+  // through the outline would be worse than covering it.
   background: var(--surface-subtle-color);
   box-shadow:
     0 2px 6px var(--overlay-shadow-color),
@@ -332,12 +329,6 @@
     color: var(--accent-color);
     font-weight: 500;
   }
-}
-
-// Pinned in a gutter too narrow to dock it, the reader has asked to keep the
-// outline at hand, so it opens at its full width and may cover the column.
-#tpl-outline.tpl-outline-pinned:not(.tpl-outline-docked)[data-state="open"] {
-  width: clamp(250px, calc(var(--tpl-right-gutter, 250px) + 140px), 340px);
 }
 
 // --- docked ------------------------------------------------------------------
