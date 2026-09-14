@@ -46,7 +46,9 @@ function measureProgress(state) {
   state.starts = starts
   for (var j = 0; j < starts.length; j += 1) {
     var end = j + 1 < starts.length ? starts[j + 1] : 1
-    state.segments[j].seg.style.flexGrow = String(Math.max(1, Math.round((end - starts[j]) * rect.height)))
+    state.segments[j].seg.style.flexGrow = String(
+      Math.max(1, Math.round((end - starts[j]) * rect.height)),
+    )
   }
 }
 
@@ -54,7 +56,13 @@ function paintProgress(state) {
   state.frame = 0
   if (!isNarrow() || !state.bar.isConnected || !state.starts.length) return
   var top = state.article.getBoundingClientRect().top + window.scrollY
-  var progress = readingProgress(window.scrollY, state.headerH, top, state.height, window.innerHeight)
+  var progress = readingProgress(
+    window.scrollY,
+    state.headerH,
+    top,
+    state.height,
+    window.innerHeight,
+  )
   var fills = segmentFills(progress, state.starts)
   for (var i = 0; i < fills.length; i += 1) {
     var segment = state.segments[i]
@@ -84,7 +92,13 @@ function refreshProgress() {
   var sidebar = document.querySelector(".sidebar.left")
   var article = document.querySelector(".page > #quartz-body > .center > article")
   var bar = document.getElementById("tpl-progress")
-  if (progressState && bar && bar.isConnected && progressState.bar === bar && progressState.article === article) {
+  if (
+    progressState &&
+    bar &&
+    bar.isConnected &&
+    progressState.bar === bar &&
+    progressState.article === article
+  ) {
     return
   }
   teardownProgress(progressState)

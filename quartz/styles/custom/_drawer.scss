@@ -132,10 +132,12 @@
     }
   }
 
-  // A field's surface, so the row reads as the place to type.
+  // A field's surface, so the row reads as the place to type. The paper colour
+  // and a hairline, because the light sidebar and surface tones nearly match.
   .tpl-drawer-search {
     min-height: 40px;
-    background: var(--surface-color);
+    background: var(--canvas-color);
+    box-shadow: inset 0 0 0 1px var(--line-color);
     color: var(--ink-muted-color);
   }
 
@@ -195,9 +197,18 @@
       min-height: 44px;
     }
 
+    // A name that does not fit wraps to a second line rather than being cut
+    // at the drawer's edge.
     .folder-title,
     a.nav-file-title {
       font-size: 15px;
+      line-height: 1.3;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    a.nav-file-title {
+      padding-block: 10px;
     }
 
     .folder-icon {

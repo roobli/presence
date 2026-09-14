@@ -107,7 +107,10 @@ function syncDrawerLabels() {
   if (theme) {
     var dark = document.documentElement.getAttribute("saved-theme") === "dark"
     theme.querySelector(".tpl-nav-icon").innerHTML = ICONS[dark ? "sun" : "moon"]
-    theme.querySelector(".tpl-drawer-label").textContent = t("drawer", dark ? "lightTheme" : "darkTheme")
+    theme.querySelector(".tpl-drawer-label").textContent = t(
+      "drawer",
+      dark ? "lightTheme" : "darkTheme",
+    )
   }
   if (drawer.hasAttribute("role")) drawer.setAttribute("aria-label", t("drawer", "label"))
 }
@@ -341,14 +344,18 @@ document.addEventListener("pointercancel", function (event) {
   if (drawerDrag && event.pointerId === drawerDrag.id) endDrawerDrag(event)
 })
 
+// Only the drawer's own capture counts. A touch starts out captured by the row
+// it pressed, and moving the capture to the drawer fires this at that row.
 document.addEventListener("lostpointercapture", function (event) {
-  if (drawerDrag && drawerDrag.captured && event.pointerId === drawerDrag.id) endDrawerDrag(event)
+  var d = drawerDrag
+  if (d && d.captured && event.pointerId === d.id && event.target === d.drawer) endDrawerDrag(event)
 })
 
 // A link dragged with the mouse would start a native drag and cancel ours.
 document.addEventListener("dragstart", function (event) {
   var target = event.target
-  if (drawerDrag && target && target.closest && target.closest("#tpl-drawer")) event.preventDefault()
+  if (drawerDrag && target && target.closest && target.closest("#tpl-drawer"))
+    event.preventDefault()
 })
 
 window.addEventListener(

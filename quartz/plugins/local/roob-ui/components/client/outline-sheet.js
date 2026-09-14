@@ -177,7 +177,10 @@ function sizeOutlineSheet() {
 /** Rows below the bottom of the screen at this detent can still scroll up. */
 function setSheetDetent(fraction) {
   sheetDetent = fraction
-  sheetListEl.style.setProperty("--tpl-os-hidden", Math.round((1 - fraction) * sheetViewport) + "px")
+  sheetListEl.style.setProperty(
+    "--tpl-os-hidden",
+    Math.round((1 - fraction) * sheetViewport) + "px",
+  )
 }
 
 /** At the top of the list a downward swipe belongs to the sheet, so touch
@@ -267,7 +270,10 @@ function goToHeading(id) {
   var heading = document.getElementById(id)
   closeOutlineSheet(false)
   if (!heading) return
-  heading.scrollIntoView({ behavior: prefersReducedMotion() ? "instant" : "smooth", block: "start" })
+  heading.scrollIntoView({
+    behavior: prefersReducedMotion() ? "instant" : "smooth",
+    block: "start",
+  })
   if (!heading.hasAttribute("tabindex")) heading.setAttribute("tabindex", "-1")
   heading.focus({ preventScroll: true })
   try {
@@ -424,8 +430,11 @@ document.addEventListener("pointercancel", function (event) {
   if (sheetDrag && event.pointerId === sheetDrag.id) endSheetDrag(event)
 })
 
+// Only the sheet's own capture counts: a touch on a row starts out captured
+// by that row, and taking the capture fires this at the row.
 document.addEventListener("lostpointercapture", function (event) {
-  if (sheetDrag && sheetDrag.captured && event.pointerId === sheetDrag.id) endSheetDrag(event)
+  var d = sheetDrag
+  if (d && d.captured && event.pointerId === d.id && event.target === sheetEl) endSheetDrag(event)
 })
 
 window.addEventListener(
