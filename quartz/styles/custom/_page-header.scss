@@ -51,9 +51,12 @@
 
 // A 44px hit box on touch and narrow screens for a link in a 20px line. The
 // padding makes the box and the matching negative margin keeps the line
-// height, so nothing around the link moves.
+// height, so nothing around the link moves. Positioned, so the padding stays
+// on top of a following block (a row's dek) that would otherwise take the
+// taps on the box's lower edge.
 @mixin touch-target {
   @media (pointer: coarse), #{$mobile} {
+    position: relative;
     display: inline-block;
     padding-block: 12px;
     margin-block: -12px;
