@@ -210,6 +210,9 @@
 
 // The three steps the reader actually sees. The tilt grows in shrinking
 // increments, which is what makes the set read as an arc rather than a fan.
+// Every line is a link, so the first neighbour on each side keeps the muted
+// ink at full strength and no blur (4.5:1 or better in both themes); only the
+// lines beyond it fade.
 .tpl-outline-item[data-rel="0"] {
   opacity: 1;
   filter: none;
@@ -223,14 +226,14 @@
 }
 
 .tpl-outline-item[data-rel="-1"] {
-  opacity: 0.55;
-  filter: blur(0.3px);
+  opacity: 1;
+  filter: none;
   transform: rotate(2deg);
 }
 
 .tpl-outline-item[data-rel="1"] {
-  opacity: 0.55;
-  filter: blur(0.3px);
+  opacity: 1;
+  filter: none;
   transform: rotate(-2deg);
 }
 
