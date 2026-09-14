@@ -194,11 +194,14 @@ article {
 
   input[type="checkbox"] {
     accent-color: var(--accent-color);
-    cursor: pointer;
-    transition: transform 0.2s ease;
 
-    &:hover {
-      transform: scale(1.1);
+    &:not(:disabled) {
+      cursor: pointer;
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: scale(1.1);
+      }
     }
   }
 
