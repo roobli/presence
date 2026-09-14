@@ -294,7 +294,8 @@ body[data-kind="home"] article h2 {
 @supports (animation-timeline: scroll()) {
   article pre > code,
   article .table-container,
-  article .katex-display {
+  article .katex-display,
+  article .mermaid-paper {
     mask-image: linear-gradient(
       to right,
       transparent,

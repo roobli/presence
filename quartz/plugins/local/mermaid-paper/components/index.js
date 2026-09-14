@@ -3,7 +3,8 @@
  * so fences arrive as syntax-highlighted code[data-language="mermaid"] blocks.
  * Sources are read synchronously when a page mounts, rendered off-DOM with
  * theme "base" and the site tokens, and each block is swapped once for a
- * .mermaid-paper container. themechange re-renders from the kept sources.
+ * .mermaid-paper container, which scrolls a diagram too wide for the column.
+ * themechange re-renders from the kept sources.
  */
 
 function mermaidPaper() {
@@ -93,6 +94,41 @@ function mermaidPaper() {
     ".cluster-label .nodeLabel{font-size:12.5px;font-weight:600}",
   ].join("")
 
+  // Labels never render smaller than this. A diagram that would have to shrink
+  // below it keeps its width and scrolls inside its container instead.
+  var MIN_LABEL_PX = 12
+
+  // The container can scroll, so it takes focus and needs a name.
+  var REGION_LABEL = { en: "Diagram, scrolls sideways", zh: "图表，可横向滚动" }
+
+  function regionLabel() {
+    return /^zh(-|$)/i.test((document.body && document.body.lang) || "")
+      ? REGION_LABEL.zh
+      : REGION_LABEL.en
+  }
+
+  // Mermaid sizes a flowchart to its container (width 100%, max-width the
+  // viewBox width), so a narrow column scales every label down with it. A
+  // min-width at the scale that draws the smallest label at MIN_LABEL_PX stops
+  // the shrinking; the viewBox width caps it. The column itself still sets the
+  // width above that, so sidebar drags and resizes need no script.
+  function holdLabelSize(box) {
+    var svg = box.querySelector(":scope > svg")
+    var viewBox = svg && svg.viewBox && svg.viewBox.baseVal
+    if (!viewBox || !viewBox.width) return
+    var smallest = Infinity
+    var walker = document.createTreeWalker(svg, NodeFilter.SHOW_TEXT)
+    for (var node = walker.nextNode(); node; node = walker.nextNode()) {
+      var parent = node.parentElement
+      if (!parent || !node.nodeValue.trim() || parent.closest("style, title, desc")) continue
+      var size = parseFloat(window.getComputedStyle(parent).fontSize)
+      if (size > 0 && size < smallest) smallest = size
+    }
+    if (smallest === Infinity) return
+    var width = Math.min(viewBox.width, Math.ceil((viewBox.width * MIN_LABEL_PX) / smallest))
+    svg.style.minWidth = width + "px"
+  }
+
   var loading = null
   var items = []
   var captured = new WeakSet()
@@ -152,10 +188,14 @@ function mermaidPaper() {
     for (var j = 0; j < batch.length; j++) {
       var item = batch[j]
       var res = results[j]
+      if (!res) showSource(item)
       if (!res || !item.el.isConnected) continue
       if (!item.box) {
         item.box = document.createElement("div")
         item.box.className = "mermaid-paper"
+        item.box.tabIndex = 0
+        item.box.setAttribute("role", "region")
+        item.box.setAttribute("aria-label", regionLabel())
       }
       item.box.innerHTML = res.svg
       if (item.el !== item.box) {
@@ -163,6 +203,10 @@ function mermaidPaper() {
         item.el = item.box
       }
       if (res.bindFunctions) res.bindFunctions(item.box)
+    }
+    // Every theme re-render replaces the SVG, so its min-width is set again.
+    for (var k = 0; k < batch.length; k++) {
+      if (results[k] && batch[k].box && batch[k].box.isConnected) holdLabelSize(batch[k].box)
     }
   }
 
@@ -177,7 +221,17 @@ function mermaidPaper() {
       })
       .catch(function (err) {
         console.error("mermaid-paper: render pass failed", err)
+        if (gen === generation) batch.forEach(showSource)
       })
+  }
+
+  // A fence waiting for its diagram keeps its space with the source hidden
+  // (_mermaid.scss). Only mount() sets the mark, so with JavaScript off the
+  // source shows as written; a failed import or render takes the mark off.
+  var PENDING = "data-mermaid-pending"
+
+  function showSource(item) {
+    if (item.el !== item.box) item.el.removeAttribute(PENDING)
   }
 
   function unmount() {
@@ -201,6 +255,7 @@ function mermaidPaper() {
       var source = code.textContent.trim()
       if (!source) continue
       var el = code.closest("figure[data-rehype-pretty-code-figure]") || code.closest("pre") || code
+      el.setAttribute(PENDING, "")
       items.push({ el: el, source: source, box: null })
       found = true
     }

@@ -2,19 +2,41 @@
 /* mermaid-paper renders each diagram with theme "base": colours and fonts come
    from themeVariables, stroke details from themeCSS inside the SVG. This partial
    only frames the container. */
+/* The container is the diagram's horizontal scroller. The renderer gives each
+   SVG a min-width that keeps its smallest label at 12px, so a diagram wider
+   than the column scrolls here instead of shrinking; safe centring keeps its
+   start reachable. overflow-y stays hidden so a vertical swipe over the diagram
+   always scrolls the page. The edge fade comes from _prose.scss. */
 article .mermaid-paper {
   display: flex;
-  justify-content: center;
+  justify-content: safe center;
+  overflow: auto hidden;
   margin: 14px 0 18px;
   padding: 1.15rem 1rem 1rem;
   background-color: var(--canvas-color);
   border: 1px solid var(--line-color);
   border-radius: var(--radius-block);
+
+  /* The edge-fade mask would clip the ring, so a focused scroller drops it. */
+  &:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+    mask-image: none;
+  }
 }
 
+/* A fence the renderer has taken on keeps its space, but its source stays out
+   of sight, focus and the accessibility tree until the diagram swaps in. The
+   renderer sets the mark and takes it off again if the render fails. */
+article [data-mermaid-pending] {
+  visibility: hidden;
+}
+
+/* Width: Mermaid's width="100%" and inline max-width (the viewBox width), and
+   the renderer's inline min-width. */
 article .mermaid-paper > svg {
   display: block;
-  max-width: 100%;
+  flex: none;
   height: auto;
 }
 
