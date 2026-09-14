@@ -190,14 +190,14 @@ a.ph-lang-seg {
   }
 }
 
-// Work pages: the screenshot at column width.
+// Work pages: the screenshot at its own size, scaled down with its proportions
+// kept only when the column is narrower than the image. The width and height
+// attributes hold its box before it loads.
 .ph-shot {
   display: block;
-  width: 100%;
+  width: auto;
   max-width: 100%;
   height: auto;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
   margin: var(--space-5) 0 0;
   outline: 1px solid var(--image-outline-color);
   outline-offset: -1px;
