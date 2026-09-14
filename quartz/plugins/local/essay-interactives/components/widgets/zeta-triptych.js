@@ -200,7 +200,8 @@ WIDGETS["zeta-triptych"] = function (fig) {
   var knobX = 0
   var grab = 0
   var stripLeft = 0
-  var settleToOne = false
+  var settleTo = null
+  var pressZeta = 1
   var pw = 0
   var ph = 0
   var sw = 0
@@ -463,21 +464,20 @@ WIDGETS["zeta-triptych"] = function (fig) {
   function finishSettle() {
     knobX = spring.target
     spring.set(knobX)
-    setZeta(settleToOne ? 1 : zOf(knobX))
-    settleToOne = false
+    setZeta(settleTo != null ? settleTo : zOf(knobX))
+    settleTo = null
     placeKnob()
     setPhase("rest")
   }
 
-  // Within 0.015 of 1 the knob snaps to 1; past an end it returns there;
-  // anywhere else it stays. The readout is spoken for where it ends up.
-  function release() {
+  // Springs the knob from where it is to ζ `to`, or, when to is null, to its
+  // own position brought back inside the ends.
+  function settle(to) {
     var lo = zx(ZETA_MIN)
     var hi = zx(ZETA_MAX)
-    settleToOne = zeta !== 1 && Math.abs(zeta - 1) <= ZETA_DETENT
-    var target = settleToOne ? zx(1) : Math.min(hi, Math.max(lo, knobX))
-    fig.announce(zetaSay(s, settleToOne ? 1 : zeta, false))
-    keys.reset(settleToOne ? 1 : zeta)
+    var target = to != null ? zx(to) : Math.min(hi, Math.max(lo, knobX))
+    settleTo = to
+    keys.reset(to != null ? to : zeta)
     spring.set(knobX, 0)
     spring.retarget(target)
     if (spring.resting || Math.abs(target - knobX) < 0.5) {
@@ -486,6 +486,14 @@ WIDGETS["zeta-triptych"] = function (fig) {
     }
     setPhase("settling")
     loop.start()
+  }
+
+  // Within 0.015 of 1 the knob snaps to 1; past an end it returns there;
+  // anywhere else it stays. The readout is spoken for where it ends up.
+  function release() {
+    var to = zeta !== 1 && Math.abs(zeta - 1) <= ZETA_DETENT ? 1 : null
+    fig.announce(zetaSay(s, to != null ? to : zeta, false))
+    settle(to)
   }
 
   function startPlay() {
@@ -539,7 +547,9 @@ WIDGETS["zeta-triptych"] = function (fig) {
     strip,
     {
       onStart: function (point) {
-        settleToOne = false
+        // Escape restores this: the value at rest, or the one a settle is heading for.
+        pressZeta = settleTo != null ? settleTo : zeta
+        settleTo = null
         spring.set(knobX)
         stripLeft = strip.getBoundingClientRect().left
         var local = point.x - stripLeft
@@ -559,7 +569,10 @@ WIDGETS["zeta-triptych"] = function (fig) {
         placeKnob()
       },
       onEnd: release,
-      onCancel: release,
+      // Escape springs the knob back to the press value and announces nothing.
+      onCancel: function () {
+        settle(pressZeta)
+      },
     },
     { touchAction: "pan-y" },
   )
@@ -576,7 +589,7 @@ WIDGETS["zeta-triptych"] = function (fig) {
       return zetaSay(s, v, true)
     },
     onInput: function (v) {
-      settleToOne = false
+      settleTo = null
       setPhase("rest")
       setZeta(v)
       knobX = zx(zeta)
@@ -608,7 +621,7 @@ WIDGETS["zeta-triptych"] = function (fig) {
 
   fig.onReset(function () {
     loop.stop()
-    settleToOne = false
+    settleTo = null
     playT = -1
     setPlaying(false)
     setPhase("rest")

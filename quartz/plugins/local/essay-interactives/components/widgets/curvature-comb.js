@@ -133,6 +133,7 @@ WIDGETS["curvature-comb"] = function (fig) {
   var knobX = 0
   var grab = 0
   var pressRho = rho0
+  var restoreRho = rho0
   var settleTo = null
   var stripW = 0
   var stripH = 0
@@ -526,13 +527,20 @@ WIDGETS["curvature-comb"] = function (fig) {
     settleTo = null
   }
 
+  // Within 0.03 of rho0 or 1 the knob snaps there; past an end it returns.
   function release() {
+    if (Math.abs(rho - rho0) <= COMB_DETENT) settle(rho0)
+    else if (Math.abs(rho - 1) <= COMB_DETENT) settle(1)
+    else settle(null)
+  }
+
+  // Springs the knob from where it is to radius `to`, or, when to is null, to
+  // its own position brought back inside the ends.
+  function settle(to) {
     var lo = ox + COMB_MIN * r
     var hi = ox + COMB_MAX * r
-    settleTo = null
-    if (Math.abs(rho - rho0) <= COMB_DETENT) settleTo = rho0
-    else if (Math.abs(rho - 1) <= COMB_DETENT) settleTo = 1
-    var target = settleTo != null ? ox + settleTo * r : Math.min(hi, Math.max(lo, knobX))
+    var target = to != null ? ox + to * r : Math.min(hi, Math.max(lo, knobX))
+    settleTo = to
     spring.set(knobX, 0)
     spring.retarget(target)
     if (spring.resting || Math.abs(target - knobX) < 0.5) {
@@ -562,6 +570,8 @@ WIDGETS["curvature-comb"] = function (fig) {
     knob,
     {
       onStart: function () {
+        // Escape restores this: the radius at rest, or the one a settle is heading for.
+        restoreRho = settleTo != null ? settleTo : rho
         loop.stop()
         settleTo = null
         spring.set(knobX)
@@ -578,7 +588,10 @@ WIDGETS["curvature-comb"] = function (fig) {
         placeKnob()
       },
       onEnd: release,
-      onCancel: release,
+      // Escape springs the knob back to the press radius.
+      onCancel: function () {
+        settle(restoreRho)
+      },
     },
     { touchAction: "none" },
   )

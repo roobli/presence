@@ -259,3 +259,240 @@ test("spring-throw: release speed, keyboard throw, rest times and edge resistanc
   near(run("throwTween(0.1, 0.025)"), 0.0729, 1e-4, "tween 25 ms after the release")
   assert.equal(run("throwTween(0.4, 0.25)"), 0)
 })
+
+/* ---------- Escape during a drag, on a stand-in figure ---------- */
+
+// Enough DOM for a widget to mount: nodes keep attributes, children, inline
+// style and text, and nothing is laid out.
+function fakeNode(tag) {
+  const attrs = new Map()
+  return {
+    tag,
+    style: {},
+    textContent: "",
+    parentNode: null,
+    children: [],
+    classList: { add() {}, remove() {}, contains: () => false },
+    setAttribute(key, value) {
+      attrs.set(key, String(value))
+    },
+    getAttribute(key) {
+      return attrs.has(key) ? attrs.get(key) : null
+    },
+    hasAttribute(key) {
+      return attrs.has(key)
+    },
+    removeAttribute(key) {
+      attrs.delete(key)
+    },
+    set tabIndex(value) {
+      attrs.set("tabindex", String(value))
+    },
+    appendChild(child) {
+      return this.insertBefore(child, null)
+    },
+    insertBefore(child, ref) {
+      const from = child.parentNode
+      if (from) from.children.splice(from.children.indexOf(child), 1)
+      const at = ref ? this.children.indexOf(ref) : -1
+      this.children.splice(at < 0 ? this.children.length : at, 0, child)
+      child.parentNode = this
+      return child
+    },
+    addEventListener() {},
+    removeEventListener() {},
+    focus() {},
+    getBoundingClientRect: () => ({ left: 0, top: 0, width: 0, height: 0 }),
+  }
+}
+
+function findNode(node, cls) {
+  if ((node.getAttribute("class") || "").split(" ").includes(cls)) return node
+  for (const child of node.children) {
+    const hit = findNode(child, cls)
+    if (hit) return hit
+  }
+  return null
+}
+
+// Mounts a widget on a stand-in fig whose surfaces are `width` px wide. The
+// handlers the widget gives fig.drag are kept so a test can call them the way
+// createDrag does, and the widget's loop runs only inside frames().
+function mountWidget(file, width) {
+  const context = vm.createContext({
+    WIDGETS: {},
+    performance,
+    setTimeout: () => 0,
+    clearTimeout: () => {},
+    document: {
+      createElement: (tag) => fakeNode(tag),
+      createElementNS: (ns, tag) => fakeNode(tag),
+      createTextNode: (text) => Object.assign(fakeNode("#text"), { textContent: text }),
+    },
+  })
+  for (const name of ["motion.js", "corner.js", "drag.js", file]) {
+    const dir = name === file ? WIDGETS_DIR : RUNTIME_DIR
+    vm.runInContext(read(dir, name), context, { filename: name })
+  }
+  const run = (source) => vm.runInContext(source, context)
+  const runtime = run("({ createSpring, createKeySlider, rubberBand, rubberBandInverse })")
+  const announced = []
+  const drags = []
+  const loop = { step: null, running: false }
+  const box = fakeNode("div")
+  const rail = fakeNode("div")
+  const fig = {
+    box,
+    rail,
+    strings: (table) => table.en,
+    size: () => "wide",
+    width: () => width,
+    svg: ({ parent }) => {
+      const el = parent.appendChild(fakeNode("svg"))
+      el.setAttribute("class", "essay-fig__svg")
+      return { el, width: () => width, height: () => width / 2 }
+    },
+    button: () => ({ el: rail.appendChild(fakeNode("button")) }),
+    press: () => ({}),
+    listen: () => {},
+    announce: (text) => announced.push(text),
+    spring: (o) => runtime.createSpring({ ...o, reducedMotion: () => false }),
+    loop: (step) => {
+      loop.step = step
+      return {
+        start: () => (loop.running = true),
+        stop: () => (loop.running = false),
+        running: () => loop.running,
+      }
+    },
+    drag: (el, handlers) => drags.push(handlers),
+    keySlider: (el, o) => runtime.createKeySlider(el, { announce: fig.announce, ...o }),
+    rubberBand: runtime.rubberBand,
+    rubberBandInverse: runtime.rubberBandInverse,
+    reducedMotion: () => false,
+    onReducedMotionChange: () => {},
+    onSizeChange: () => {},
+    onReset: () => {},
+    model: () => {},
+  }
+  context.WIDGETS[file.replace(/\.js$/, "")](fig)
+  assert.equal(drags.length, 1)
+  return {
+    run,
+    announced,
+    root: box.children[0],
+    drag: drags[0],
+    // At most n frames of 1/60 s, stopping when the loop does.
+    frames(n = 600) {
+      for (let i = 0; i < n && loop.running; i++) {
+        if (loop.step(1 / 60) === false) loop.running = false
+      }
+    },
+  }
+}
+
+const at = (x) => ({ x, y: 0 })
+
+test("zeta-triptych: Escape settles back to the press value; release and pointercancel commit", () => {
+  const w = mountWidget("zeta-triptych.js", 600)
+  const knob = findNode(w.root, "zeta-triptych__knob")
+  const zeta = () => w.root.getAttribute("data-zeta")
+  const phase = () => w.root.getAttribute("data-phase")
+  const knobX = () => Number(/translate3d\(([-\d.]+)px/.exec(knob.style.transform)[1]) + 22
+  const x1 = knobX()
+  near(x1, 22 + (0.7 / 1.7) * 556, 0.1, "ζ 1 on a 600 px strip")
+
+  w.drag.onStart(at(x1))
+  w.drag.onMove(at(x1 - 60), at(-60))
+  assert.notEqual(zeta(), "1.000")
+  w.drag.onCancel(at(x1 - 60), { key: "Escape" })
+  assert.equal(phase(), "settling", "the knob springs back from where it was")
+  w.frames()
+  assert.equal(zeta(), "1.000")
+  assert.equal(phase(), "rest")
+  near(knobX(), x1, 0.1, "the knob is back on ζ 1")
+  assert.equal(knob.getAttribute("aria-valuenow"), "1")
+  assert.deepEqual(w.announced, [], "a cancelled drag announces nothing")
+
+  // A press away from the knob brings the knob to the pointer; Escape undoes that too.
+  w.drag.onStart(at(x1 + 150))
+  assert.notEqual(zeta(), "1.000")
+  w.drag.onMove(at(x1 + 170), at(20))
+  w.drag.onCancel(at(x1 + 170), { key: "Escape" })
+  w.frames()
+  assert.equal(zeta(), "1.000")
+  assert.deepEqual(w.announced, [])
+
+  // pointerup and pointercancel both end in onEnd, which keeps the dragged value.
+  w.drag.onStart(at(x1))
+  w.drag.onMove(at(x1 - 60), at(-60))
+  const dragged = zeta()
+  w.drag.onEnd(at(x1 - 60), at(0), { type: "pointercancel" })
+  w.frames()
+  assert.equal(zeta(), dragged)
+  assert.equal(Number(knob.getAttribute("aria-valuenow")).toFixed(3), dragged)
+  assert.equal(w.announced.length, 1)
+
+  // Caught during a detent settle, Escape returns to the value the settle was heading for.
+  const from = knobX()
+  w.drag.onStart(at(from))
+  w.drag.onMove(at(x1 - 3), at(x1 - 3 - from))
+  w.drag.onEnd(at(x1 - 3), at(0), { type: "pointerup" })
+  assert.equal(phase(), "settling")
+  w.frames(3)
+  const caught = knobX()
+  w.drag.onStart(at(caught))
+  w.drag.onMove(at(caught - 80), at(-80))
+  w.drag.onCancel(at(caught - 80), { key: "Escape" })
+  w.frames()
+  assert.equal(zeta(), "1.000")
+  near(knobX(), x1, 0.1, "the knob is on ζ 1")
+  assert.equal(w.announced.length, 2, "only the two releases announce")
+})
+
+test("curvature-comb: Escape settles back to the press radius; release and pointercancel commit", () => {
+  const w = mountWidget("curvature-comb.js", 600)
+  const knob = findNode(w.root, "curvature-comb__knob")
+  const rho = () => w.root.getAttribute("data-rho")
+  const phase = () => w.root.getAttribute("data-phase")
+  const knobX = () => Number(/translate3d\(([-\d.]+)px/.exec(knob.style.transform)[1])
+  const rho0 = w.run("combRho0()")
+  const r = (600 - 16) / 2.35
+  const x0 = knobX()
+  assert.equal(rho(), rho0.toFixed(3))
+
+  w.drag.onStart(at(0))
+  w.drag.onMove(at(60), at(60))
+  assert.equal(rho(), (rho0 + 60 / r).toFixed(3))
+  w.drag.onCancel(at(60), { key: "Escape" })
+  assert.equal(phase(), "settling", "the knob springs back from where it was")
+  w.frames()
+  assert.equal(rho(), rho0.toFixed(3))
+  assert.equal(phase(), "rest")
+  near(knobX(), x0, 0.1, "the knob is back on rho0")
+  assert.equal(knob.getAttribute("aria-valuenow"), String(rho0))
+  assert.deepEqual(w.announced, [], "a cancelled drag announces nothing")
+
+  // pointerup and pointercancel both end in onEnd, which keeps the dragged radius.
+  w.drag.onStart(at(0))
+  w.drag.onMove(at(60), at(60))
+  const dragged = rho()
+  w.drag.onEnd(at(60), at(0), { type: "pointercancel" })
+  w.frames()
+  assert.equal(rho(), dragged)
+  assert.equal(Number(knob.getAttribute("aria-valuenow")).toFixed(3), dragged)
+
+  // Caught during a detent settle, Escape returns to the detent the settle was heading for.
+  const now = Number(knob.getAttribute("aria-valuenow"))
+  w.drag.onStart(at(0))
+  w.drag.onMove(at(1), at((0.99 - now) * r))
+  w.drag.onEnd(at(1), at(0), { type: "pointerup" })
+  assert.equal(phase(), "settling")
+  w.frames(3)
+  w.drag.onStart(at(0))
+  w.drag.onMove(at(1), at(-100))
+  w.drag.onCancel(at(1), { key: "Escape" })
+  w.frames()
+  assert.equal(rho(), "1.000")
+  near(knobX(), x0 + (1 - rho0) * r, 0.1, "the knob is on the 1.00 detent")
+})
