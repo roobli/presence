@@ -2,11 +2,17 @@
 // Copy the page-lang marker that i18n-slug writes into every head, so the
 // document language follows the page after each navigation.
 //
-// A switch through the header's language control keeps the reading position.
-// The click records where the link goes, which h2 or h3 section the reader is
-// in and how far through it; the next page, when it is that destination and
-// has the same number of h2 and h3 headings, opens at the same point instead
-// of the top.
+// A switch through the header's language control keeps the reading position:
+// the h2 or h3 section the reader is in and how far through it. The next page,
+// when it is the link's destination and has the same number of h2 and h3
+// headings, opens at the same point instead of the top.
+//
+// The control sits in the page header, above the first heading, and does not
+// stick. A reader reaches it by scrolling back up, or by Tab, which scrolls it
+// into view, so when it is activated every heading is below the reading line
+// and the click itself says nothing about the place being read. The place is
+// taken earlier instead: on each move down the page while the control is out
+// of view. Moving back up to the control, by any means, leaves it as it was.
 var JUMP_KEY = "presence-lang-jump"
 
 // Mermaid diagrams, live figures and late fonts render after the navigation
@@ -38,12 +44,9 @@ function sectionSpan(article, headings, index) {
   return { top: top, height: Math.max(1, end - top) }
 }
 
-function samePath(a, b) {
-  return a.replace(/\/$/, "") === b.replace(/\/$/, "")
-}
-
-function recordPosition(link) {
-  var article = pageArticle()
+// The last h2 or h3 at or above the reading line, and how far the line is into
+// its section. Null above the first heading, where a switch opens at the top.
+function placeIn(article) {
   var headings = headingsIn(article)
   var line = readingLine()
   var index = -1
@@ -51,17 +54,41 @@ function recordPosition(link) {
     if (headings[i].getBoundingClientRect().top > line) break
     index = i
   }
+  if (index < 0) return null
+  var span = sectionSpan(article, headings, index)
+  return {
+    count: headings.length,
+    index: index,
+    ratio: Math.min(1, (line - span.top) / span.height),
+  }
+}
+
+function inView(element) {
+  var rect = element.getBoundingClientRect()
+  return rect.bottom > readingLine() && rect.top < window.innerHeight
+}
+
+// Overscroll bounce reports offsets past either end. Clamp them, so the spring
+// back after a fling to the top does not count as a move down.
+function scrollOffset() {
+  var max = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
+  return Math.min(Math.max(0, window.scrollY), max)
+}
+
+function samePath(a, b) {
+  return a.replace(/\/$/, "") === b.replace(/\/$/, "")
+}
+
+function recordPlace(link, place) {
   try {
-    // Above the first heading the next page simply opens at the top.
-    if (index < 0) return sessionStorage.removeItem(JUMP_KEY)
-    var span = sectionSpan(article, headings, index)
+    if (!place) return sessionStorage.removeItem(JUMP_KEY)
     sessionStorage.setItem(
       JUMP_KEY,
       JSON.stringify({
         path: new URL(link.href, location.href).pathname,
-        count: headings.length,
-        index: index,
-        ratio: Math.min(1, (line - span.top) / span.height),
+        count: place.count,
+        index: place.index,
+        ratio: place.ratio,
       }),
     )
   } catch (e) {}
@@ -114,7 +141,27 @@ document.addEventListener("nav", function () {
 
   restorePosition()
 
-  // Runs before the SPA router's window listener, so the position is saved
+  var article = pageArticle()
+  var control = document.querySelector(".page-header .ph-lang")
+  if (!article || !control) return
+
+  // After a restored switch this is the carried place; after a hash link, the
+  // target's section. Scroll events keep it current from here.
+  var place = placeIn(article)
+  var lastOffset = scrollOffset()
+  var frame = 0
+
+  function onScroll() {
+    if (frame) return
+    frame = requestAnimationFrame(function () {
+      frame = 0
+      var offset = scrollOffset()
+      if (offset > lastOffset && !inView(control)) place = placeIn(article)
+      lastOffset = offset
+    })
+  }
+
+  // Runs before the SPA router's window listener, so the place is saved
   // before the page changes. A modified click opens another tab: skip it.
   function onClick(event) {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
@@ -122,10 +169,14 @@ document.addEventListener("nav", function () {
     }
     var target = event.target
     var link = target instanceof Element ? target.closest(".page-header .ph-lang a") : null
-    if (link) recordPosition(link)
+    if (link) recordPlace(link, place)
   }
+
+  window.addEventListener("scroll", onScroll, { passive: true })
   document.addEventListener("click", onClick)
   window.addCleanup(function () {
+    window.removeEventListener("scroll", onScroll)
+    cancelAnimationFrame(frame)
     document.removeEventListener("click", onClick)
   })
 })
