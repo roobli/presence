@@ -2,7 +2,7 @@
 title: Why America builds productivity tools
 lang: en
 alt: /writing/why-america-builds-productivity-tools/zh
-description: "The phenomenon is real; the Protestant-culture story is half right. What concentrates the industry is buyer structure, expensive labor, subscription valuation, and an English market — culture supplies the accent."
+description: "Not ‘America loves Todoist.’ English-speaking professional strata, expensive labor, and ARR capital built a symptom market: micro-control for sale, responsibility sunk onto the self."
 date: 2026-09-15
 tags:
   - SaaS
@@ -11,11 +11,11 @@ tags:
   - AI
 ---
 
-A familiar story says America builds Notion, Slack, Todoist, and Linear because it inherited a Protestant calling to work, absorbed Taylor’s scientific management, and let Silicon Valley turn “optimize” into a civic religion — with YouTube and X full of self-improvement hosts to match. This essay tests that story against East Asia as a control, then asks what AI is doing to the same loop.
+The feed says America loves productivity tools. Look closer: the heat sits in English-speaking professional and tech strata — people whose hours are expensive enough that a seat looks cheap, who can swipe a card without a procurement fight, and who fear falling out of their class if the personal system fails. X and Product Hunt make that stratum look like a people. It is a market segment with a megaphone.
 
-The phenomenon holds, and more tightly than intuition suggests: in 2024 more than half of global software spend landed in the United States. The cultural half of the popular explanation does not. Koreans work longer hours than Americans; Chinese and Korean respondents put work first at far higher rates than Americans; East Asian demand for self-improvement is loud — and still no equal export industry of productivity software grew there. What decides *where tools get built* is the buyer and the capital stack: expensive labor, engineers inside the buying firm who can evaluate a standard product, employees and small teams who can swipe a card, low piracy, a market that prices recurring revenue richly, and English as a day-one global surface. Culture shapes the *accent* of those tools and of the content around them: the unit of optimization is the individual, and effort is presumed to pay.
+In 2024 more than half of global software spend landed in the United States. The Protestant-culture story names the *accent* and misses the *machine*. Koreans work longer hours; Chinese and Korean respondents put work first at far higher rates; East Asian demand for self-improvement is loud — and still no equal export industry of productivity software grew there. What concentrates building is buyer structure and capital: expensive labor, engineers on the buyer side, employee cards, low piracy, subscription multiples, English as a day-one global surface. Class stratification and productivity-SaaS heat are the same loop, not two coincidences sharing a decade.
 
-AI loosens several joints at once. Productivity software is shifting from an interface that helps people manage time into labor that finishes work, with pricing moving from seats toward outcomes. Build and use are splitting: the U.S. ships frontier models, while adoption ranks behind Korea, Singapore, and Taiwan, and many application-layer products are built by Asian teams for overseas paying users. The self-improvement story relocates from “how do I manage my hours” to “how many agents can I run” and “what can AI not replace.” Anxiety does not shrink.
+That market sells a particular relief. It does not heal inequality; it sells micro-control inside a fixed distribution, and sinks responsibility from structure onto personal systems. Makers turn anxiety into ARR. Audiences buy a steering wheel they can grip. Fanatics moralize tidiness into desert. Platforms reward the demo over the bargain. AI does not end the race — it changes the unit, from managing hours to commanding non-human labor.
 
 ## Three claims bundled as one
 
@@ -137,7 +137,7 @@ flowchart TD
 
 ## The content flywheel: why English self-improvement hosts run hot
 
-As of September 2026: Steven Bartlett’s *The Diary of a CEO* ~19.6M YouTube subscribers; neuroscientist Andrew Huberman’s Huberman Lab 7.84M; Ali Abdaal 6.69M; Mel Robbins 6.17M; Alex Hormozi 4.48M; Matt D’Avella ~4.04M (mid-August count); Thomas Frank 3.01M. Bartlett and Abdaal are British; Chris Williamson on the chart is British; learning-methods host Justin Sung is in New Zealand. The accurate unit is the English-speaking world, not America alone.
+As of September 2026 the English self-improvement YouTube tier runs from multi-million to near-twenty-million subscribers — Bartlett, Huberman, Abdaal, Robbins, Hormozi, and peers. Several of the loudest hosts are British or otherwise non-U.S.; the accurate unit is the English-speaking world, not America alone.
 
 Put East Asia on the same page and the picture is not one-sided.
 
@@ -151,7 +151,7 @@ The gap is money, and how far content can travel.
 
 Google does not publish country RPMs; third-party estimates often differ by 2× — magnitude only. Lenos (April 2026): creator RPM ~$10.81 for a U.S. audience, $7.12 U.K., $2.90 Japan, $0.46 India, $0.15 Philippines. Business Insider checked Ali Abdaal’s backend: 2022 average RPM $8.23. Same content, English audience: several times Japan’s value per view, tens of times Southeast Asia’s. That decides who can fund teams, editing, and research — and how many people the category can attract.
 
-A second money pipe is the tool companies themselves. Notion’s affiliate program pays up to $50 per activated signup plus 20% of first-year revenue, plus creator Builders programs and a template marketplace. Influencer Marketing Hub / NeoReach’s 2025 survey of 3,000+ creators: over 49% said brand deals were their main income. Ali Abdaal’s public 2022 breakdown (third-party tallies from the video, indicative): ~$4.6M total — YouTube ads ~$650k, sponsorships ~$600k, Skillshare ~$780k, and the largest slice Part-Time YouTuber Academy (~$1.76M). At least for Abdaal, the business closes a loop: efficiency content draws the audience, sponsorships and affiliates monetize, then “how to become a productivity creator” becomes the course that pays most. The “tool companies sponsor creators” node in section five’s loop is that business.
+A second money pipe is the tool companies themselves. Notion’s affiliate program pays up to $50 per activated signup plus 20% of first-year revenue, plus creator Builders programs and a template marketplace. Influencer Marketing Hub / NeoReach’s 2025 survey of 3,000+ creators: over 49% said brand deals were their main income. Ali Abdaal’s public 2022 breakdown (third-party tallies, indicative): ~$4.6M — and the largest slice was not ads or sponsorships but a course teaching others to become productivity creators. The business closes a loop: efficiency content draws the audience, affiliates monetize, then “how to join the religion” becomes the product that pays most. The “tool companies sponsor creators” node in section five’s loop is that business.
 
 Belief remains a last variable. Section three: 55% of U.S. respondents believe effort usually brings a better life; 16% in Korea. Self-improvement sells a causal promise — change the habit, system, or tool, and outcomes move. More believers means more people treat the genre as “investing in yourself” rather than chicken soup. Daytime Japanese and Korean head-channel scale still shows belief differences shape tone and topic more than raw demand. What lets English self-improvement dominate other languages is higher ad RPMs, tool-company sponsorship budgets, and a global audience pool.
 
@@ -168,6 +168,18 @@ Micro data explains part of it. An August 2022 *Harvard Business Review* study o
 Critique has always existed, mostly from inside the English-speaking world. Merlin Mann early coined “productivity porn” for consuming efficiency tips as a substitute for efficiency; Tim Kreider’s 2012 *New York Times* “Busy Trap” called much white-collar busyness self-branding; Derek Thompson’s 2019 *Atlantic* “workism” named elite America’s work fervor; Cal Newport’s 2021 *New Yorker* piece argued knowledge workers were done with “personal productivity” and that the problem belongs at organization and system level. Anne Helen Petersen’s 2019 millennial-burnout essay and Oliver Burkeman’s 2021 *Four Thousand Weeks* sit in the same current. “Quiet quitting” went viral on TikTok in 2022; Gallup that year estimated at least half of U.S. employees were quiet quitters doing only the job description.
 
 East Asia has its own versions. China’s 2021 “lie flat” wave, later cooled by regulators; Japan’s 2013 buzzword candidate *satori sedai* for youth cool to consumption and ambition; Korea’s path from the 2011 “three-give-up generation” to “N-give-up.” Direction rhymes with American anti-efficiency currents; starting points differ. U.S. critique targets the promise that the individual should endlessly optimize the self; East Asian versions more often answer “effort still doesn’t pay.” Low Japanese and Korean agreement that effort pays matches that reading; Chinese respondents in the 2018 wave still agreed effort pays at high rates, and lie-flat only surged in 2021 — more a reading of changed circumstances than a permanent values gap.
+
+## A symptom market
+
+The heat is real — and narrower than the feed suggests. What looks like “America loves Todoist” is mostly English-speaking professional and tech strata performing optimization in public. X and Product Hunt amplify people who can demo a setup, not people bargaining for shorter hours. Much of the country clocks in and buys groceries; it does not fund Linear’s ARR.
+
+Class stratification and productivity-SaaS heat are the same machine. Expensive labor makes seats cheap relative to heads. Card-swipe buyers turn anxiety into MRR without a procurement committee. Individualized failure fear — miss the promotion, lose the role, fall out of the stratum — makes “fix your system” feel like survival. Capital prices the resulting ARR. English makes the product global on day one. Culture supplies the sermon; the machine supplies the invoice.
+
+Productivity culture is a *symptom market*. It does not heal inequality. It sells micro-control inside a fixed distribution: better calendar, cleaner inbox, tighter Notion dashboard — while the wage ladder, ownership of the firm, and who can absorb a bad quarter stay where they were. Responsibility sinks from structure to personal systems. When output stalls, the prescribed move is a new habit tracker, not a harder look at staffing, incentives, or power.
+
+Three gears keep it spinning. **Makers** are often people who already optimized themselves hard enough to productize the anxiety — private panic turned into an ARR narrative. **Audiences** buy a controllable steering wheel: if the week went badly, at least the system was yours. **Fanatics** supply the moral aesthetics — tidy people deserve outcomes — and keep the religion funded with tutorials, setups, and affiliate links. Platforms pay for what can be demonstrated. A screen recording of a second brain travels; invisible collective bargaining does not.
+
+AI tightens the same race. The object of optimization migrates from managing the self to commanding non-human labor. Anxiety does not shrink; it changes units — from hours rescued to agents deployed.
 
 ## The AI era: where the center of gravity moves
 
@@ -201,7 +213,7 @@ Japan’s driver is missing people. A February 2026 survey: 78.6% of managers re
 
 ### The self-improvement story changes object
 
-Self-improvement content is turning too. Sam Altman said in 2023 he and CEO friends had a bet on when the first one-person billion-dollar company appears; Lovable’s 146 people at $400M ARR makes the line feel less distant. “How do I get more efficient” is becoming “how many agents can I command.” The other face is anxiety: Pew 2025 found 52% of U.S. workers worried about AI’s effect on their jobs; an August 2026 Pew survey found 71% of Americans expect AI to reduce jobs.
+Self-improvement content is turning too. Sam Altman said in 2023 he and CEO friends had a bet on when the first one-person billion-dollar company appears; Lovable’s 146 people at $400M ARR makes the line feel less distant. The race tightens from managing the self to commanding non-human labor: “how do I get more efficient” becomes “how many agents can I run.” The other face is anxiety: Pew 2025 found 52% of U.S. workers worried about AI’s effect on their jobs; an August 2026 Pew survey found 71% of Americans expect AI to reduce jobs.
 
 Optimization also migrates onto the body. Bryan Johnson’s Blueprint raised $60 million in October 2025 toward an AI health assistant. Cognitive outsourcing’s cost entered the discourse: an MIT Media Lab 2025 preprint found the weakest brain connectivity in the LLM-writing group. Small sample, not peer-reviewed — but the question is direct: if thinking itself is outsourced, what is self-improvement supposed to improve?
 
@@ -221,9 +233,13 @@ The largest uncertainty is the evidence itself. METR moved from “19% slower”
 
 ## Conclusion
 
-“Americans are more diligent and more Protestant, therefore they love building productivity tools” names the phenomenon and misplaces the main cause. East Asia as control shows diligence and hunger for self-improvement are not scarce in Asia. Indian SaaS and Chinese outbound AI apps show that teams facing American buyers — whatever their cultural background — produce highly similar product shapes. What is distinctive about America is a bundle: expensive labor, buyer-side engineers, employees who can swipe a card, low piracy, capital that prices subscription, and English as a global market. Culture puts an accent on the tools and content inside that market: individual effort can change results.
+Productivity-SaaS heat is not national character. It is a class machine priced in English ARR — expensive labor, card-swipe buyers, failure fear, and capital that loves recurring revenue.
 
-AI is prying several pieces of that bundle apart. The cost of substituting labor starts to track token prices; whether tools sell to people or to agents decides the billing model; the highest-adoption places are no longer the places that build the tools. The industry will likely keep America as its largest market, while “American productivity culture” looks more and more like a global commercial dialect — and less like a national character.
+The culture sells micro-control and sinks responsibility onto the self. That is a symptom market, not a cure for inequality.
+
+Makers, audiences, and fanatics keep the religion spinning; platforms pay for demos, not for bargaining.
+
+AI does not end the race. It changes the unit — from managing your hours to commanding non-human labor — while America remains the fattest paying market and “American productivity culture” keeps traveling as a commercial dialect.
 
 ## Sources
 
