@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "Write sitemap.xml with translation alternates and an RSS feed of writing and works",
+  "description": "Write sitemap.xml with translation alternates, an RSS feed of writing and works, and llms.txt",
   "exports": {
     ".": "./index.js",
     "./package.json": "./package.json"

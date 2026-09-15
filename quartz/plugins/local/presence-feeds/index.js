@@ -3,7 +3,8 @@ import path from "node:path"
 import { languageVersions, pageUrl } from "../i18n-slug/index.js"
 
 /**
- * sitemap.xml and index.xml, replacing the ones content-index writes.
+ * sitemap.xml, index.xml, and llms.txt — replacing the feeds content-index writes
+ * and adding a generative-engine map at the site root.
  *
  * content-index skips unlisted pages, so its sitemap has no translations, and it
  * dates virtual folder and tag pages with the build time, so its newest-first feed
@@ -12,6 +13,7 @@ import { languageVersions, pageUrl } from "../i18n-slug/index.js"
  *                for each language pair (the same set as the hreflang head tags)
  *   index.xml    RSS 2.0 of English pages under writing/ and works/, newest first
  *                by frontmatter date
+ *   llms.txt     short English-primary map of the public site for generative engines
  *
  * URLs come from i18n-slug's pageUrl, so <loc> always equals the canonical link.
  */
@@ -53,6 +55,15 @@ function isContentPage(data) {
 
 function isTranslation(data) {
   return Boolean(data.i18n) && data.i18n.base !== data.slug
+}
+
+function pageDescription(data) {
+  const fm = data.frontmatter ?? {}
+  if (typeof fm.description === "string" && fm.description.trim()) return fm.description.trim()
+  if (typeof data.description === "string" && data.description.trim()) {
+    return unescapeHtml(data.description.trim())
+  }
+  return ""
 }
 
 function generateSitemap(baseUrl, pages) {
@@ -132,6 +143,80 @@ function generateFeed(cfg, pages) {
   ].join("\n")
 }
 
+/**
+ * Concise generative-engine map. English primary; one brief CN line.
+ * Essays are English public writing/* pages (not translations, not indexes).
+ */
+export function generateLlmsTxt(cfg, pages) {
+  const baseUrl = cfg.baseUrl
+  const home = pages.find((data) => data.slug === "index")
+  const purpose =
+    pageDescription(home ?? {}) ||
+    (typeof cfg.description === "string" ? cfg.description : "") ||
+    "Fewer pages. Harder claims."
+
+  const essays = pages
+    .filter(
+      (data) =>
+        data.unlisted !== true &&
+        (data.i18n?.lang ?? EN) === EN &&
+        data.slug.startsWith("writing/") &&
+        !data.slug.endsWith("/index") &&
+        (data.presence?.kind === "essay" || data.presence?.kind === undefined),
+    )
+    .map((data) => {
+      const fm = data.frontmatter ?? {}
+      return {
+        title: String(fm.title ?? data.slug),
+        url: pageUrl(baseUrl, data.slug),
+        description: pageDescription(data),
+        date: toDate(fm.published ?? fm.date),
+      }
+    })
+    .sort((a, b) => {
+      if (a.date && b.date && a.date.getTime() !== b.date.getTime()) {
+        return b.date.getTime() - a.date.getTime()
+      }
+      return a.title.localeCompare(b.title)
+    })
+
+  const lines = [
+    `# RoobLi`,
+    ``,
+    `> ${purpose}`,
+    ``,
+    `Public site for selected works and deep writing.`,
+    ``,
+    `- Site: ${pageUrl(baseUrl, "index")}`,
+    `- About: ${pageUrl(baseUrl, "about")}`,
+    `- Writing: ${pageUrl(baseUrl, "writing/index")}`,
+    `- Works: ${pageUrl(baseUrl, "works/index")}`,
+    `- RSS: https://${baseUrl}/index.xml`,
+    ``,
+    `## Essays`,
+    ``,
+  ]
+
+  if (essays.length === 0) {
+    lines.push(`(none yet)`)
+    lines.push(``)
+  } else {
+    for (const essay of essays) {
+      const desc = essay.description ? ` — ${essay.description}` : ""
+      lines.push(`- [${essay.title}](${essay.url})${desc}`)
+    }
+    lines.push(``)
+  }
+
+  lines.push(`## Notes`)
+  lines.push(``)
+  lines.push(`Internal RooB notes are not published from this site.`)
+  lines.push(``)
+  lines.push(`中文：精选作品与深度文章；内部 RooB 笔记不在此发布。`)
+  lines.push(``)
+  return lines.join("\n")
+}
+
 async function write(ctx, name, content) {
   const target = path.join(ctx.argv.output, name)
   await fs.mkdir(path.dirname(target), { recursive: true })
@@ -142,7 +227,7 @@ async function write(ctx, name, content) {
 export function PresenceFeeds() {
   const emitFeeds = async (ctx, content) => {
     const cfg = ctx.cfg.configuration
-    // Both files need absolute URLs.
+    // Absolute URLs for all three artefacts.
     if (!cfg.baseUrl) return []
 
     const pages = content.map(([, file]) => file.data).filter(isContentPage)
@@ -158,6 +243,7 @@ export function PresenceFeeds() {
     return Promise.all([
       write(ctx, "sitemap.xml", generateSitemap(cfg.baseUrl, sitemapPages)),
       write(ctx, "index.xml", generateFeed(cfg, feedPages)),
+      write(ctx, "llms.txt", generateLlmsTxt(cfg, pages)),
     ])
   }
 
