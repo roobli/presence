@@ -109,7 +109,7 @@ Publishing is a push to `main`: GitHub Actions builds the site and deploys it to
 
 Writing never needs these. When something looks wrong on every page, fix it here rather than in a page:
 
-- Font roles, type sizes, line heights, prose rhythm and spacing: `quartz/styles/custom/_site-tokens.scss`. These follow the Typora Claude-Like theme (Songti SC text, a 16px base, headings at 1.84, 1.48 and 1.24 times the base). Every size is a multiple of `--size-base`, so changing that one value rescales the whole page, and the `-zh` tokens tune Chinese pages on their own.
+- Font roles, type sizes, line heights, prose rhythm and spacing: `quartz/styles/custom/_site-tokens.scss`. These follow the Typora Claude-Like theme's ratios (headings at 1.84, 1.48 and 1.24 times the base, line height 1.58) on a 17px base, with Source Serif 4 for Latin letters and the theme's Songti SC for Chinese. Every font size and the space around blocks and headings is a multiple of `--size-base`, so changing that one value rescales the text and its rhythm, and the `-zh` tokens tune Chinese pages on their own.
 - Colours: `quartz/styles/claude-like-tokens.scss`, generated from the Typora Claude-Like theme with `node tools/sync-theme-tokens.mjs`
 - The column and the three text widths: `quartz/styles/custom/_shell.scss`
 - Headings, lists, quotes, tables, code and math: the matching partial in `quartz/styles/custom/`

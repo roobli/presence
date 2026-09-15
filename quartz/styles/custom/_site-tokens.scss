@@ -13,10 +13,11 @@
 // --- webfonts ---------------------------------------------------------------
 // Source Serif 4, wght axis 200 to 900, from @fontsource-variable/source-serif-4
 // 5.3.0 under the SIL OFL 1.1 (static/fonts/LICENSE). unicode-range values are
-// copied from the package's wght.css and wght-italic.css. The text stacks list
-// it after the CJK serifs, so the browser fetches a file only on a system that
-// has none of them (Songti SC covers Latin on a Mac), and only for the glyphs
-// and styles a page uses.
+// copied from the package's wght.css. Only the Latin normal file is preloaded
+// (presence-derive/head.js), and latin-ext loads when a glyph on the page needs
+// it. The italic face is not declared here: a rule here would start its
+// download during first layout on every page with <em>. head.js registers it
+// after the load event instead.
 @font-face {
   font-family: "Source Serif 4 Variable";
   font-style: normal;
@@ -34,16 +35,6 @@
   font-weight: 200 900;
   font-display: swap;
   src: url("/static/fonts/source-serif-4-latin-wght-normal.woff2") format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
-    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: "Source Serif 4 Variable";
-  font-style: italic;
-  font-weight: 200 900;
-  font-display: swap;
-  src: url("/static/fonts/source-serif-4-latin-wght-italic.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
     U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
@@ -87,16 +78,17 @@
 
 :root {
   // --- font roles -----------------------------------------------------------
-  // The owner's Typora theme (typora-claude-like-theme, tokens-light.css):
-  // Songti SC sets Latin and Chinese text alike, PingFang SC the interface,
-  // Menlo code. The text stacks open with the theme's own list. Where none of
-  // those CJK serifs is installed, Source Serif 4 takes the Latin glyphs, and
-  // the faces after it take only Han: a Windows serif, then the sans faces the
-  // theme falls back to and their Windows and Linux counterparts.
-  --font-text: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", "Source Serif 4 Variable",
-    "SS4 Fallback Georgia", "SS4 Fallback Times", "Noto Serif SC", "STSong", "PingFang SC",
+  // Latin letters in Source Serif 4. Han in the Typora theme's Songti SC
+  // (typora-claude-like-theme, tokens-light.css), then its other CJK serifs, a
+  // Windows serif, and the sans faces the theme falls back to with their
+  // Windows and Linux counterparts. Songti's own Latin letters are about a
+  // fifth shorter than Source Serif 4's at the same size, which is why Latin
+  // text does not follow the theme here. The interface is PingFang SC and code
+  // Menlo, as in the theme.
+  --font-text: "Source Serif 4 Variable", "SS4 Fallback Georgia", "SS4 Fallback Times", "Songti SC",
+    "Noto Serif CJK SC", "Source Han Serif SC", "Noto Serif SC", "STSong", "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", serif;
-  --font-text-zh: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", "Source Serif 4 Latin",
+  --font-text-zh: "Source Serif 4 Latin", "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC",
     "Noto Serif SC", "STSong", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
     "Noto Sans CJK SC", serif;
   --font-interface: "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Source Han Sans SC",
@@ -114,11 +106,12 @@
   --font-mono: var(--font-code);
 
   // --- type scale -------------------------------------------------------------
-  // The Typora theme's scale (shared.css): a 16px base, body line height 1.58,
-  // headings at 1.84em, 1.48em, 1.24em, 1.12em, 1em and 0.91em, code at 0.9em
-  // and table cells at 0.92rem. Every size is written from --size-base, so the
-  // whole scale moves with that one number.
-  --size-base: 16px;
+  // The Typora theme's scale (shared.css): body line height 1.58, headings at
+  // 1.84em, 1.48em, 1.24em, 1.12em, 1em and 0.91em, code at 0.9em and table
+  // cells at 0.92 of the base. The theme's base is 16px; the site sets 17px for
+  // its Source Serif 4 text. Every size here, and the rhythm below, is written
+  // from --size-base, so the text moves with that one number.
+  --size-base: 17px;
   --size-body: var(--size-base);
   --lh-body: 1.58;
   --size-title: calc(var(--size-base) * 1.84);
@@ -162,14 +155,15 @@
   --size-ui-sm: 12.5px;
 
   // --- prose rhythm -----------------------------------------------------------
-  // The theme's vertical rhythm. Block margins are em of the text they sit in;
-  // the space above a heading is rem, so it does not grow with the heading.
+  // The theme's vertical rhythm. Block margins are em of the text they sit in.
+  // The theme gives heading space in rem, its base size; here it is a multiple
+  // of --size-base, so it does not grow with the heading.
   --flow-block: 0.74em;
-  --flow-heading-before: 1.3rem;
-  --flow-h1-before: 0.35rem;
-  --flow-h2-before: 1.72rem;
-  --flow-h3-before: 1.5rem;
-  --flow-heading-after: 0.7rem;
+  --flow-heading-before: calc(var(--size-base) * 1.3);
+  --flow-h1-before: calc(var(--size-base) * 0.35);
+  --flow-h2-before: calc(var(--size-base) * 1.72);
+  --flow-h3-before: calc(var(--size-base) * 1.5);
+  --flow-heading-after: calc(var(--size-base) * 0.7);
 
   // --- spacing --------------------------------------------------------------
   --space-1: 4px;
