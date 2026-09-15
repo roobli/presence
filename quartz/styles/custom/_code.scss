@@ -26,6 +26,12 @@ article pre {
   }
 }
 
+// base.scss zeroes the padding of a fence inside rehype-pretty-code's figure,
+// which every built fence is, with a more specific selector than the one above.
+article figure[data-rehype-pretty-code-figure] > pre {
+  padding: 0.9rem 1rem 0.85rem;
+}
+
 // code, tt
 article :not(pre) > code {
   font-family: var(--font-code);
@@ -34,9 +40,14 @@ article :not(pre) > code {
   color: var(--inline-code-color);
   border-radius: var(--radius-inline);
   padding: 0.06em 0.3em 0.08em;
-  font-size: 0.88em;
+  font-size: 0.9em;
   box-shadow: none;
   font-variant-ligatures: none;
+}
+
+// #write h1 code: code in a heading takes the heading's size.
+article :is(h1, h2, h3, h4, h5, h6) > code {
+  font-size: inherit;
 }
 
 // Line-number gutter, matching the theme's CSS-counter gutter: right aligned,

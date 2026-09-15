@@ -1,5 +1,18 @@
 // --- tables ----------------------------------------------------------------
-// Cells use the caption step of the scale, a notch under the body text.
+// Cells use the caption step of the scale, the theme's 0.92rem.
+//
+// The scroll wrapper carries the table's block margin. base.scss gives the
+// table itself 1rem margins with a more specific selector, which pushed it
+// past the edges of its scroller.
+article .table-container {
+  margin: var(--flow-block) 0;
+}
+
+article .table-container > table {
+  margin: 0;
+  padding: 0;
+}
+
 article table {
   padding: 0;
   width: 100%;
@@ -46,7 +59,7 @@ article table {
     vertical-align: bottom;
     color: var(--heading-color);
     font-size: var(--size-caption);
-    line-height: 1.45;
+    line-height: 1.46;
     letter-spacing: 0;
     font-variant-numeric: lining-nums tabular-nums;
   }
