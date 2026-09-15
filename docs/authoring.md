@@ -82,6 +82,7 @@ In Chinese text, type a space between Chinese and Latin words or numbers; the si
 
 - Mermaid diagrams in a ` ```mermaid ` block. Labels stay at 12px or more, and a diagram wider than the column scrolls sideways.
 - A horizontal rule: `---` on its own line, with blank lines around it.
+- A contents block: `[TOC]` alone on a line, outside quotes, callouts and lists, lists the page's `#` to `###` headings as links, as in Typora. It needs at least two such headings; with fewer, or with `enableToc: false` in the frontmatter, the marker is dropped.
 
 ## Interactive figures
 
@@ -108,7 +109,7 @@ Publishing is a push to `main`: GitHub Actions builds the site and deploys it to
 
 Writing never needs these. When something looks wrong on every page, fix it here rather than in a page:
 
-- Font roles, type sizes, line heights and spacing: `quartz/styles/custom/_site-tokens.scss`
+- Font roles, type sizes, line heights, prose rhythm and spacing: `quartz/styles/custom/_site-tokens.scss`. These follow the Typora Claude-Like theme (Songti SC text, a 16px base, headings at 1.84, 1.48 and 1.24 times the base). Every size is a multiple of `--size-base`, so changing that one value rescales the whole page, and the `-zh` tokens tune Chinese pages on their own.
 - Colours: `quartz/styles/claude-like-tokens.scss`, generated from the Typora Claude-Like theme with `node tools/sync-theme-tokens.mjs`
 - The column and the three text widths: `quartz/styles/custom/_shell.scss`
 - Headings, lists, quotes, tables, code and math: the matching partial in `quartz/styles/custom/`
