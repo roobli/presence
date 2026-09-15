@@ -1,12 +1,10 @@
-@use "sass:math";
-@use "sass:string";
 @use "../variables" as *;
 
 // ===========================================================================
-// Site tokens: webfonts, font roles, type scale, spacing, motion and the few
-// colours the generated Typora tokens do not carry. This partial loads right
-// after claude-like-tokens.scss and is unlayered, so a name declared in both
-// takes the value here. Never hand-edit the generated file.
+// Site tokens: webfonts, font roles, type scale, prose rhythm, spacing, motion
+// and the few colours the generated Typora tokens do not carry. This partial
+// loads right after claude-like-tokens.scss and is unlayered, so a name
+// declared in both takes the value here. Never hand-edit the generated file.
 //
 // Layout tokens (sidebar reference, gutter, write padding, measure, header
 // height) live with the column model in _shell.scss.
@@ -15,11 +13,10 @@
 // --- webfonts ---------------------------------------------------------------
 // Source Serif 4, wght axis 200 to 900, from @fontsource-variable/source-serif-4
 // 5.3.0 under the SIL OFL 1.1 (static/fonts/LICENSE). unicode-range values are
-// copied from the package's wght.css. Only the Latin normal file is preloaded
-// (presence-derive/head.js), and latin-ext loads when a glyph on the page needs
-// it. The italic face is not declared here: a rule here would start its
-// download during first layout on every page with <em>. head.js registers it
-// after the load event instead.
+// copied from the package's wght.css and wght-italic.css. The text stacks list
+// it after the CJK serifs, so the browser fetches a file only on a system that
+// has none of them (Songti SC covers Latin on a Mac), and only for the glyphs
+// and styles a page uses.
 @font-face {
   font-family: "Source Serif 4 Variable";
   font-style: normal;
@@ -37,6 +34,16 @@
   font-weight: 200 900;
   font-display: swap;
   src: url("/static/fonts/source-serif-4-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Source Serif 4 Variable";
+  font-style: italic;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("/static/fonts/source-serif-4-latin-wght-italic.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
     U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
@@ -78,26 +85,26 @@
   line-gap-override: 0%;
 }
 
-// A size that is $min at a 375px viewport and $max at 1440px, linear between
-// and clamped outside. Written from the endpoints so both ends are exact.
-@function fluid($min, $max) {
-  $step: math.div($max - $min, 1px);
-  @return string.unquote("clamp(#{$min}, #{$min} + (100vw - 375px) * #{$step} / 1065, #{$max})");
-}
-
 :root {
   // --- font roles -----------------------------------------------------------
-  --font-text: "Source Serif 4 Variable", "SS4 Fallback Georgia", "SS4 Fallback Times", Georgia, serif;
-  --font-text-zh: "Source Serif 4 Latin", "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC",
-    "Noto Serif SC", "STSong", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", serif;
-  --font-interface: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Ubuntu, "PingFang SC",
-    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
-  --font-code: ui-monospace, "SF Mono", Menlo, Consolas, "Cascadia Mono", "Sarasa Mono SC",
-    "Liberation Mono", monospace;
+  // The owner's Typora theme (typora-claude-like-theme, tokens-light.css):
+  // Songti SC sets Latin and Chinese text alike, PingFang SC the interface,
+  // Menlo code. The text stacks open with the theme's own list. Where none of
+  // those CJK serifs is installed, Source Serif 4 takes the Latin glyphs, and
+  // the faces after it take only Han: a Windows serif, then the sans faces the
+  // theme falls back to and their Windows and Linux counterparts.
+  --font-text: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", "Source Serif 4 Variable",
+    "SS4 Fallback Georgia", "SS4 Fallback Times", "Noto Serif SC", "STSong", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", serif;
+  --font-text-zh: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", "Source Serif 4 Latin",
+    "Noto Serif SC", "STSong", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Noto Sans CJK SC", serif;
+  --font-interface: "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Source Han Sans SC",
+    "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+  --font-code: Menlo, Monaco, "SF Mono", Consolas, "Sarasa Mono SC", "Cascadia Code", monospace;
 
-  // Quartz's font slots and the generated theme names, pointed at the roles.
-  // The generated stacks open with a CJK face; these keep base.scss, component
-  // CSS strings and scripts that still read the old names off it.
+  // Quartz's font slots and the generated theme names, pointed at the roles,
+  // for base.scss, component CSS strings and scripts that read the old names.
   --bodyFont: var(--font-text);
   --headerFont: var(--font-text);
   --titleFont: var(--font-interface);
@@ -106,44 +113,63 @@
   --font-ui: var(--font-interface);
   --font-mono: var(--font-code);
 
-  // --- type scale (375px / 1440px) -----------------------------------------
-  // The owner's Typora theme (typora-claude-like-theme) sets a 16px body with
-  // headings at 1.84em, 1.48em and 1.24em. The body here is Source Serif 4,
-  // which reads a touch smaller than Songti at the same size, so it runs 16px
-  // on a phone to 17px on a desktop, and the headings keep those ratios.
-  --size-body: #{fluid(16px, 17px)};
-  --lh-body: 1.6;
-  --size-body-zh: #{fluid(16px, 17px)};
-  --lh-body-zh: 1.8;
-  --size-title: #{fluid(29px, 31px)};
-  --lh-title: 1.15;
-  --size-title-zh: #{fluid(26px, 30px)};
-  --lh-title-zh: 1.35;
-  --size-dek: #{fluid(17px, 19px)};
-  --lh-dek: 1.45;
-  --size-dek-zh: #{fluid(16px, 18px)};
-  --lh-dek-zh: 1.7;
-  --size-h2: #{fluid(23px, 25px)};
-  --lh-head: 1.25;
-  --size-h2-zh: #{fluid(20px, 23px)};
-  --lh-head-zh: 1.45;
-  --size-h3: #{fluid(19px, 21px)};
-  --lh-h3: 1.3;
-  --size-h3-zh: #{fluid(18px, 20px)};
-  --lh-h3-zh: 1.5;
-  --size-row-title: #{fluid(19px, 21px)};
+  // --- type scale -------------------------------------------------------------
+  // The Typora theme's scale (shared.css): a 16px base, body line height 1.58,
+  // headings at 1.84em, 1.48em, 1.24em, 1.12em, 1em and 0.91em, code at 0.9em
+  // and table cells at 0.92rem. Every size is written from --size-base, so the
+  // whole scale moves with that one number.
+  --size-base: 16px;
+  --size-body: var(--size-base);
+  --lh-body: 1.58;
+  --size-title: calc(var(--size-base) * 1.84);
+  --lh-title: 1.16;
+  --size-h2: calc(var(--size-base) * 1.48);
+  --lh-head: 1.22;
+  --size-h3: calc(var(--size-base) * 1.24);
+  --lh-h3: 1.32;
+  --size-h4: calc(var(--size-base) * 1.12);
+  --size-h6: calc(var(--size-base) * 0.91);
+  // h4 to h6.
+  --lh-heading: 1.3;
+  // The page dek and the homepage rows have no counterpart in the theme; they
+  // take the nearest steps of the same scale.
+  --size-dek: calc(var(--size-base) * 1.12);
+  --lh-dek: 1.5;
+  --size-row-title: calc(var(--size-base) * 1.24);
   --lh-row-title: 1.3;
-  --size-row-dek: #{fluid(15px, 16px)};
+  --size-row-dek: calc(var(--size-base) * 0.95);
   --lh-row-dek: 1.5;
-  --size-caption: #{fluid(14px, 15px)};
-  --lh-caption: 1.5;
-  --size-code: #{fluid(14px, 15px)};
-  --lh-code: 1.55;
+  --size-caption: calc(var(--size-base) * 0.92);
+  --lh-caption: 1.52;
+  --size-code: calc(var(--size-base) * 0.9);
+  --lh-code: 1.52;
+  // Chinese pages (_i18n.scss) read these. The theme sets both languages on
+  // one scale, so they start equal; change one here to tune Chinese alone.
+  --size-body-zh: var(--size-body);
+  --lh-body-zh: var(--lh-body);
+  --size-title-zh: var(--size-title);
+  --lh-title-zh: var(--lh-title);
+  --size-dek-zh: var(--size-dek);
+  --lh-dek-zh: var(--lh-dek);
+  --size-h2-zh: var(--size-h2);
+  --lh-head-zh: var(--lh-head);
+  --size-h3-zh: var(--size-h3);
+  --lh-h3-zh: var(--lh-h3);
   // Meta, kicker, rail controls and index labels.
   --size-ui: 14px;
   --lh-ui: 20px;
   // Colophon, model line and figure number.
   --size-ui-sm: 12.5px;
+
+  // --- prose rhythm -----------------------------------------------------------
+  // The theme's vertical rhythm. Block margins are em of the text they sit in;
+  // the space above a heading is rem, so it does not grow with the heading.
+  --flow-block: 0.74em;
+  --flow-heading-before: 1.3rem;
+  --flow-h1-before: 0.35rem;
+  --flow-h2-before: 1.72rem;
+  --flow-h3-before: 1.5rem;
+  --flow-heading-after: 0.7rem;
 
   // --- spacing --------------------------------------------------------------
   --space-1: 4px;
@@ -173,10 +199,6 @@
   // --- overlays -------------------------------------------------------------
   --scrim-color: rgba(32, 30, 28, 0.36);
   --sheet-shadow: 0 -8px 32px var(--overlay-shadow-color);
-
-  @media all and not ($mobile) {
-    --lh-body-zh: 1.85;
-  }
 
   @media (pointer: coarse), #{$mobile} {
     --fig-row-h: 44px;

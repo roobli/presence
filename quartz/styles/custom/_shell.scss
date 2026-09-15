@@ -6,7 +6,9 @@
   --tpl-sidebar-ref: 280px;
   --tpl-shell-gutter: 24px;
   --tpl-write-padding: 32px;
-  --measure: 48em;
+  // The Typora theme's writing area: #write is 860px with 32px of padding a
+  // side, so 796px of text at the 16px base.
+  --measure: 49.75em;
   --measure-floor: 20em;
   --header-h: 48px;
   --progress-h: 2px;
@@ -21,7 +23,7 @@
 // ---------------------------------------------------------------------------
 // The note column.
 //
-// The measure is 48em of the English body size, plus whatever the panel gives
+// The measure is 49.75em of the body size, plus whatever the panel gives
 // up against its 280px reference. So the text's right edge stays put while
 // its left edge follows the sidebar handle 1:1. On a narrow window the 100%
 // term takes over, and the drag still changes the width 1:1 there. The em
@@ -34,7 +36,7 @@
   box-sizing: border-box;
   min-width: 0;
   max-width: none;
-  font-size: var(--size-body, clamp(16px, 15.648px + 0.0939vw, 17px));
+  font-size: var(--size-body, 16px);
   --col-drag: calc(var(--tpl-sidebar-ref) - var(--tpl-sidebar-width));
   --col-track: calc(100% - 2 * var(--tpl-shell-gutter));
   --col-default: min(
