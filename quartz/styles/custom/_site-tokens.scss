@@ -107,31 +107,35 @@
   --font-mono: var(--font-code);
 
   // --- type scale (375px / 1440px) -----------------------------------------
-  --size-body: #{fluid(17px, 19px)};
+  // The owner's Typora theme (typora-claude-like-theme) sets a 16px body with
+  // headings at 1.84em, 1.48em and 1.24em. The body here is Source Serif 4,
+  // which reads a touch smaller than Songti at the same size, so it runs 16px
+  // on a phone to 17px on a desktop, and the headings keep those ratios.
+  --size-body: #{fluid(16px, 17px)};
   --lh-body: 1.6;
-  --size-body-zh: #{fluid(17px, 18px)};
+  --size-body-zh: #{fluid(16px, 17px)};
   --lh-body-zh: 1.8;
-  --size-title: #{fluid(30px, 40px)};
+  --size-title: #{fluid(29px, 31px)};
   --lh-title: 1.15;
-  --size-title-zh: #{fluid(26px, 34px)};
+  --size-title-zh: #{fluid(26px, 30px)};
   --lh-title-zh: 1.35;
-  --size-dek: #{fluid(18px, 21px)};
+  --size-dek: #{fluid(17px, 19px)};
   --lh-dek: 1.45;
-  --size-dek-zh: #{fluid(17px, 19px)};
+  --size-dek-zh: #{fluid(16px, 18px)};
   --lh-dek-zh: 1.7;
-  --size-h2: #{fluid(23px, 27px)};
+  --size-h2: #{fluid(23px, 25px)};
   --lh-head: 1.25;
-  --size-h2-zh: #{fluid(21px, 25px)};
+  --size-h2-zh: #{fluid(20px, 23px)};
   --lh-head-zh: 1.45;
-  --size-h3: #{fluid(19px, 22px)};
+  --size-h3: #{fluid(19px, 21px)};
   --lh-h3: 1.3;
-  --size-h3-zh: #{fluid(18px, 21px)};
+  --size-h3-zh: #{fluid(18px, 20px)};
   --lh-h3-zh: 1.5;
-  --size-row-title: #{fluid(20px, 24px)};
+  --size-row-title: #{fluid(19px, 21px)};
   --lh-row-title: 1.3;
-  --size-row-dek: #{fluid(16px, 17px)};
+  --size-row-dek: #{fluid(15px, 16px)};
   --lh-row-dek: 1.5;
-  --size-caption: #{fluid(15px, 16px)};
+  --size-caption: #{fluid(14px, 15px)};
   --lh-caption: 1.5;
   --size-code: #{fluid(14px, 15px)};
   --lh-code: 1.55;
