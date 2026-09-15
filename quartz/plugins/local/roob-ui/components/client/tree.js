@@ -147,8 +147,11 @@ document.addEventListener("click", function (event) {
 // branch holding the open note is drawn again in the accent colour, so a
 // tree this size still answers "where am I" at a glance.
 var SVG_NS = "http://www.w3.org/2000/svg"
-var GUIDE_ARM = 9
-var GUIDE_RADIUS = 6
+// An arm runs from the trunk into the row's own padding and stops short of its
+// mark, so on the open note it leads straight into the accent bar. The corner
+// radius is the Typora tree's.
+var GUIDE_ARM_INTO_ROW = 5
+var GUIDE_RADIUS = 7
 // Fallback only. The trunk belongs under the chevron of the folder that owns
 // the group, which is where the eye expects the branch to leave the parent;
 // that is measured off the chevron itself, and this is what to use when a
@@ -194,13 +197,13 @@ function guideOverlay(content) {
 }
 
 /** Trunk down to a row, turned into its arm with a real radius. */
-function guideCorner(x, top, y, radius) {
+function guideCorner(x, top, y, end, radius) {
   var r = Math.min(radius, Math.max(0, y - top))
   return (
     "M" + x + "," + top +
     "L" + x + "," + (y - r) +
     "Q" + x + "," + y + " " + (x + r) + "," + y +
-    "L" + (x + GUIDE_ARM) + "," + y
+    "L" + end + "," + y
   )
 }
 
@@ -213,8 +216,8 @@ function folderChevron(ul) {
   return container.querySelector(".folder-icon")
 }
 
-function guideArm(x, y) {
-  return "M" + x + "," + y + "L" + (x + GUIDE_ARM) + "," + y
+function guideArm(x, y, end) {
+  return "M" + x + "," + y + "L" + end + "," + y
 }
 
 function drawTreeGuides(explorer) {
@@ -255,22 +258,25 @@ function drawTreeGuides(explorer) {
     }
     var top = Math.round(ulRect.top - host.top) + 0.5
     var arms = []
+    var ends = []
     var onPath = -1
     for (var i = 0; i < rows.length; i += 1) {
       var rr = rows[i].row.getBoundingClientRect()
       arms.push(Math.round(rr.top - host.top + rr.height / 2) + 0.5)
+      ends.push(Math.round(rr.left - host.left) + GUIDE_ARM_INTO_ROW)
       if (active && rows[i].li.contains(active)) onPath = i
     }
 
-    base += guideCorner(x, top, arms[arms.length - 1], GUIDE_RADIUS)
-    for (var j = 0; j < arms.length - 1; j += 1) base += guideArm(x, arms[j])
+    var last = arms.length - 1
+    base += guideCorner(x, top, arms[last], ends[last], GUIDE_RADIUS)
+    for (var j = 0; j < last; j += 1) base += guideArm(x, arms[j], ends[j])
 
     if (onPath !== -1) {
       var y = arms[onPath]
       lit +=
-        onPath === arms.length - 1
-          ? guideCorner(x, top, y, GUIDE_RADIUS)
-          : "M" + x + "," + top + "L" + x + "," + y + guideArm(x, y)
+        onPath === last
+          ? guideCorner(x, top, y, ends[onPath], GUIDE_RADIUS)
+          : "M" + x + "," + top + "L" + x + "," + y + guideArm(x, y, ends[onPath])
     }
   }
 
