@@ -13,6 +13,8 @@ npx quartz build --serve --port 8080
 
 Content lives in `content/` inside this repo (curated, public). Do not symlink RooB here.
 
+How to write a page, from frontmatter and translations to math, diagrams and live figures: [docs/authoring.md](docs/authoring.md).
+
 ## Deploy
 
 Cloudflare Pages project **`presence`**, via GitHub Actions on `main`:
@@ -27,7 +29,8 @@ Secrets (repo Actions): `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`. Never c
 
 | What | Where |
 | --- | --- |
-| Fonts, colors, plugins | `quartz.config.yaml` |
+| Fonts, type scale, spacing | `quartz/styles/custom/_site-tokens.scss` |
+| Plugins | `quartz.config.yaml` |
 | Layout / chrome CSS | `quartz/styles/custom/_*.scss`, listed in cascade order by `quartz/styles/custom.scss` |
 | Sidebar, TOC disk, width shortcuts | `quartz/plugins/local/roob-ui/` |
 | Theme tokens (generated) | `quartz/styles/claude-like-tokens.scss` + `node tools/sync-theme-tokens.mjs` |

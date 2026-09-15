@@ -201,13 +201,14 @@
   overscroll-behavior: contain;
   // The scrollbar stops where the resize strip starts, so neither covers the
   // other's grab area. The strip's width is set in _resize.scss.
-  padding: 0 6px 1.5rem 10px;
+  padding: 0 6px 1.5rem 6px;
   margin-right: var(--tpl-resize-hit);
+  // The Typora theme's scrollbar: 6px, a hairline-coloured thumb, round ends.
   scrollbar-width: thin;
-  scrollbar-color: var(--line-strong-color) transparent;
+  scrollbar-color: var(--border-color) transparent;
 
   &::-webkit-scrollbar {
-    width: 7px;
+    width: 6px;
   }
 
   &::-webkit-scrollbar-track {
@@ -215,8 +216,8 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    border-radius: 4px;
-    background: var(--line-strong-color);
+    border-radius: 3px;
+    background: var(--border-color);
   }
 }
 
@@ -415,7 +416,7 @@
   border-bottom: 1px solid transparent;
   background: var(--side-bar-bg-color);
   color: var(--ink-strong-color);
-  font-family: var(--font-interface);
+  font-family: var(--font-text); // the tree's face, so a crumb reads as its row
   font-size: var(--size-ui);
   font-weight: 500;
   text-align: left;

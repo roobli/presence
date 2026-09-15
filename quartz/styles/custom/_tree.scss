@@ -72,9 +72,11 @@ $mark-ext: (
 // it goes, along with the per-row box borders this used to be built from.
 .explorer-content {
   position: relative;
-  font-family: var(--font-interface);
+  // The owner's Typora theme sets its file tree in the body face, so the tree
+  // here reads as part of the page it lists rather than as app chrome.
+  font-family: var(--font-text);
   font-size: var(--size-ui);
-  padding: 0 0 0 10px;
+  padding: 0 0 0 3px;
   max-height: none;
   overflow: visible;
 
@@ -87,10 +89,10 @@ $mark-ext: (
   ul.tree-item-children > li {
     position: relative;
     margin: 0;
-    // The trunk sits under the parent's chevron, which is 14px into this box,
-    // so the indent has to leave the arm somewhere to land before the child's
-    // own icon starts.
-    padding-left: 18px;
+    // The Typora tree steps 28px a level. The trunk sits under the parent's
+    // chevron, 14px into this box, so its arms run 14px to the child's row and
+    // on into the row's padding.
+    padding-left: 28px;
   }
 
   .tree-item-self {
@@ -103,7 +105,7 @@ $mark-ext: (
     min-height: 26px;
     // Even vertical padding so icon+label sit on the midline (Typora rail).
     padding: 4px 8px 4px 7px;
-    border-radius: var(--radius-block);
+    border-radius: 5px;
     color: var(--ink-color);
     background-image: none;
     line-height: 18px;
@@ -216,9 +218,12 @@ $mark-ext: (
     -webkit-mask-size: 14px 14px;
   }
 
+  // A solid folder in the ink colour, as the Typora tree draws folders; notes
+  // keep their outlined page, so the two kinds of row still read apart.
   .folder-title::before {
-    $folder: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z'/%3E%3C/svg%3E";
+    $folder: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z'/%3E%3C/svg%3E";
 
+    background-color: var(--ink-color);
     mask-image: url($folder);
     -webkit-mask-image: url($folder);
   }
@@ -304,13 +309,28 @@ $mark-ext: (
 
 .explorer-content {
 
-  // The open note is a filled row, the way Claude's sidebar marks the open
-  // chat. An inset accent spine on a rounded row bent into an arc at its ends.
+  // The open note, as the Typora theme marks it: a filled row with a 2px accent
+  // bar down its left edge. The row's left corners are square so the bar stays
+  // straight (a rounded row bent it into an arc), and the guide arm runs into it.
   a.nav-file-title.active,
   a.nav-file-title.is-active {
+    border-radius: 0 5px 5px 0;
     background-color: var(--surface-active-color);
+    box-shadow: inset 2px 0 0 var(--accent-color);
     color: var(--ink-strong-color);
     font-weight: 500;
+  }
+
+  // The folders above the open note carry a hairline and a faint shadow, as in
+  // the Typora tree, so the path down to the note reads at a glance. Both are
+  // shadows, so the row keeps the 26px the crumbs are counted in.
+  @supports selector(:has(*)) {
+    .folder-container:has(+ .folder-outer a.nav-file-title:is(.active, .is-active)) {
+      border-radius: 5px 5px 0 0;
+      box-shadow:
+        inset 0 -1px 0 var(--line-color),
+        0 1px 2px var(--overlay-shadow-color);
+    }
   }
 
 }

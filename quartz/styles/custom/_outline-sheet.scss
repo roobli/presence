@@ -185,7 +185,9 @@ html.tpl-sheet-dragging {
   border-left: 2px solid transparent;
   background-image: none;
   color: var(--ink-color);
-  font-family: var(--font-interface);
+  // The body face, as the Typora theme sets its outline; the sheet's title
+  // above keeps the interface face, like that theme's panel header.
+  font-family: var(--font-text);
   font-size: 15px;
   font-weight: 400;
   line-height: 1.35;

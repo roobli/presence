@@ -214,6 +214,52 @@ export function markdownPlugins(_ctx) {
   ]
 }
 
+// Typora writes [TOC] on a line of its own for a contents block. The same line
+// here becomes a list of the page's headings (file.data.toc, from the
+// table-of-contents transformer), or goes away on a page too short to have one.
+const TOC_MARKER = "[TOC]"
+
+export function replaceTocMarkers(tree, toc, lang) {
+  const children = tree.children
+  for (let i = children.length - 1; i >= 0; i--) {
+    const node = children[i]
+    const only =
+      node.type === "element" && node.tagName === "p" && node.children.length === 1
+        ? node.children[0]
+        : null
+    if (!only || only.type !== "text" || only.value.trim() !== TOC_MARKER) continue
+    if (!toc || toc.length === 0) {
+      children.splice(i, 1)
+      continue
+    }
+    children[i] = {
+      type: "element",
+      tagName: "nav",
+      properties: { className: ["md-toc"], ariaLabel: lang.startsWith("zh") ? "目录" : "Contents" },
+      children: [
+        {
+          type: "element",
+          tagName: "ul",
+          properties: {},
+          children: toc.map((entry) => ({
+            type: "element",
+            tagName: "li",
+            properties: { className: ["md-toc-item"], dataDepth: entry.depth },
+            children: [
+              {
+                type: "element",
+                tagName: "a",
+                properties: { href: `#${entry.slug}` },
+                children: [{ type: "text", value: entry.text }],
+              },
+            ],
+          })),
+        },
+      ],
+    }
+  }
+}
+
 // Runs after OFM's rehypeRaw (figure markup is elements), GFM's heading ids and
 // crawl-links (file.data.links), and before KaTeX renders math.
 export function htmlPlugins(ctx) {
@@ -224,6 +270,8 @@ export function htmlPlugins(ctx) {
       Object.assign(presence, derivePage(tree, lang), {
         relation: relationOf(ctx, file, presence.kind),
       })
+      // After the counts, so a contents block never adds reading time.
+      replaceTocMarkers(tree, file.data.toc, lang)
     },
   ]
 }

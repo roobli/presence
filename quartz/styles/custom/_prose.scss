@@ -3,9 +3,9 @@
 // ---------------------------------------------------------------------------
 // Prose
 // ---------------------------------------------------------------------------
-// Body type. The measure in _shell.scss is em of this size, so the column
-// keeps the English body size on every page; Chinese prose resizes the
-// article instead (_i18n.scss).
+// The Typora theme's #write rules (typora-claude-like-theme/src/shared.css) on
+// the tokens in _site-tokens.scss. The measure in _shell.scss is em of the
+// body size.
 body {
   font-size: var(--size-body);
   line-height: var(--lh-body);
@@ -15,22 +15,21 @@ article {
   font-size: var(--size-body);
   line-height: var(--lh-body);
 
-  // Ink links: the colour of the text they sit in, a hairline underline, and
-  // the accent on hover.
+  // #write a: links in the accent with a hairline underline, darker on hover.
   a {
     font-weight: inherit;
-    color: inherit;
+    color: var(--link-color);
     text-decoration-line: underline;
     text-decoration-color: var(--link-underline-color);
     text-decoration-thickness: 1px;
-    text-underline-offset: 0.18em;
+    text-underline-offset: 0.14em;
     text-decoration-skip-ink: auto;
     transition:
       color var(--dur-fade) ease-out,
       text-decoration-color var(--dur-fade) ease-out;
 
     &:hover {
-      color: var(--accent-color);
+      color: var(--link-hover-color);
       text-decoration-color: currentColor;
     }
 
@@ -69,10 +68,10 @@ article {
   h5,
   h6 {
     position: relative;
-    margin: 1.6em 0 0.5em;
+    margin: var(--flow-heading-before) 0 var(--flow-heading-after);
     font-family: var(--font-text);
     font-weight: 600;
-    line-height: 1.35;
+    line-height: var(--lh-heading);
     color: var(--heading-color);
     letter-spacing: 0;
     // Lines of even length, so a heading never ends on one word or one 字.
@@ -80,26 +79,25 @@ article {
   }
 
   h1 {
+    margin-top: var(--flow-h1-before);
     font-size: var(--size-title);
     line-height: var(--lh-title);
-    letter-spacing: -0.01em;
-    margin: 0.35em 0 0.5em;
   }
 
   h2 {
+    margin-top: var(--flow-h2-before);
     font-size: var(--size-h2);
     line-height: var(--lh-head);
-    margin: 2.2em 0 0.6em;
   }
 
   h3 {
+    margin-top: var(--flow-h3-before);
     font-size: var(--size-h3);
     line-height: var(--lh-h3);
-    margin: 1.8em 0 0.5em;
   }
 
   h4 {
-    font-size: 1.05em;
+    font-size: var(--size-h4);
   }
 
   h5 {
@@ -108,7 +106,7 @@ article {
 
   h6 {
     font-family: var(--font-interface);
-    font-size: var(--size-ui);
+    font-size: var(--size-h6);
     letter-spacing: 0.02em;
     color: var(--control-text-color);
   }
@@ -119,7 +117,7 @@ article {
   ol,
   dl,
   table {
-    margin: 0.74em 0;
+    margin: var(--flow-block) 0;
   }
 
   p,
@@ -139,6 +137,14 @@ article {
   ul,
   ol {
     padding-left: 1.45rem;
+
+    &:first-child {
+      margin-top: 0;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 
   li {
@@ -184,12 +190,17 @@ article {
     > :last-child {
       margin-bottom: 0;
     }
+
+    blockquote {
+      padding-right: 0;
+    }
   }
 
-  // #write img
+  // #write img. base.scss gives every image 1rem block margins.
   img {
     max-width: 100%;
     height: auto;
+    margin: 0;
     object-fit: contain;
     outline: 1px solid var(--image-outline-color);
     outline-offset: -1px;
@@ -214,26 +225,51 @@ article {
     }
   }
 
-  li:has(> input[type="checkbox"]:checked) {
-    color: var(--task-done-color);
-    text-decoration-color: var(--task-done-color);
+  // [TOC] (presence-derive): the theme's .md-toc block, with Typora's own
+  // indent of 2em per heading level.
+  .md-toc {
+    margin: 20px 0 0;
+    padding: 18px 20px;
+    background-color: var(--surface-color);
+    border-radius: var(--radius-block);
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    li {
+      padding-left: 0;
+    }
+
+    @for $depth from 1 through 5 {
+      li[data-depth="#{$depth}"] {
+        padding-left: #{$depth * 2}em;
+      }
+    }
+
+    a {
+      text-decoration-line: none;
+
+      &:hover {
+        text-decoration-line: underline;
+      }
+    }
   }
 }
 
-// Essays: the block rhythm the Pass A frame gave apple-design-physics, now on
-// every essay.
-body[data-kind="essay"] article {
-  p,
-  li {
-    margin-block: 0.85em;
+// base.scss sets these through `.page article`, which outranks the rules
+// above: a 2rem h1, and done tasks in its grey.
+.page article {
+  > h1 {
+    font-size: var(--size-title);
   }
 
-  .katex-display {
-    margin-block: 1.4em;
-  }
-
-  .table-container {
-    margin-block: 1.5em;
+  // .task-list-done
+  li:has(> input[type="checkbox"]:checked) {
+    color: var(--task-done-color);
+    text-decoration-color: var(--task-done-color);
   }
 }
 

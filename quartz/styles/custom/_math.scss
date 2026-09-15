@@ -2,7 +2,8 @@
 // Math (KaTeX) and standalone figures
 // ---------------------------------------------------------------------------
 // katex.min.css sets .katex to 1.21em. Here math is sized against the prose
-// instead: display math one step up at 1.05em, inline math at text size.
+// instead: display math at 1.2em, a clear step above the text so a one-line
+// equation stands as a figure of its own, and inline math at text size.
 article .katex-display {
   text-align: center;
   margin: 1.15em auto;
@@ -11,7 +12,7 @@ article .katex-display {
 }
 
 article .katex-display > .katex {
-  font-size: 1.05em;
+  font-size: 1.2em;
   text-align: center;
 }
 

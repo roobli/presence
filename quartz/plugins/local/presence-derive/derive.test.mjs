@@ -226,4 +226,41 @@ describe("presence-derive", () => {
     assert.deepStrictEqual(countWords("按 Cmd+K 打开"), { words: 4, han: 3 })
     assert.deepStrictEqual(countWords("  \n "), { words: 0, han: 0 })
   })
+
+  test("[TOC] becomes a contents block from the page's headings, or goes when there are none", () => {
+    const toc = [
+      { depth: 0, text: "Springs", slug: "springs" },
+      { depth: 1, text: "Damping", slug: "damping" },
+    ]
+    const tree = root(el("p", {}, "[TOC]"), el("p", {}, prose(3)))
+    derive(tree, { slug: "writing/springs", toc })
+    const nav = tree.children[0]
+    assert.equal(nav.tagName, "nav")
+    assert.deepStrictEqual(nav.properties.className, ["md-toc"])
+    assert.equal(nav.properties.ariaLabel, "Contents")
+    assert.deepStrictEqual(
+      nav.children[0].children.map((li) => [
+        li.properties.dataDepth,
+        li.children[0].properties.href,
+        li.children[0].children[0].value,
+      ]),
+      [
+        [0, "#springs", "Springs"],
+        [1, "#damping", "Damping"],
+      ],
+    )
+
+    const bare = root(el("p", {}, " [TOC] "), el("p", {}, "Say [TOC] here"))
+    derive(bare, { slug: "writing/short" })
+    assert.equal(bare.children.length, 1)
+    assert.equal(bare.children[0].children[0].value, "Say [TOC] here")
+
+    const zh = root(el("p", {}, "[TOC]"))
+    derive(zh, {
+      slug: "writing/springs/zh",
+      i18n: { lang: "zh-Hans", base: "writing/springs", alternates: [] },
+      toc,
+    })
+    assert.equal(zh.children[0].properties.ariaLabel, "目录")
+  })
 })
