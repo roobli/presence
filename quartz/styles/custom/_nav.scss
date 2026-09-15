@@ -201,7 +201,7 @@
   overscroll-behavior: contain;
   // The scrollbar stops where the resize strip starts, so neither covers the
   // other's grab area. The strip's width is set in _resize.scss.
-  padding: 0 6px 1.5rem 10px;
+  padding: 0 6px 1.5rem 6px;
   margin-right: var(--tpl-resize-hit);
   // The Typora theme's scrollbar: 6px, a hairline-coloured thumb, round ends.
   scrollbar-width: thin;
