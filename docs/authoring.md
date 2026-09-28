@@ -119,7 +119,7 @@ In Chinese text, type a space between Chinese and Latin words or numbers; the si
   $$
   ```
 
-- Mermaid diagrams in a ` ```mermaid ` block. Labels stay at 12px or more, and a diagram wider than the column scrolls sideways.
+- Mermaid diagrams in a ` ```mermaid ` block. A diagram scales to fit the column. When that makes its labels smaller than 12px, it shows a Full size tab, and a tap or click opens it full screen, fitted when it stays legible and panning when it does not.
 - A horizontal rule: `---` on its own line, with blank lines around it.
 - A contents block: `[TOC]` alone on a line, outside quotes, callouts and lists, lists the page's `#` to `###` headings as links, as in Typora. It needs at least two such headings; with fewer, or with `enableToc: false` in the frontmatter, the marker is dropped.
 
