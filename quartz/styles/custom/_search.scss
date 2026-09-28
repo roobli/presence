@@ -319,12 +319,16 @@ $sections: (
             min-height: 48px;
             padding: 8px 12px;
 
+            // The result's kind in the label face, as the index labels it.
             &::before {
               content: "Page";
               grid-row: 1;
-              font-size: 12px;
+              font-family: var(--font-label);
+              font-size: 11px;
               line-height: 16px;
-              letter-spacing: 0.02em;
+              font-weight: 500;
+              letter-spacing: var(--tracking-label);
+              text-transform: uppercase;
               color: var(--ink-muted-color);
             }
 

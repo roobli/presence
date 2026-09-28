@@ -4,7 +4,16 @@ import { render } from "preact-render-to-string"
 import { formatDate, isoDate } from "./dates.js"
 import { t } from "./locale.js"
 import { renderSpine, spineLength } from "./spine.js"
-import { claimsOf, renderCard, renderHero, renderLedgerRow } from "./plates.js"
+import {
+  backlinksOf,
+  claimsOf,
+  entryNumber,
+  renderCard,
+  renderHero,
+  renderLedgerRow,
+  renderTitleBlock,
+  seriesOf,
+} from "./plates.js"
 import {
   essaysForWork,
   hrefOf,
@@ -207,17 +216,22 @@ describe("rows", () => {
 describe("components", () => {
   test("page header on an essay pair", () => {
     const html = render(PageHeader()(props(keyboard)))
-    assert.match(html, /<p class="ph-kicker"><a href="\/writing\/">Writing<\/a><\/p>/)
+    assert.match(html, /<p class="ph-kicker"><a href="\/writing\/">Writing<\/a>.*<span class="entry-no">No\. 002<\/span><\/p>/)
     assert.match(html, /<h1 class="article-title ph-title">Keyboard shortcut systems<\/h1>/)
-    assert.match(html, /<p class="ph-facts">.*<span class="ph-lang"><a href="[^"]+" lang="zh-Hans" hreflang="zh-Hans" rel="alternate">中文<\/a><\/span><\/p>/)
+    assert.match(html, /<dl class="titleblock titleblock--spec">/)
+    assert.match(html, /<dt>Published<\/dt><dd><time datetime="2026-09-11">Sep 11, 2026<\/time><\/dd>/)
+    assert.match(html, /<dt>Reading<\/dt><dd>8 min<\/dd>/)
+    assert.doesNotMatch(html, /Live figures/)
+    assert.match(html, /<dt>Language<\/dt><dd><span>English<\/span>.*<span class="ph-lang"><a href="[^"]+" lang="zh-Hans" hreflang="zh-Hans" rel="alternate">中文<\/a><\/span><\/dd>/)
     assert.doesNotMatch(html, /aria-current|ph-lang-seg|<nav/)
   })
 
   test("page header on the translation uses zh chrome and the original's minutes", () => {
     const html = render(PageHeader()(props(keyboardZh)))
     assert.match(html, /<a href="\/writing\/">文章<\/a>/)
+    assert.match(html, /No\. 002/)
     assert.match(html, /2026年9月11日/)
-    assert.match(html, /约 8 分钟/)
+    assert.match(html, /<dt>阅读<\/dt><dd>8 分钟<\/dd>/)
     assert.match(html, /<span class="ph-lang"><a href="\/writing\/keyboard" lang="en" hreflang="en" rel="alternate">English<\/a><\/span>/)
   })
 
@@ -229,9 +243,9 @@ describe("components", () => {
 
   test("page header on a work shows links and the screenshot", () => {
     const html = render(PageHeader()(props(course)))
-    assert.match(html, /<p class="ph-links">/)
+    assert.match(html, /<dt>Links<\/dt><dd><span class="ph-links">/)
     assert.match(html, /<img class="ph-shot"/)
-    assert.doesNotMatch(html, /ph-facts|Design essay/)
+    assert.doesNotMatch(html, /Reading|Design essay/)
   })
 
   test("home index renders the thesis, rows and works only where it belongs", () => {
@@ -239,11 +253,14 @@ describe("components", () => {
     assert.equal(html.match(/<h1/g).length, 1)
     assert.match(html, /<h1 class="home-thesis">Fewer pages. Harder claims.<\/h1>/)
     // The newest essay is the hero, the rest are cards, and the ledger lists all.
-    assert.equal(html.match(/class="plate plate--ink hero"/g).length, 1)
+    assert.equal(html.match(/class="plate plate--night hero"/g).length, 1)
     assert.equal(html.match(/class="plate plate--\w+ card"/g).length, 2)
     assert.equal(html.match(/class="ledger-row"/g).length, 3)
     assert.equal(html.match(/class="plate plate--paper work-plate"/g).length, 1)
-    assert.match(html, /3 essays/)
+    assert.match(html, /<dt>Essays<\/dt><dd>03<\/dd>/)
+    assert.match(html, /<dt>Works<\/dt><dd>01<\/dd>/)
+    assert.match(html, /<dt>Since<\/dt><dd>2026<\/dd>/)
+    assert.match(html, /class="ledger-head" aria-hidden="true"/)
     assert.equal(render(HomeIndex()(props(writingFolder))).match(/class="ledger-row"/g).length, 3)
     assert.equal(render(HomeIndex()(props(apple))), "")
   })
@@ -309,11 +326,83 @@ describe("plates", () => {
   })
 
   test("cards cycle tones and fall back to the dek without claims", () => {
-    assert.match(render(renderCard(apple, 0, ctx)), /plate--vellum card/)
-    assert.match(render(renderCard(apple, 1, ctx)), /plate--ink card/)
+    assert.match(render(renderCard(apple, 0, ctx)), /plate--slate card/)
+    assert.match(render(renderCard(apple, 1, ctx)), /plate--sage card/)
     assert.match(render(renderCard(apple, 2, ctx)), /plate--clay card/)
     const html = render(renderCard(apple, 0, ctx))
     assert.match(html, /class="card-caption"/)
     assert.doesNotMatch(html, /card-figure|card-quote/)
+  })
+})
+
+describe("links between entries", () => {
+  test("entries are numbered in order of publication, per section", () => {
+    assert.equal(entryNumber(cuda, allFiles), 1)
+    assert.equal(entryNumber(keyboard, allFiles), 2)
+    assert.equal(entryNumber(apple, allFiles), 3)
+    // A translation takes its original's number; a work counts in its own section.
+    assert.equal(entryNumber(keyboardZh, allFiles), 2)
+    assert.equal(entryNumber(course, allFiles), 1)
+    assert.equal(entryNumber(home, allFiles), null)
+  })
+
+  test("a title block leaves out the fields it has no value for", () => {
+    const html = render(renderTitleBlock([{ label: "A", value: "1" }, { label: "B", value: null }]))
+    assert.equal(html, '<dl class="titleblock"><div class="tb-cell"><dt>A</dt><dd>1</dd></div></dl>')
+    assert.equal(renderTitleBlock([{ label: "B", value: null }]), null)
+  })
+
+  const part = (slug, n, date) => ({
+    slug,
+    frontmatter: { title: `Part ${n}`, date, series: "Kernels", part: n },
+    i18n: { lang: "en", base: slug, alternates: [] },
+    presence: { kind: "essay", figures: [], sections: [], words: 400, readingMinutes: 2 },
+  })
+  const one = part("writing/k1", 1, "2026-10-01")
+  const two = part("writing/k2", 2, "2026-10-08")
+  const three = part("writing/k3", 3, "2026-10-02")
+  const linker = {
+    slug: "writing/linker",
+    links: ["writing/k2", "works/course"],
+    frontmatter: { title: "Linker", date: "2026-10-09" },
+    i18n: { lang: "en", base: "writing/linker", alternates: [] },
+    presence: { kind: "essay", figures: [], sections: [], words: 400, readingMinutes: 2 },
+  }
+  const files = [...allFiles, three, one, two, linker]
+
+  test("a series orders its parts by part number, whatever the dates", () => {
+    const series = seriesOf(two, files)
+    assert.equal(series.name, "Kernels")
+    assert.deepStrictEqual(
+      series.parts.map((entry) => entry.slug),
+      ["writing/k1", "writing/k2", "writing/k3"],
+    )
+    assert.equal(series.index, 1)
+    assert.equal(seriesOf(apple, files), null)
+  })
+
+  test("backlinks list the entries that link to a page", () => {
+    assert.deepStrictEqual(
+      backlinksOf(two, files).map((entry) => entry.slug),
+      ["writing/linker"],
+    )
+    assert.deepStrictEqual(
+      backlinksOf(course, files).map((entry) => entry.slug),
+      ["writing/linker"],
+    )
+    assert.deepStrictEqual(backlinksOf(one, files), [])
+  })
+
+  test("end matter shows the series, then Linked from, and lists nothing twice", () => {
+    const html = render(EndMatter()({ fileData: two, allFiles: files, cfg }))
+    assert.match(html, /<section class="end-series">/)
+    assert.match(html, /Part 2 of 3/)
+    assert.match(html, /<li class="is-current"><span aria-current="page">Part 2<\/span><\/li>/)
+    assert.match(html, /rel="previous"[^>]*>.*Part 1/)
+    assert.match(html, /rel="next"[^>]*>.*Part 3/)
+    assert.match(html, /<section class="end-linked">.*Linker/)
+    // Parts already listed in the series are not repeated under More writing.
+    const more = html.slice(html.indexOf('class="end-more"'))
+    assert.doesNotMatch(more, /Part 1|Part 3|Linker/)
   })
 })

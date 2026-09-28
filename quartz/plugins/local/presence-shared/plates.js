@@ -1,22 +1,32 @@
 import { h } from "preact"
 import { formatDate, isoDate } from "./dates.js"
 import { isZh, langOf, t, ZH } from "./locale.js"
-import { hrefOf, joined, readingMinutes, workLinks, workShot } from "./rows.js"
-import { sectionOf } from "./sections.js"
+import { hrefOf, joined, readingMinutes, selectEntries, workLinks, workShot } from "./rows.js"
+import { sectionOf, SECTIONS } from "./sections.js"
 import { renderSpine } from "./spine.js"
 
-// Markup for the index surfaces: the homepage hero and cards ("plates"), the
-// index ledger on the homepage, section pages and end matter, and the work
-// plate. Plates carry an essay's claims, from its frontmatter:
+// Markup for the index surfaces and the linked end matter.
+//
+// The notebook's grammar with a casebook's details: every entry carries its
+// number in order of publication; title blocks set a page's facts as labelled
+// fields; the featured essay is a night page (the theme's dark canvas) and the
+// next three are index cards in the theme's code colours, each torn off along a
+// perforated foot; the index is a ruled ledger with column heads.
+//
+// Plates carry an essay's claims, from its frontmatter:
 //
 //   claims:
 //     - figure: "54%"
 //       text: "of 2024 global software spend landed in the U.S."
 //     - quote: "Harsh can be faked. Precise can't."
 //
-// A figure is a short value set large, its text a caption that completes the
-// sentence; a quote is a line from the essay, verbatim. A plain string is read
-// as a quote. Claims are optional: a plate without them falls back to the dek.
+// A figure is a short value set large with a caption that completes the
+// sentence; a quote is a line from the essay, verbatim. A plain string reads
+// as a quote. Claims are optional: a plate without them shows the dek.
+//
+// Series and links: `series: "Name"` with `part: n` in frontmatter joins an
+// essay to a series (seriesOf), and backlinksOf lists the entries that link to
+// a page, from the links Quartz records for every file.
 
 /** An entry's claims as { figure, text } or { quote }, dropping malformed ones. */
 export function claimsOf(file) {
@@ -56,21 +66,24 @@ function shortTitle(file) {
   return cut > 0 ? title.slice(0, cut) : title
 }
 
-// Tags shown on a plate's label line, leaving out one that only repeats the
-// section's name (a work tagged "works").
-function tagsOf(file, max) {
+/**
+ * Tags shown on a label line, leaving out one that only repeats the section's
+ * name (a work tagged "works"). The page header reads it too.
+ */
+export function tagsOf(file, max) {
   const section = sectionOf(file.slug)?.id ?? ""
   return (Array.isArray(file.frontmatter?.tags) ? file.frontmatter.tags : [])
     .filter((tag) => typeof tag === "string" && tag.trim() && tag.toLowerCase() !== section)
     .slice(0, max)
 }
 
-// A row or plate in a language other than the page's says so.
+// A block in a language other than the page's says so.
 const langIfOther = (own, other) => (own === other ? undefined : own)
 
+const baseSlug = (file) => file.i18n?.base ?? file.slug
 const translationOf = (file) => file.i18n?.alternates?.find((version) => isZh(version.lang))
 
-// The 中文 link a row offers when the essay has a translation.
+/** The 中文 link an entry offers when it has a translation. */
 function zhLink(file, className) {
   const translation = translationOf(file)
   if (!translation) return null
@@ -93,15 +106,76 @@ function shortFacts(file, { lang, allFiles }) {
 
 const dateOf = (file) => isoDate(file.frontmatter?.date)
 
-function timeEl(file, lang, className) {
+function timeEl(file, lang) {
   const date = dateOf(file)
-  return date ? h("time", { class: className, datetime: date }, formatDate(date, lang)) : null
+  return date ? h("time", { datetime: date }, formatDate(date, lang)) : null
 }
 
 /**
- * The hero plate: the newest essay with its label line (section, tags, date),
- * full title, dek, a call to read, and its claims in a column beside it. The
- * foot carries the spine and the short facts.
+ * An entry's number in its section, in order of publication: the oldest is 1.
+ * A translation takes its original's number. Null outside a section.
+ */
+export function entryNumber(file, allFiles) {
+  const base = baseSlug(file)
+  const section = sectionOf(base)
+  if (!section) return null
+  const oldestFirst = selectEntries(allFiles, section).reverse()
+  const index = oldestFirst.findIndex((entry) => entry.slug === base)
+  return index < 0 ? null : index + 1
+}
+
+function numberLabel(file, ctx) {
+  const n = entryNumber(file, ctx.allFiles)
+  return n ? h("span", { class: "entry-no" }, t(ctx.lang, "no", { n })) : null
+}
+
+/**
+ * A title block: facts as labelled fields in a ruled row, the way a casebook
+ * heads a case or a drawing its sheet. cells is [{ label, value }]; a cell
+ * with no value is left out.
+ */
+export function renderTitleBlock(cells, className = "") {
+  const kept = cells.filter((cell) => cell.value !== null && cell.value !== undefined)
+  if (kept.length === 0) return null
+  return h(
+    "dl",
+    { class: `titleblock ${className}`.trim() },
+    kept.map((cell) =>
+      h("div", { class: "tb-cell" }, h("dt", null, cell.label), h("dd", null, cell.value)),
+    ),
+  )
+}
+
+/** A section's head on the index: its name set large and a note beside it. */
+export function renderSectionHead(id, label, note) {
+  return h(
+    "div",
+    { class: "sec-head" },
+    h("h2", { id, class: "sec-title" }, label),
+    note ? h("p", { class: "sec-note" }, note) : null,
+  )
+}
+
+// A plate's foot: the spine, the perforation, then the facts line.
+function plateFoot(file, own, lang, facts, go) {
+  return h(
+    "footer",
+    { class: "plate-foot", lang: langIfOther(lang, own) },
+    renderSpine(file.presence),
+    h("div", { class: "perf", "aria-hidden": "true" }),
+    h(
+      "p",
+      { class: "plate-facts" },
+      h("span", null, joined(facts, "plate-sep")),
+      go ? h("span", { class: "plate-go", "aria-hidden": "true" }, go) : null,
+    ),
+  )
+}
+
+/**
+ * The hero: the newest essay as a night page. Its number, section and tags on
+ * the label line, the full title, the dek and a call to read, with its claims
+ * in a column beside them and a torn-off foot.
  */
 export function renderHero(file, ctx) {
   const { lang } = ctx
@@ -111,15 +185,17 @@ export function renderHero(file, ctx) {
   const section = sectionOf(file.slug)
   const claims = claimsOf(file).slice(0, 3)
   const label = [
+    numberLabel(file, ctx),
     section ? t(lang, section.label) : null,
     ...tagsOf(file, 2),
-    dateOf(file) ? h("time", { datetime: dateOf(file) }, dateOf(file)) : null,
   ].filter(Boolean)
-  const facts = [...shortFacts(file, ctx), zhLink(file, "plate-alt")].filter(Boolean)
+  const facts = [timeEl(file, lang), ...shortFacts(file, ctx), zhLink(file, "plate-alt")].filter(
+    Boolean,
+  )
 
   return h(
     "article",
-    { class: "plate plate--ink hero", lang: langIfOther(own, lang) },
+    { class: "plate plate--night hero", lang: langIfOther(own, lang) },
     h(
       "div",
       { class: "hero-main" },
@@ -153,22 +229,17 @@ export function renderHero(file, ctx) {
           ),
         )
       : null,
-    h(
-      "footer",
-      { class: "plate-foot", lang: langIfOther(lang, own) },
-      renderSpine(file.presence),
-      facts.length > 0 ? h("p", { class: "plate-facts" }, joined(facts, "plate-sep")) : null,
-    ),
+    plateFoot(file, own, lang, facts, null),
   )
 }
 
-const CARD_TONES = ["vellum", "ink", "clay"]
+const CARD_TONES = ["slate", "sage", "clay"]
 
 /**
- * A card plate: date and first tag on the label line, the short title, then
- * the essay's first claim set large (a figure with its caption, or a quote),
- * else its dek. The foot carries the spine, the short facts and a read link.
- * Tones cycle vellum, ink, clay by position.
+ * An index card: number and first tag on the label line, the short title, the
+ * essay's first claim set large (a figure with its caption, or a quote), else
+ * its dek, then a torn-off foot. The title's link covers the whole card; the
+ * foot's "Read" is its visible cue. Tones run slate, sage, clay by position.
  */
 export function renderCard(file, index, ctx) {
   const { lang } = ctx
@@ -191,50 +262,63 @@ export function renderCard(file, index, ctx) {
     body = fm.description ? h("p", { class: "card-caption" }, fm.description) : null
   }
 
+  // A card's foot has room for the date and the reading time; the live
+  // figures are on the ledger row below.
+  const minutes = readingMinutes(file, ctx.allFiles)
+  const facts = [timeEl(file, lang), minutes ? t(lang, "minShort", { n: minutes }) : null].filter(
+    Boolean,
+  )
   return h(
     "li",
     { class: `plate plate--${tone} card`, lang: langIfOther(own, lang) },
     h(
       "p",
       { class: "plate-label plate-label--split", lang: langIfOther(lang, own) },
-      timeEl(file, lang, null),
+      numberLabel(file, ctx),
       tag ? h("span", null, tag) : null,
     ),
-    h("h3", { class: "card-title" }, h("a", { href, title: titleOf(file) }, shortTitle(file))),
-    h("div", { class: "card-body" }, body),
     h(
-      "footer",
-      { class: "plate-foot", lang: langIfOther(lang, own) },
-      renderSpine(file.presence),
-      h(
-        "p",
-        { class: "plate-facts plate-facts--split" },
-        h("span", null, joined(shortFacts(file, ctx), "plate-sep")),
-        h(
-          "a",
-          { class: "plate-go", href, tabindex: "-1", "aria-hidden": "true" },
-          t(lang, "read"),
-          " →",
-        ),
-      ),
+      "h3",
+      { class: "card-title" },
+      h("a", { class: "card-link", href, title: titleOf(file) }, shortTitle(file)),
     ),
+    h("div", { class: "card-body" }, body),
+    plateFoot(file, own, lang, facts, [t(lang, "read"), " →"]),
+  )
+}
+
+/** The ledger's column heads, drawn once above its rows on wide screens. */
+export function renderLedgerHead(lang) {
+  return h(
+    "li",
+    { class: "ledger-head", "aria-hidden": "true" },
+    h("span", null, t(lang, "colNo")),
+    h("span", null, t(lang, "colDate")),
+    h("span", null, t(lang, "colEntry")),
+    h("span", null, t(lang, "colReading")),
   )
 }
 
 /**
- * One ledger row: the date in the margin, then title, dek and spine, then the
- * short facts and the 中文 link. The index on the homepage, the section pages
- * and the end matter all use it.
+ * One ledger row: the entry's number and date in the margin, then title, dek
+ * and spine, then the short facts and the 中文 link. The index on the
+ * homepage, the section pages and the end matter all use it.
  */
 export function renderLedgerRow(file, ctx) {
-  const { lang } = ctx
+  const { lang, allFiles } = ctx
   const own = langOf(file)
   const fm = file.frontmatter ?? {}
+  const n = entryNumber(file, allFiles)
   const facts = [...shortFacts(file, ctx), zhLink(file, "idx-alt")].filter(Boolean)
   return h(
     "li",
     { class: "ledger-row", lang: langIfOther(own, lang) },
-    h("p", { class: "ledger-date", lang: langIfOther(lang, own) }, timeEl(file, lang, null)),
+    h(
+      "p",
+      { class: "ledger-no", lang: langIfOther(lang, own) },
+      n ? String(n).padStart(3, "0") : null,
+    ),
+    h("p", { class: "ledger-date", lang: langIfOther(lang, own) }, timeEl(file, lang)),
     h(
       "div",
       { class: "ledger-body" },
@@ -242,15 +326,27 @@ export function renderLedgerRow(file, ctx) {
       fm.description ? h("p", { class: "ledger-dek" }, fm.description) : null,
       renderSpine(file.presence),
     ),
-    facts.length > 0
-      ? h("p", { class: "ledger-meta", lang: langIfOther(lang, own) }, joined(facts, "plate-sep"))
-      : null,
+    h(
+      "p",
+      { class: "ledger-meta", lang: langIfOther(lang, own) },
+      facts.length > 0 ? joined(facts, "plate-sep") : null,
+    ),
+  )
+}
+
+/** A ruled ledger of entries, with column heads unless head is false. */
+export function renderLedger(files, ctx, { head = true } = {}) {
+  return h(
+    "ul",
+    { class: head ? "ledger" : "ledger ledger--bare" },
+    head ? renderLedgerHead(ctx.lang) : null,
+    files.map((file) => renderLedgerRow(file, ctx)),
   )
 }
 
 /**
- * A work plate: the screenshot, then a label line, the title, the dek and the
- * work's links, with the essays about it last.
+ * A work plate: the screenshot, then its number, date and tags, the title,
+ * the dek and the work's links, with the essays about it last.
  */
 export function renderWorkPlate(work, ctx, essays = []) {
   const { lang } = ctx
@@ -259,10 +355,7 @@ export function renderWorkPlate(work, ctx, essays = []) {
   const href = hrefOf(work.slug)
   const shot = workShot(work, { className: "work-plate-shot" })
   const links = workLinks(work, lang, { essays })
-  const date = dateOf(work)
-  const label = [date ? h("time", { datetime: date }, date) : null, ...tagsOf(work, 2)].filter(
-    Boolean,
-  )
+  const label = [numberLabel(work, ctx), timeEl(work, lang), ...tagsOf(work, 2)].filter(Boolean)
   return h(
     "li",
     { class: "plate plate--paper work-plate", lang: langIfOther(own, lang) },
@@ -272,9 +365,7 @@ export function renderWorkPlate(work, ctx, essays = []) {
     h(
       "div",
       { class: "work-plate-body" },
-      label.length > 0
-        ? h("p", { class: "plate-label", lang: langIfOther(lang, own) }, joined(label, "plate-sep"))
-        : null,
+      h("p", { class: "plate-label", lang: langIfOther(lang, own) }, joined(label, "plate-sep")),
       h("h3", { class: "work-plate-title" }, h("a", { href }, titleOf(work))),
       fm.description ? h("p", { class: "work-plate-dek" }, fm.description) : null,
       links.length > 0
@@ -285,5 +376,38 @@ export function renderWorkPlate(work, ctx, essays = []) {
           )
         : null,
     ),
+  )
+}
+
+// --- links between entries ---------------------------------------------------
+
+// Listed entries of every section, translations and section pages left out.
+const allEntries = (allFiles) => SECTIONS.flatMap((section) => selectEntries(allFiles, section))
+
+/**
+ * The series an entry belongs to: { name, parts, index } with parts in order
+ * (frontmatter part, then date), or null. A translation reads its original's.
+ */
+export function seriesOf(file, allFiles) {
+  const base = allFiles.find((candidate) => candidate.slug === baseSlug(file)) ?? file
+  const name = base.frontmatter?.series
+  if (typeof name !== "string" || !name.trim()) return null
+  const partOf = (entry) =>
+    Number.isInteger(entry.frontmatter?.part) ? entry.frontmatter.part : Infinity
+  const parts = allEntries(allFiles)
+    .filter((entry) => entry.frontmatter?.series === name)
+    .sort((a, b) => partOf(a) - partOf(b) || (dateOf(a) ?? "").localeCompare(dateOf(b) ?? ""))
+  const index = parts.findIndex((entry) => entry.slug === base.slug)
+  return index < 0 ? null : { name: name.trim(), parts, index }
+}
+
+/**
+ * Entries that link to this page, newest first. A translation lists its
+ * original's. The page itself is left out.
+ */
+export function backlinksOf(file, allFiles) {
+  const target = baseSlug(file)
+  return allEntries(allFiles).filter(
+    (entry) => entry.slug !== target && (entry.links ?? []).includes(target),
   )
 }

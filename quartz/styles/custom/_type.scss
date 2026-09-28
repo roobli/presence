@@ -1,8 +1,14 @@
 // ---------------------------------------------------------------------------
-// Type roles for the index faces: display (Bricolage Grotesque) for headlines,
-// figure for the large numbers, label (Martian Mono) for title-block lines.
-// Also the link style for text on a plate. Mixins only, no CSS of their own;
-// _page-header.scss and _plates.scss use them. Every instance reads its weight and stretch from _site-tokens.scss.
+// Type roles for the index and the page headers, and the link style for text
+// on a plate. Mixins only, no CSS of their own; _page-header.scss,
+// _plates.scss, _end-matter.scss and _tree.scss use them.
+//
+// display  titles on plates and page headers: the text face, heavier and
+//          tighter than the prose, so the notebook keeps one voice
+// figure   the large numbers of a claim: the text face at its heaviest, with
+//          lining, tabular digits
+// label    field names, dates and counts: Source Code Pro, small, upper case
+//          and tracked open, like a casebook's or a title block's fields
 // ---------------------------------------------------------------------------
 
 @mixin display($size, $lh) {
@@ -10,9 +16,7 @@
   font-size: $size;
   line-height: $lh;
   font-weight: var(--display-weight);
-  font-stretch: var(--display-stretch);
   letter-spacing: var(--tracking-display);
-  font-synthesis: none;
 }
 
 @mixin figure($size) {
@@ -20,10 +24,8 @@
   font-size: $size;
   line-height: var(--lh-figure);
   font-weight: var(--figure-weight);
-  font-stretch: var(--figure-stretch);
   letter-spacing: var(--tracking-figure);
   font-variant-numeric: lining-nums tabular-nums;
-  font-synthesis: none;
 }
 
 @mixin label {
@@ -31,7 +33,6 @@
   font-size: var(--size-label);
   line-height: var(--lh-label);
   font-weight: var(--label-weight);
-  font-stretch: var(--label-stretch);
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
@@ -43,8 +44,8 @@
   color: inherit;
   font-weight: inherit;
   text-decoration: none;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.14em;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.16em;
 
   &:hover {
     text-decoration-line: underline;

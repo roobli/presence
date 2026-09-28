@@ -76,54 +76,30 @@
   line-gap-override: 0%;
 }
 
-// Index faces: Bricolage Grotesque (display: headlines and figures) and Martian
-// Mono (labels), both SIL OFL 1.1 from @fontsource-variable 5.3.0, latin subset
-// with the wght and wdth axes (static/fonts/LICENSE-*). Neither is preloaded:
-// they swap in over the metric-matched fallbacks below. Both files default to
-// an extreme instance (Bricolage weight 800, Martian width 112.5%), so every
-// rule that uses them sets weight and stretch from the tokens in :root.
+// Label face: Source Code Pro, Source Serif's sibling in Adobe's Source
+// family, so the labels share the text face's proportions. Variable wght,
+// latin subset, from @fontsource-variable/source-code-pro 5.3.0 under the SIL
+// OFL 1.1 (static/fonts/LICENSE-source-code-pro). Not preloaded: labels are
+// short and swap in over a metric-matched fallback. The file's default
+// instance is weight 200, so every rule that uses it sets --label-weight.
 @font-face {
-  font-family: "Bricolage Grotesque Variable";
+  font-family: "Source Code Pro Variable";
   font-style: normal;
-  font-weight: 200 800;
-  font-stretch: 75% 100%;
+  font-weight: 200 900;
   font-display: swap;
-  src: url("/static/fonts/bricolage-grotesque-latin-wdth-normal.woff2") format("woff2");
+  src: url("/static/fonts/source-code-pro-latin-wght-normal.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
     U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+// Source Code Pro advances 600 units like Menlo (602), so the fallback needs
+// no size-adjust, only its vertical metrics: hhea 984 / -273, unitsPerEm 1000,
+// lineGap 0 (read with fontTools from the latin wght file).
 @font-face {
-  font-family: "Martian Mono Variable";
-  font-style: normal;
-  font-weight: 100 800;
-  font-stretch: 75% 112.5%;
-  font-display: swap;
-  src: url("/static/fonts/martian-mono-latin-wdth-normal.woff2") format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
-    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-// Fallbacks, measured with fontTools on the instances the tokens use: mean
-// advance over a pangram with digits, Bricolage at wght 700 wdth 88 is 0.460 em
-// against Arial Bold's 0.535, Martian at wght 450 wdth 87.5 is 0.650 against
-// Menlo's 0.602. Vertical metrics: Bricolage hhea 930 / -270, Martian 1000 /
-// -200, both unitsPerEm 1000 and lineGap 0. Override = metric / size-adjust.
-@font-face {
-  font-family: "BG Fallback Arial";
-  src: local("Arial Bold"), local("Arial-BoldMT"), local("Arial");
-  size-adjust: 86%;
-  ascent-override: 108.14%;
-  descent-override: 31.4%;
-  line-gap-override: 0%;
-}
-
-@font-face {
-  font-family: "MM Fallback Menlo";
+  font-family: "SCP Fallback Menlo";
   src: local("Menlo"), local("DejaVu Sans Mono"), local("Consolas");
-  size-adjust: 108%;
-  ascent-override: 92.59%;
-  descent-override: 18.52%;
+  ascent-override: 98.4%;
+  descent-override: 27.3%;
   line-gap-override: 0%;
 }
 
@@ -145,13 +121,13 @@
   --font-interface: "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Source Han Sans SC",
     "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
   --font-code: Menlo, Monaco, "SF Mono", Consolas, "Sarasa Mono SC", "Cascadia Code", monospace;
-  // Index surfaces and page headers. Han in the display role falls to the
-  // interface sans, which sets a Chinese headline better than the text serif.
-  --font-display: "Bricolage Grotesque Variable", "BG Fallback Arial", "PingFang SC",
-    "Hiragino Sans GB", "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei", system-ui,
-    sans-serif;
-  --font-label: "Martian Mono Variable", "MM Fallback Menlo", "PingFang SC", "Hiragino Sans GB",
-    "Noto Sans CJK SC", "Microsoft YaHei", monospace;
+  // The index and the page headers. Titles and figures stay in the text face,
+  // so the notebook keeps one voice; labels take the Source family's mono.
+  // --font-display follows --font-text, so Chinese pages set their titles in
+  // the zh serif (_i18n.scss swaps --font-text).
+  --font-display: var(--font-text);
+  --font-label: "Source Code Pro Variable", "SCP Fallback Menlo", Menlo, "PingFang SC",
+    "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", monospace;
 
   // Quartz's font slots and the generated theme names, pointed at the roles,
   // for base.scss, component CSS strings and scripts that read the old names.
@@ -213,31 +189,30 @@
   --size-ui-sm: 12.5px;
 
   // --- index type -------------------------------------------------------------
-  // Display and label instances (see the @font-face notes above). Headlines run
-  // condensed and heavy; figures run narrower and heavier still; labels are
-  // small caps-height mono with open tracking, like a drawing's title block.
-  --display-weight: 700;
-  --display-stretch: 88%;
-  --figure-weight: 760;
-  --figure-stretch: 82%;
-  --label-weight: 450;
-  --label-stretch: 87.5%;
-  --size-label: 11px;
+  // Titles and figures in Source Serif 4, heavier and tighter than the prose;
+  // labels in Source Code Pro, small, upper case and tracked open, the way a
+  // casebook or a drawing's title block sets its field names.
+  --display-weight: 650;
+  --figure-weight: 700;
+  --label-weight: 500;
+  --size-label: 11.5px;
   --lh-label: 16px;
-  --tracking-label: 0.08em;
-  --size-display: clamp(38px, 2.8vw + 16px, 60px);
-  --lh-display: 1.02;
-  --size-hero-title: clamp(30px, 1.9vw + 16px, 46px);
-  --lh-hero-title: 1.05;
-  --size-page-title: clamp(30px, 1.3vw + 20px, 42px);
-  --lh-page-title: 1.08;
-  --size-card-title: 20px;
-  --lh-card-title: 1.18;
-  --size-figure: clamp(56px, 3.6vw + 26px, 88px);
-  --size-figure-hero: clamp(40px, 2vw + 22px, 60px);
-  --lh-figure: 0.92;
-  --tracking-display: -0.015em;
-  --tracking-figure: -0.03em;
+  --tracking-label: 0.07em;
+  --size-display: clamp(40px, 2.4vw + 18px, 60px);
+  --lh-display: 1.04;
+  --size-hero-title: clamp(30px, 1.5vw + 18px, 44px);
+  --lh-hero-title: 1.1;
+  // An entry's title in its page header: the theme's title size (1.84 of the
+  // base) at the narrowest window, a step larger where there is room.
+  --size-page-title: clamp(var(--size-title), 1vw + 22px, 40px);
+  --lh-page-title: 1.14;
+  --size-card-title: calc(var(--size-base) * 1.24);
+  --lh-card-title: 1.25;
+  --size-figure: clamp(52px, 2.8vw + 26px, 76px);
+  --size-figure-hero: clamp(38px, 1.4vw + 24px, 52px);
+  --lh-figure: 0.95;
+  --tracking-display: -0.012em;
+  --tracking-figure: -0.025em;
 
   // --- prose rhythm -----------------------------------------------------------
   // The theme's vertical rhythm. Block margins are em of the text they sit in.
@@ -263,27 +238,33 @@
 
   // --radius-inline and --radius-block come from the generated tokens.
   --radius-sheet: 12px;
-  --radius-plate: 18px;
+  --radius-plate: 14px;
 
   // --- plates -----------------------------------------------------------------
-  // The index surfaces: cyanotype ink, pale vellum and fired clay on the paper
-  // canvas. Each plate names its own text, muted text and rule colours; every
-  // pair is at least 4.5:1 (the muted vellum text is 5.25:1, the rest higher).
-  // Figures on the ink plate take the signal colour, 7.6:1.
-  --plate-ink: #10283a;
-  --on-ink: #f3eee4;
-  --on-ink-muted: #a8bac8;
-  --on-ink-rule: rgba(243, 238, 228, 0.18);
-  --signal: #f2a679;
-  --plate-vellum: #dde6ec;
-  --on-vellum: #10283a;
-  --on-vellum-muted: #46606f;
-  --on-vellum-rule: rgba(16, 40, 58, 0.18);
-  --plate-clay: #8f4c2d;
-  --on-clay: #fdf5ec;
-  --on-clay-muted: #f8e2d4;
-  --on-clay-rule: rgba(253, 245, 236, 0.24);
-  --plate-shadow: 0 1px 0 rgba(16, 40, 58, 0.04), 0 18px 40px -28px rgba(16, 40, 58, 0.45);
+  // Every plate colour comes from the Typora theme. The night page is the
+  // theme's own dark canvas, ink and accent: the featured essay is printed in
+  // the other theme. Index cards are the theme's code colours (symbol blue,
+  // string green, the accent) let down to paper strength, like coloured index
+  // cards on the page. Each pair is at least 4.5:1: text 10:1 or more, muted
+  // text 5.3:1 or more, the mark (figures, the card's edge) 4.7:1 or more.
+  --night-bg: #22201e;
+  --night-ink: #f1eee8;
+  --night-muted: #b4aea5;
+  --night-rule: rgba(241, 238, 232, 0.16);
+  --night-mark: #e0a07a;
+  --slate-bg: #e6ecf1;
+  --slate-ink: #22384d;
+  --slate-muted: #4d6275;
+  --slate-mark: #2f5378;
+  --sage-bg: #e6ede4;
+  --sage-ink: #243a28;
+  --sage-muted: #4f6553;
+  --sage-mark: #3b6641;
+  --clay-bg: #f3e5dc;
+  --clay-ink: #4a2615;
+  --clay-muted: #7a4a33;
+  --clay-mark: #9a522f;
+  --plate-shadow: 0 1px 2px rgba(32, 30, 28, 0.05), 0 12px 28px -22px rgba(32, 30, 28, 0.5);
 
   // --- motion ---------------------------------------------------------------
   // Unitless so scripts can parseFloat them. --dur-fade is for colour and
@@ -307,15 +288,21 @@
 
 [saved-theme="dark"] {
   --scrim-color: rgba(0, 0, 0, 0.56);
-  // Plates lift off the dark canvas instead of sinking into it.
-  --plate-ink: #173550;
-  --signal: #f4b089;
-  --plate-vellum: #1b2f3d;
-  --on-vellum: #d9e5ee;
-  --on-vellum-muted: #98afbf;
-  --on-vellum-rule: rgba(217, 229, 238, 0.16);
-  --plate-clay: #8a4a30;
-  --on-clay: #fdf1e6;
-  --on-clay-muted: #efcdb8;
-  --plate-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 18px 40px -26px rgba(0, 0, 0, 0.8);
+  // The night page cannot be darker than a dark canvas, so it lifts to the
+  // theme's raised surface and draws a hairline; the cards take the same code
+  // colours at night strength.
+  --night-bg: #2b2926;
+  --slate-bg: #1f2830;
+  --slate-ink: #dce6ef;
+  --slate-muted: #9fb2c2;
+  --slate-mark: #9dc0e0;
+  --sage-bg: #1f2720;
+  --sage-ink: #dde8db;
+  --sage-muted: #a2b6a0;
+  --sage-mark: #a6d0a2;
+  --clay-bg: #2d221d;
+  --clay-ink: #f1e2d8;
+  --clay-muted: #c2a797;
+  --clay-mark: #e8a47c;
+  --plate-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 12px 28px -20px rgba(0, 0, 0, 0.8);
 }

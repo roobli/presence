@@ -68,23 +68,42 @@
   padding-bottom: var(--space-5);
   margin-bottom: var(--space-6);
   border-bottom: 1px solid var(--line-color);
+
+  // An entry's title block rules the header off itself.
+  &:has(> .titleblock) {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
 }
 
-// The kicker reads as a title-block label in the accent, the title is set in
-// the display face, and the meta line takes the label face, so a page header
-// carries the same voice as the plates that link to it.
+// A casebook's head on a notebook page: the label line names the section, the
+// entry's number and its tags; the title and dek stay in the text face; the
+// facts sit in a title block (_plates.scss), the one the index uses.
 .ph-kicker {
   @include label;
   margin: 0 0 var(--space-3);
-  font-weight: 550;
-  color: var(--accent-color);
+  color: var(--ink-muted-color);
 
   a {
     @include quiet-link;
     @include focus-ring;
     @include touch-target;
+    color: var(--accent-color);
+    font-weight: 600;
+  }
+
+  .entry-no {
+    color: var(--ink-strong-color);
+    font-weight: 600;
   }
 }
+
+.ph-sep {
+  opacity: 0.6;
+}
+
+// The title block's own rules are in _plates.scss, with the other title
+// blocks.
 
 .ph .ph-title {
   @include display(var(--size-page-title), var(--lh-page-title));
@@ -102,25 +121,8 @@
   color: var(--ink-muted-color);
 }
 
-.ph-meta {
-  @include label;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-2) var(--space-4);
-  margin-top: var(--space-5);
-  color: var(--ink-muted-color);
-}
-
-.ph-facts,
-.ph-links {
-  margin: 0;
-  color: inherit;
-  line-height: inherit;
-}
-
 // Work links and a translated page's link to its other language share one
-// link style on the meta line, the way the homepage rows offer 中文.
+// link style in the title block, the way the ledger offers 中文.
 .ph-links a,
 .ph-lang a {
   @include ui-link;
