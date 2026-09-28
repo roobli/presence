@@ -25,7 +25,7 @@ tags:
 
 ## 二、现象是真的：钱、公司和资本都集中在美国
 
-![全球软件支出，一半以上发生在美国](writing/why-america-builds-productivity-tools/fig_software_spend_2024.webp)
+![全球软件支出，一半以上发生在美国](essays/why-america-builds-productivity-tools/fig_software_spend_2024.webp)
 
 S&P Global Market Intelligence 的数据（WIPO 在 2025 年 6 月引用）显示，2024 年全球软件支出约 6,750 亿美元，美国一家就有 3,685 亿美元，占 54% 以上；排第二的中国是 618 亿美元，约为美国的六分之一。美国也是唯一一个软件支出超过 GDP 1% 的经济体。公司数量是同样的形状：Statista 估计 2024 年全球约 30,800 家 SaaS 公司里，美国约 17,000 家，英国约 1,500 家，加拿大 992 家，印度 711 家（这是经二手引用的估算，只看量级）。按 CB Insights 的口径，2025 年全行业独角兽美国 712 家，中国 157 家，韩国 14 家，日本 9 家。BVP 新兴云计算指数在 2026 年 9 月有 66 家成分公司，没有一家来自中日韩（这个指数只收美国上市的公司，所以这一条部分反映的是上市地）。这几组都是全软件或全行业的口径，效率工具没有单独的统计，但方向是一致的。
 
@@ -33,7 +33,7 @@ S&P Global Market Intelligence 的数据（WIPO 在 2025 年 6 月引用）显�
 
 日本是另一种形状。IPA 用 2015 年数据做的国际比较显示，日本 72.0% 的 IT 人才在 IT 企业（系统集成商、外包商、软件公司）工作，美国只有 34.6%，德国 38.6%，法国 46.1%。换句话说，美国企业的软件大多由自己的工程师选型和搭建，日本企业的软件大多交给系统集成商（日本叫 SIer）按需定制。经产省 2018 年的 DX 报告警告，如果遗留系统不更新，2025 年以后每年可能损失最高 12 万亿日元。
 
-![日本的 IT 工程师大多在乙方，美国的大多在甲方](writing/why-america-builds-productivity-tools/fig_it_staff_placement.webp)
+![日本的 IT 工程师大多在乙方，美国的大多在甲方](essays/why-america-builds-productivity-tools/fig_it_staff_placement.webp)
 
 日本的 SaaS 公司这几年增长很快。Sansan、freee、Money Forward 在 2025 到 2026 年间公布的年度数据里，收入增速在 24% 到 31% 之间，SmartHR 在 2026 年 7 月宣布 ARR 达到 300 亿日元；日本政府 2020 年清理行政手续，在 14,992 项需要盖章的规定里宣布废除 14,909 项。
 
@@ -49,13 +49,13 @@ S&P Global Market Intelligence 的数据（WIPO 在 2025 年 6 月引用）显�
 
 ### 如果勤奋是原因，东亚应该做得更多
 
-![勤奋程度和劳动价格是两回事](writing/why-america-builds-productivity-tools/fig_hours_wages_2025.webp)
+![勤奋程度和劳动价格是两回事](essays/why-america-builds-productivity-tools/fig_hours_wages_2025.webp)
 
 按 OECD 的数据，2025 年韩国每位就业者年均工作 1,833 小时，美国 1,800 小时，日本 1,598 小时，德国 1,332 小时。美国人工作时间长，但不是最长的（OECD 提示这组数只宜看相对位置）。韩国人比美国人工作得更久，年薪却低三成左右，勤奋程度和劳动力的价格是两回事。日本的过劳问题也没有消失，厚生劳动省公布的 2024 财年数据里，因工作导致精神疾病的工伤认定有 1,055 件，第一次超过 1,000 件，连续六年创新高。中国在 2019 年有 996.ICU 的讨论，2021 年最高人民法院明确 996 违法；韩国 2018 年把每周工时上限从 68 小时降到 52 小时，2023 年政府提出放宽到 69 小时，因年轻人和工会反对而撤回。
 
 价值观调查给出的画面更反直觉。
 
-![中韩比美国更「工作第一」，美国比日韩更相信努力有回报](writing/why-america-builds-productivity-tools/fig_work_values_wvs7.webp)
+![中韩比美国更「工作第一」，美国比日韩更相信努力有回报](essays/why-america-builds-productivity-tools/fig_work_values_wvs7.webp)
 
 世界价值观调查第 7 轮（伦敦国王学院 2023 年整理）里，同意「工作应当永远放在第一位」的比例，中国 82%，韩国 47%，德国 29%，美国 28%，日本 10%。认为「工作是对社会的责任」的，中国 83%，美国 59%，日本 58%。
 
@@ -77,7 +77,7 @@ S&P Global Market Intelligence 的数据（WIPO 在 2025 年 6 月引用）显�
 
 如果问这些效率方法是谁发明的，美国的位置就没有那么中心了。
 
-![方法生于各地，放大在英语市场](writing/why-america-builds-productivity-tools/fig_method_origin_timeline.webp)
+![方法生于各地，放大在英语市场](essays/why-america-builds-productivity-tools/fig_method_origin_timeline.webp)
 
 番茄工作法是意大利人 Francesco Cirillo 在 1980 年代末想出来的，最初靠一份免费 PDF 传播，下载量过了 200 万之后，企鹅兰登旗下的 Currency 在 2018 年出了正式的英文书。卡片盒笔记法来自德国社会学家卢曼，他从 1951 年到 1996 年积累了约 9 万张卡片，这套方法在 2020 年前后随着 Roam Research、Obsidian 这类软件在英语互联网上走红。看板出自丰田，大野耐一在 1940 年代末到 1960 年代之间，参照美国超市的补货方式做出这套系统；「精益」这个词是 John Krafcik 1988 年在《斯隆管理评论》上提出的，1990 年 MIT 的《改变世界的机器》让它传遍全球，2011 年 Trello 把看板做成了人人能用的软件。
 
@@ -139,13 +139,13 @@ flowchart TD
 
 把东亚放进来，画面就不是一边倒了。
 
-![自我提升内容在日本和韩国同样是大生意](writing/why-america-builds-productivity-tools/fig_creator_scale.webp)
+![自我提升内容在日本和韩国同样是大生意](essays/why-america-builds-productivity-tools/fig_creator_scale.webp)
 
 日本讲个人理财和自我提升的「両学長 リベラルアーツ大学」有 976 万订阅，比 Ali Abdaal 还多；搞笑艺人中田敦彦做的知识讲解频道有 548 万。韩国讲赚钱和自我提升的「신사임당」有 282 万，「김작가 TV」约 273 万。日本人口约 1.2 亿，韩国约 5,100 万，而英语博主面对的是全球英语观众，按潜在观众的规模算，日韩头部频道的覆盖程度要高得多。中国的对应物在 B 站：陈睿 2021 年说泛知识内容占 B 站视频播放量的 45%，2023 年的一份行业报告说过去一年有 2.43 亿用户在 B 站看过知识类内容，讲刑法的罗翔在 2026 年初有 3,208 万粉丝。东亚观众对「让自己变得更好」的内容同样买账。市场规模的估算也指向同一件事：Grand View Research 估计 2025 年全球个人发展市场约 510 亿美元，北美只占 34.8%，而美国一家就占了全球软件支出的一半以上。对自我提升的需求分布得比软件产业均匀得多。
 
 差别在钱，以及内容能卖到多远。
 
-![同样一千次播放，美国观众的价值是日本观众的近 4 倍](writing/why-america-builds-productivity-tools/fig_rpm_by_country.webp)
+![同样一千次播放，美国观众的价值是日本观众的近 4 倍](essays/why-america-builds-productivity-tools/fig_rpm_by_country.webp)
 
 谷歌不公布分国家的广告单价，第三方估算之间常常差一倍，只能看量级。按 Lenos 2026 年 4 月的估算，观众在美国时，创作者每千次播放大约拿到 10.81 美元，英国 7.12 美元，日本 2.90 美元，印度 0.46 美元，菲律宾 0.15 美元。Business Insider 核对过 Ali Abdaal 的后台数据，他的频道 2022 年平均每千次播放收入是 8.23 美元。同样的内容，面向英语观众时，每次播放的价值是日本观众的几倍、东南亚观众的几十倍。这决定了谁有预算养团队、做剪辑、做研究，也决定了这个品类能吸引多少人进来。
 
@@ -157,7 +157,7 @@ flowchart TD
 
 效率工具行业有一个尴尬的背景：它最繁荣的年代，恰好是美国生产率增长最慢的年代之一。
 
-![效率工具最繁荣的年代，生产率增长反而放慢](writing/why-america-builds-productivity-tools/fig_productivity_by_cycle.webp)
+![效率工具最繁荣的年代，生产率增长反而放慢](essays/why-america-builds-productivity-tools/fig_productivity_by_cycle.webp)
 
 美国劳工统计局按经济周期计算的非农企业部门劳动生产率，1947 到 1973 年平均每年增长 2.7%，2001 到 2007 年 2.8%；2007 年底到 2019 年底只有 1.5%，是二战后倒数第二慢的一段。这十二年正是 iPhone 普及，Slack、Notion、Asana 这类协作和效率软件大量出现的时候。2019 年底以来的这一轮周期回升到 2.1%，2024 年全年 3.0%，但堪萨斯城联储的分析认为这轮提升很难归功于 AI（见第八节）。这组数字不能证明效率工具拖慢了生产率，同一时期还有金融危机和之后的投资疲软等许多因素；它能说明的是，工具的繁荣没有在宏观上兑现为效率的繁荣。1987 年 7 月，索洛在《纽约时报书评》上写过一句后来被反复引用的话：计算机时代无处不在，唯独不在生产率统计里。这句话放到 SaaS 身上也说得通。
 
@@ -191,7 +191,7 @@ AI 把同一场竞赛拧得更紧。优化对象从管理自我，迁到调度�
 
 ### 效率的证据比效率的叙事慢
 
-![感觉更快，实际更慢](writing/why-america-builds-productivity-tools/fig_metr_perception_gap.webp)
+![感觉更快，实际更慢](essays/why-america-builds-productivity-tools/fig_metr_perception_gap.webp)
 
 METR 在 2025 年 7 月发表的随机对照试验里，16 名资深开源开发者完成 246 个真实任务，使用 AI 工具时完成时间反而延长了 19%；他们事前预计会快 24%，做完后仍然觉得快了 20%。2026 年 2 月 METR 发布了更新，新一轮研究的点估计转为加速（老参与者完成时间缩短 18%，但置信区间跨过零），同时发现 30% 到 50% 的开发者会回避那些不用 AI 就不愿做的任务，研究团队自己也说这个信号不可靠。
 
@@ -201,7 +201,7 @@ METR 在 2025 年 7 月发表的随机对照试验里，16 名资深开源开发
 
 ### 造的地方和用的地方分开了
 
-![造出前沿 AI 的国家，不是用得最普遍的国家](writing/why-america-builds-productivity-tools/fig_ai_diffusion_2026q1.webp)
+![造出前沿 AI 的国家，不是用得最普遍的国家](essays/why-america-builds-productivity-tools/fig_ai_diffusion_2026q1.webp)
 
 微软 AI 经济研究院公开的数据显示，2026 年一季度劳动年龄人口里用过生成式 AI 的比例，阿联酋 70.1%，新加坡 63.4%，韩国 37.1%，台湾 31.8%，美国 31.3%，在有数据的 147 个经济体里排第 21 位（排名按公开数据集自行排序）；日本 22.5%，中国大陆 16.4%。这个指标由微软的匿名遥测数据推算，再按操作系统和设备份额、互联网普及率和人口做调整，我的判断是它对以本土应用为主的中国大陆会有低估。Anthropic 2025 年 9 月的人均使用指数给出相近的排序：以色列 7.0，新加坡 4.57，韩国 3.73，美国 3.62，日本 1.86。韩国的付费意愿同样突出，OpenAI 在 2025 年说韩国的 ChatGPT 付费用户数仅次于美国。
 

@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------
-// Type roles for the index and the page headers, and the link style for text
-// on a plate. Mixins only, no CSS of their own; _page-header.scss,
-// _plates.scss, _end-matter.scss and _tree.scss use them.
+// Type roles for the index and the page headers. Mixins only, no CSS of their
+// own; _page-header.scss, _notebook.scss, _end-matter.scss and _tree.scss use
+// them.
 //
-// display  titles on plates and page headers: the text face, heavier and
-//          tighter than the prose, so the notebook keeps one voice
+// display  titles on the index and in page headers: the text face, heavier
+//          and tighter than the prose, so the notebook keeps one voice
 // figure   the large numbers of a claim: the text face at its heaviest, with
 //          lining, tabular digits
 // label    field names, dates and counts: Source Code Pro, small, upper case
@@ -36,24 +36,4 @@
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
-}
-
-// A link on a plate: the plate's own ink, underlined on hover, since the
-// accent would not hold contrast on every tone.
-@mixin plate-link {
-  color: inherit;
-  font-weight: inherit;
-  text-decoration: none;
-  text-decoration-thickness: 1.5px;
-  text-underline-offset: 0.16em;
-
-  &:hover {
-    text-decoration-line: underline;
-  }
-
-  &:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 3px;
-    border-radius: 2px;
-  }
 }

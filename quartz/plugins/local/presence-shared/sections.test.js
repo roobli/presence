@@ -1,67 +1,109 @@
 import test, { describe } from "node:test"
 import assert from "node:assert"
 import {
+  entryKind,
+  formerSlugs,
   indexSlugOf,
+  isSeriesIndex,
+  layoutOf,
   pageKind,
   SECTIONS,
   sectionById,
   sectionOf,
   sectionOfIndex,
   sectionOfKind,
+  seriesIdOf,
+  seriesIndexSlug,
 } from "./sections.js"
-import { listingSlugOf, selectEntries } from "./rows.js"
+import { selectEntries } from "./entries.js"
 import { t } from "./locale.js"
 
 describe("sections", () => {
-  test("pageKind reads the section table", () => {
-    assert.equal(pageKind("index"), "home")
-    assert.equal(pageKind("writing/index"), "folder")
-    assert.equal(pageKind("works/index"), "folder")
-    assert.equal(pageKind("writing/an-unchecked-todo"), "essay")
+  test("four sections, in homepage and sidebar order", () => {
+    assert.deepStrictEqual(
+      SECTIONS.map((section) => `${section.id}:${section.kind}`),
+      ["essays:essay", "series:episode", "projects:project", "notes:note"],
+    )
+  })
+
+  test("entryKind is what a page is, pageKind the layout it is read in", () => {
+    assert.equal(entryKind("index"), "home")
+    assert.equal(entryKind("essays/index"), "folder")
+    assert.equal(entryKind("series/kernels/index"), "folder")
+    assert.equal(entryKind("essays/an-unchecked-todo"), "essay")
+    assert.equal(entryKind("series/kernels/02-coalescing"), "episode")
+    assert.equal(entryKind("projects/cuda-cpp-course"), "project")
+    assert.equal(entryKind("notes/reading-log"), "note")
+    assert.equal(entryKind("about"), "page")
     // A translation passes its original's slug; its own slug still resolves.
-    assert.equal(pageKind("writing/an-unchecked-todo/zh"), "essay")
-    assert.equal(pageKind("works/cuda-cpp-course"), "work")
-    assert.equal(pageKind("about"), "page")
-    // A prefix match needs the slash: "writings" is not the writing section.
-    assert.equal(pageKind("writings/foo"), "page")
+    assert.equal(entryKind("essays/an-unchecked-todo/zh"), "essay")
+    // A prefix match needs the slash: "essayser" is not the essays section.
+    assert.equal(entryKind("essayser/foo"), "page")
+
+    assert.equal(pageKind("series/kernels/02-coalescing"), "essay")
+    assert.equal(pageKind("notes/reading-log"), "essay")
+    assert.equal(pageKind("projects/cuda-cpp-course"), "project")
+    assert.equal(layoutOf("episode"), "essay")
+    assert.equal(layoutOf("folder"), "folder")
+  })
+
+  test("series nest one folder deep", () => {
+    assert.equal(seriesIdOf("series/kernels/02-coalescing"), "kernels")
+    assert.equal(seriesIdOf("series/kernels/index"), "kernels")
+    assert.equal(seriesIdOf("series/index"), null)
+    assert.equal(seriesIdOf("series/loose-page"), null)
+    assert.equal(seriesIdOf("essays/kernels/x"), null)
+    assert.equal(seriesIndexSlug("kernels"), "series/kernels/index")
+    assert.equal(isSeriesIndex("series/kernels/index"), true)
+    assert.equal(isSeriesIndex("series/kernels/02-coalescing"), false)
+    assert.equal(isSeriesIndex("series/index"), false)
   })
 
   test("lookups", () => {
-    assert.equal(sectionOf("writing/foo")?.id, "writing")
+    assert.equal(sectionOf("essays/foo")?.id, "essays")
     assert.equal(sectionOf("about"), null)
-    assert.equal(sectionOfIndex("works/index")?.id, "works")
-    assert.equal(sectionOfIndex("works/cuda-cpp-course"), null)
-    assert.equal(sectionOfKind("essay")?.id, "writing")
+    assert.equal(sectionOfIndex("projects/index")?.id, "projects")
+    assert.equal(sectionOfIndex("projects/cuda-cpp-course"), null)
+    assert.equal(sectionOfKind("essay")?.id, "essays")
     assert.equal(sectionById("nope"), null)
-    assert.equal(indexSlugOf(sectionById("writing")), "writing/index")
-    assert.equal(listingSlugOf("essay"), "writing/index")
-    assert.equal(listingSlugOf("nothing"), "index")
+    assert.equal(indexSlugOf(sectionById("essays")), "essays/index")
   })
 
-  test("every section has a chrome label in both languages", () => {
+  test("renamed sections keep their pages' old slugs", () => {
+    assert.deepStrictEqual(formerSlugs("essays/foo"), ["writing/foo"])
+    assert.deepStrictEqual(formerSlugs("essays/foo/zh"), ["writing/foo/zh"])
+    assert.deepStrictEqual(formerSlugs("projects/index"), ["works/index"])
+    assert.deepStrictEqual(formerSlugs("notes/foo"), [])
+    assert.deepStrictEqual(formerSlugs("about"), [])
+  })
+
+  test("every section has a chrome label, a note and an All link in both languages", () => {
     for (const section of SECTIONS) {
-      assert.ok(t("en", section.label))
-      assert.ok(t("zh-Hans", section.label))
+      for (const lang of ["en", "zh-Hans"]) {
+        assert.ok(t(lang, section.label))
+        assert.ok(t(lang, `note_${section.id}`))
+        assert.ok(t(lang, `all_${section.id}`))
+      }
     }
   })
 
   test("selectEntries skips the section page, translations and unlisted pages", () => {
-    const writing = sectionById("writing")
+    const essays = sectionById("essays")
     const files = [
-      { slug: "writing/index", frontmatter: { title: "Writing" } },
-      { slug: "writing/a", frontmatter: { title: "A", date: "2026-01-02" } },
-      { slug: "writing/b", frontmatter: { title: "B", date: "2026-03-04" } },
+      { slug: "essays/index", frontmatter: { title: "Essays" } },
+      { slug: "essays/a", frontmatter: { title: "A", date: "2026-01-02" } },
+      { slug: "essays/b", frontmatter: { title: "B", date: "2026-03-04" } },
       {
-        slug: "writing/b/zh",
+        slug: "essays/b/zh",
         frontmatter: { title: "B zh", date: "2026-03-04" },
-        i18n: { base: "writing/b" },
+        i18n: { base: "essays/b" },
       },
-      { slug: "writing/hidden", frontmatter: { title: "H", unlisted: true } },
-      { slug: "works/w", frontmatter: { title: "W" } },
+      { slug: "essays/hidden", frontmatter: { title: "H", unlisted: true } },
+      { slug: "projects/w", frontmatter: { title: "W" } },
     ]
-    assert.deepEqual(
-      selectEntries(files, writing).map((file) => file.slug),
-      ["writing/b", "writing/a"],
+    assert.deepStrictEqual(
+      selectEntries(files, essays).map((file) => file.slug),
+      ["essays/b", "essays/a"],
     )
   })
 })

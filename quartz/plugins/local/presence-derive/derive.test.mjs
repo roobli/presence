@@ -1,6 +1,6 @@
 import test, { describe } from "node:test"
 import assert from "node:assert"
-import { countWords, htmlPlugins, markdownPlugins } from "./derive.js"
+import { countWords, formerAliases, htmlPlugins, markdownPlugins } from "./derive.js"
 
 const text = (value) => ({ type: "text", value })
 const el = (tagName, properties, ...children) => ({
@@ -91,9 +91,9 @@ describe("presence-derive", () => {
       ),
     )
     const file = derive(tree, {
-      slug: "writing/springs",
-      i18n: { lang: "en", base: "writing/springs", alternates: [] },
-      links: ["writing/corners"],
+      slug: "essays/springs",
+      i18n: { lang: "en", base: "essays/springs", alternates: [] },
+      links: ["essays/corners"],
     })
 
     assert.equal(file.data.presence.kind, "essay")
@@ -118,7 +118,7 @@ describe("presence-derive", () => {
 
   test("a short lead joins the first section, and a page without h2 has no sections", () => {
     const essay = derive(root(el("p", {}, prose(20)), h2("only", "Only"), el("p", {}, prose(10))), {
-      slug: "writing/short",
+      slug: "essays/short",
     })
     assert.deepStrictEqual(essay.data.presence.sections, [{ id: "only", title: "Only", words: 31 }])
     assert.equal(essay.data.presence.intro, null)
@@ -146,11 +146,11 @@ describe("presence-derive", () => {
       el("p", {}, "每天练习十分钟"),
     )
     const file = derive(tree, {
-      slug: "writing/keys/zh",
+      slug: "essays/keys/zh",
       i18n: {
         lang: "zh-Hans",
-        base: "writing/keys",
-        alternates: [{ lang: "en", slug: "writing/keys" }],
+        base: "essays/keys",
+        alternates: [{ lang: "en", slug: "essays/keys" }],
       },
       frontmatter: { title: "快捷键系统", lang: "zh-Hans" },
     })
@@ -169,56 +169,102 @@ describe("presence-derive", () => {
     assert.equal(file.data.presence.readingMinutes, 2)
   })
 
-  test("an essay's relation is frontmatter work, else its first works link", (t) => {
+  test("a reading page's relation is frontmatter project, else its first project link", (t) => {
     const linked = derive(root(), {
-      slug: "writing/cuda",
-      links: ["writing/springs", "works/index", "works/cuda-cpp-course", "works/other"],
+      slug: "essays/cuda",
+      links: ["essays/springs", "projects/index", "projects/cuda-cpp-course", "projects/other"],
     })
-    assert.equal(linked.data.presence.relation, "works/cuda-cpp-course")
+    assert.equal(linked.data.presence.relation, "projects/cuda-cpp-course")
 
     const named = derive(
       root(),
       {
-        slug: "writing/cuda",
-        frontmatter: { work: "/works/other/" },
-        links: ["works/cuda-cpp-course"],
+        slug: "essays/cuda",
+        frontmatter: { project: "/projects/other/" },
+        links: ["projects/cuda-cpp-course"],
       },
-      ["works/other", "works/cuda-cpp-course"],
+      ["projects/other", "projects/cuda-cpp-course"],
     )
-    assert.equal(named.data.presence.relation, "works/other")
+    assert.equal(named.data.presence.relation, "projects/other")
+
+    // work: is the field's name from before projects were called projects.
+    const legacy = derive(
+      root(),
+      { slug: "essays/cuda", frontmatter: { work: "projects/other" } },
+      ["projects/other"],
+    )
+    assert.equal(legacy.data.presence.relation, "projects/other")
+
+    const episode = derive(
+      root(),
+      { slug: "series/kernels/02-coalescing", frontmatter: { project: "projects/other" } },
+      ["projects/other"],
+    )
+    assert.equal(episode.data.presence.relation, "projects/other")
 
     const warn = t.mock.method(console, "warn", () => {})
-    const typo = derive(root(), { slug: "writing/cuda", frontmatter: { work: "works/cuda" } }, [
-      "works/cuda-cpp-course",
-    ])
-    assert.equal(typo.data.presence.relation, "works/cuda")
+    const typo = derive(
+      root(),
+      { slug: "essays/cuda", frontmatter: { project: "projects/cuda" } },
+      ["projects/cuda-cpp-course"],
+    )
+    assert.equal(typo.data.presence.relation, "projects/cuda")
     assert.equal(warn.mock.callCount(), 1)
-    assert.match(warn.mock.calls[0].arguments[0], /work "works\/cuda" is not a page slug/)
+    assert.match(warn.mock.calls[0].arguments[0], /project "projects\/cuda" is not a page slug/)
 
-    const work = derive(root(), { slug: "works/cuda-cpp-course", links: ["works/other"] })
-    assert.equal(work.data.presence.relation, null)
-    assert.equal(derive(root(), { slug: "writing/solo" }).data.presence.relation, null)
+    const project = derive(root(), { slug: "projects/cuda-cpp-course", links: ["projects/other"] })
+    assert.equal(project.data.presence.relation, null)
+    assert.equal(derive(root(), { slug: "essays/solo" }).data.presence.relation, null)
   })
 
-  test("kind comes from the slug, or from the original's slug on a translation", () => {
+  test("kind is the layout and entry what the page is, from the slug or the original's", () => {
     const zh = (base) => ({ lang: "zh-Hans", base, alternates: [] })
     const cases = [
-      [{ slug: "index" }, "home"],
-      [{ slug: "writing/index" }, "folder"],
-      [{ slug: "works/index" }, "folder"],
-      [{ slug: "writing/springs" }, "essay"],
-      [{ slug: "works/spring-lab" }, "work"],
-      [{ slug: "about" }, "page"],
-      [{ slug: "writing/springs/zh", i18n: zh("writing/springs") }, "essay"],
-      [{ slug: "writing/zh", i18n: zh("writing/index") }, "folder"],
-      [{ slug: "zh", i18n: zh("index") }, "home"],
+      [{ slug: "index" }, "home", "home"],
+      [{ slug: "essays/index" }, "folder", "folder"],
+      [{ slug: "projects/index" }, "folder", "folder"],
+      [{ slug: "series/index" }, "folder", "folder"],
+      [{ slug: "series/kernels/index" }, "folder", "folder"],
+      [{ slug: "essays/springs" }, "essay", "essay"],
+      [{ slug: "series/kernels/02-coalescing" }, "essay", "episode"],
+      [{ slug: "notes/reading-log" }, "essay", "note"],
+      [{ slug: "projects/spring-lab" }, "project", "project"],
+      [{ slug: "about" }, "page", "page"],
+      [{ slug: "essays/springs/zh", i18n: zh("essays/springs") }, "essay", "essay"],
+      [{ slug: "essays/zh", i18n: zh("essays/index") }, "folder", "folder"],
+      [{ slug: "zh", i18n: zh("index") }, "home", "home"],
     ]
-    for (const [data, kind] of cases) {
-      assert.equal(derive(root(), data).data.presence.kind, kind, data.slug)
+    for (const [data, kind, entry] of cases) {
+      const presence = derive(root(), data).data.presence
+      assert.equal(presence.kind, kind, data.slug)
+      assert.equal(presence.entry, entry, data.slug)
     }
 
-    const handSet = derive(root(), { slug: "writing/springs", frontmatter: { essayFrame: false } })
+    const note = derive(root(), { slug: "notes/reading-log" })
+    assert.equal(note.data.frontmatter.essayFrame, true)
+    const handSet = derive(root(), { slug: "essays/springs", frontmatter: { essayFrame: false } })
     assert.equal(handSet.data.frontmatter.essayFrame, false)
+  })
+
+  test("a page keeps redirects from its section's earlier folder names", () => {
+    assert.deepStrictEqual(formerAliases("essays/springs"), ["writing/springs"])
+    assert.deepStrictEqual(formerAliases("essays/index"), ["writing/index"])
+    assert.deepStrictEqual(formerAliases("projects/cuda-cpp-course"), ["works/cuda-cpp-course"])
+    // A translation keeps its own old URL and the older forms i18n-slug keeps.
+    assert.deepStrictEqual(
+      formerAliases("essays/springs/zh", ["essays/springs.zh", "zh/essays/springs"]),
+      ["writing/springs/zh", "writing/springs.zh", "zh/writing/springs"],
+    )
+    // A hand-written old alias is not repeated.
+    assert.deepStrictEqual(
+      formerAliases("essays/springs", ["writing/springs", "writing/older-name"]),
+      [],
+    )
+    assert.deepStrictEqual(formerAliases("series/kernels/01-correct"), [])
+    assert.deepStrictEqual(formerAliases("about"), [])
+
+    const file = derive(root(), { slug: "essays/springs", aliases: ["writing/older-name"] })
+    assert.deepStrictEqual(file.data.aliases, ["writing/older-name", "writing/springs"])
   })
 
   test("countWords skips punctuation-only tokens and splits Han characters", () => {
@@ -233,7 +279,7 @@ describe("presence-derive", () => {
       { depth: 1, text: "Damping", slug: "damping" },
     ]
     const tree = root(el("p", {}, "[TOC]"), el("p", {}, prose(3)))
-    derive(tree, { slug: "writing/springs", toc })
+    derive(tree, { slug: "essays/springs", toc })
     const nav = tree.children[0]
     assert.equal(nav.tagName, "nav")
     assert.deepStrictEqual(nav.properties.className, ["md-toc"])
@@ -251,14 +297,14 @@ describe("presence-derive", () => {
     )
 
     const bare = root(el("p", {}, " [TOC] "), el("p", {}, "Say [TOC] here"))
-    derive(bare, { slug: "writing/short" })
+    derive(bare, { slug: "essays/short" })
     assert.equal(bare.children.length, 1)
     assert.equal(bare.children[0].children[0].value, "Say [TOC] here")
 
     const zh = root(el("p", {}, "[TOC]"))
     derive(zh, {
-      slug: "writing/springs/zh",
-      i18n: { lang: "zh-Hans", base: "writing/springs", alternates: [] },
+      slug: "essays/springs/zh",
+      i18n: { lang: "zh-Hans", base: "essays/springs", alternates: [] },
       toc,
     })
     assert.equal(zh.children[0].properties.ariaLabel, "目录")

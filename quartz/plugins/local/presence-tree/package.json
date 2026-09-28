@@ -1,9 +1,9 @@
 {
-  "name": "presence-index",
+  "name": "presence-tree",
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "The homepage, section and series pages, and the folder page type",
+  "description": "The sidebar tree, rendered at build time from the section registry",
   "exports": {
     ".": "./index.js",
     "./components": "./components/index.js",
@@ -11,12 +11,9 @@
   },
   "main": "./index.js",
   "quartz": {
-    "name": "presence-index",
-    "displayName": "Presence index",
-    "category": [
-      "pageType",
-      "component"
-    ],
+    "name": "presence-tree",
+    "displayName": "Presence tree",
+    "category": "component",
     "version": "1.0.0",
     "quartzVersion": ">=5.0.0",
     "dependencies": [],
@@ -24,10 +21,10 @@
     "defaultEnabled": true,
     "defaultOptions": {},
     "components": {
-      "HomeIndex": {
-        "displayName": "Home index",
-        "defaultPosition": "beforeBody",
-        "defaultPriority": 20
+      "SectionTree": {
+        "displayName": "Section tree",
+        "defaultPosition": "left",
+        "defaultPriority": 50
       }
     }
   }

@@ -165,7 +165,7 @@ describe("presence-derive JSON-LD", () => {
 
   test("essay emits Article with author @id matching Person and isPartOf WebSite", () => {
     const data = jsonLdFor({
-      slug: "writing/keyboard-shortcut-systems",
+      slug: "essays/keyboard-shortcut-systems",
       presence: { kind: "essay" },
       frontmatter: {
         title: "Keyboard shortcut systems",
@@ -175,8 +175,8 @@ describe("presence-derive JSON-LD", () => {
       },
       i18n: {
         lang: "en",
-        base: "writing/keyboard-shortcut-systems",
-        alternates: [{ lang: "zh-Hans", slug: "writing/keyboard-shortcut-systems/zh" }],
+        base: "essays/keyboard-shortcut-systems",
+        alternates: [{ lang: "zh-Hans", slug: "essays/keyboard-shortcut-systems/zh" }],
       },
     })
     const article = data["@graph"].find((n) => n["@type"] === "Article")
@@ -191,12 +191,12 @@ describe("presence-derive JSON-LD", () => {
     assert.equal(person["@id"], PERSON_ID)
     assert.equal(article.isPartOf["@id"], WEBSITE_ID)
     assert.equal(site["@id"], WEBSITE_ID)
-    assert.equal(article.url, "https://www.roobli.org/writing/keyboard-shortcut-systems")
+    assert.equal(article.url, "https://www.roobli.org/essays/keyboard-shortcut-systems")
     assert.equal(article.mainEntityOfPage["@id"], article.url)
     assert.deepEqual(article.workTranslation, [
       {
         "@type": "Article",
-        url: "https://www.roobli.org/writing/keyboard-shortcut-systems/zh",
+        url: "https://www.roobli.org/essays/keyboard-shortcut-systems/zh",
         inLanguage: "zh-Hans",
       },
     ])
@@ -204,10 +204,10 @@ describe("presence-derive JSON-LD", () => {
 
   test("zh essay uses zh-Hans and omits workTranslation when unpaired", () => {
     const data = jsonLdFor({
-      slug: "writing/keyboard-shortcut-systems/zh",
+      slug: "essays/keyboard-shortcut-systems/zh",
       presence: { kind: "essay" },
       frontmatter: { title: "快捷键系统", description: "简述", date: "2026-09-11" },
-      i18n: { lang: "zh-Hans", base: "writing/keyboard-shortcut-systems", alternates: [] },
+      i18n: { lang: "zh-Hans", base: "essays/keyboard-shortcut-systems", alternates: [] },
     })
     const article = data["@graph"].find((n) => n["@type"] === "Article")
     assert.equal(article.inLanguage, "zh-Hans")
@@ -220,7 +220,7 @@ describe("presence-derive JSON-LD", () => {
       jsonLdFor({ slug: "works/cuda-cpp-course", presence: { kind: "work" }, frontmatter: {} }),
       null,
     )
-    assert.equal(jsonLdFor({ slug: "writing/index", presence: { kind: "folder" }, frontmatter: {} }), null)
+    assert.equal(jsonLdFor({ slug: "essays/index", presence: { kind: "folder" }, frontmatter: {} }), null)
   })
 
   test("safeJsonLd escapes angle brackets for script embedding", () => {
@@ -228,7 +228,7 @@ describe("presence-derive JSON-LD", () => {
       structuredDataHead(
         { baseUrl: "www.roobli.org" },
         {
-          slug: "writing/demo",
+          slug: "essays/demo",
           presence: { kind: "essay" },
           frontmatter: { title: "A <script> title", description: "x", date: "2026-09-11" },
         },

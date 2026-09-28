@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "End matter: related work and more writing on essays, essays about a work on works",
+  "description": "End matter: series, project, backlinks and more writing under reading pages; the log under projects",
   "exports": {
     ".": "./index.js",
     "./components": "./components/index.js",

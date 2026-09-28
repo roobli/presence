@@ -144,14 +144,16 @@ document.addEventListener("click", function (event) {
 // Drawing the line as box borders on each row is what produced the seams and
 // the stray verticals; a path can put the trunk, every arm and the closing
 // corner in one stroke, with the corner at whatever radius reads best. The
-// branch holding the open note is drawn again in the accent colour, so a
-// tree this size still answers "where am I" at a glance.
+// branch holding the open note is drawn again in the ink, so a
+// tree this size still answers "where am I" at a glance, and the open page
+// gets a node at the end of its arm.
 var SVG_NS = "http://www.w3.org/2000/svg"
-// An arm runs from the trunk into the row's own padding and stops short of its
-// mark, so on the open note it leads straight into the accent bar. The corner
-// radius is the Typora tree's.
-var GUIDE_ARM_INTO_ROW = 5
-var GUIDE_RADIUS = 7
+// An arm runs from the trunk into the row's own padding and stops short of the
+// name; on the open page it ends in a node. The corner radius is the Typora
+// tree's, scaled to the tighter indent.
+var GUIDE_ARM_INTO_ROW = 4
+var GUIDE_RADIUS = 6
+var GUIDE_NODE_RADIUS = 2.5
 // Fallback only. The trunk belongs under the chevron of the folder that owns
 // the group, which is where the eye expects the branch to leave the parent;
 // that is measured off the chevron itself, and this is what to use when a
@@ -192,6 +194,9 @@ function guideOverlay(content) {
   var lit = document.createElementNS(SVG_NS, "path")
   lit.setAttribute("class", "tpl-guide-lit")
   svg.appendChild(lit)
+  var node = document.createElementNS(SVG_NS, "path")
+  node.setAttribute("class", "tpl-guide-node")
+  svg.appendChild(node)
   content.insertBefore(svg, content.firstChild)
   return svg
 }
@@ -220,6 +225,15 @@ function guideArm(x, y, end) {
   return "M" + x + "," + y + "L" + end + "," + y
 }
 
+/** A filled circle centred on (x, y), as path data. */
+function guideNode(x, y, r) {
+  return (
+    "M" + (x - r) + "," + y +
+    "a" + r + "," + r + " 0 1,0 " + 2 * r + ",0" +
+    "a" + r + "," + r + " 0 1,0 " + -2 * r + ",0Z"
+  )
+}
+
 function drawTreeGuides(explorer) {
   if (!explorer) return
   var content = explorer.querySelector(".explorer-content")
@@ -230,6 +244,7 @@ function drawTreeGuides(explorer) {
   var active = activeTreeLink(explorer)
   var base = ""
   var lit = ""
+  var node = ""
   var lists = content.querySelectorAll("ul.tree-item-children")
 
   for (var g = 0; g < lists.length; g += 1) {
@@ -277,11 +292,15 @@ function drawTreeGuides(explorer) {
         onPath === last
           ? guideCorner(x, top, y, ends[onPath], GUIDE_RADIUS)
           : "M" + x + "," + top + "L" + x + "," + y + guideArm(x, y, ends[onPath])
+      // The open page itself, not a folder above it, ends in a node: the
+      // branch arrives somewhere instead of stopping short of the name.
+      if (rows[onPath].row === active) node += guideNode(ends[onPath], y, GUIDE_NODE_RADIUS)
     }
   }
 
   svg.children[0].setAttribute("d", base)
   svg.children[1].setAttribute("d", lit)
+  if (svg.children[2]) svg.children[2].setAttribute("d", node)
 }
 
 // requestAnimationFrame never fires while the tab is hidden, which would
@@ -327,47 +346,12 @@ function markUnfolding(target) {
   }, 0)
 }
 
-// A note's row is labelled with its title cut at the dash (the explorer's
-// mapFn in quartz.ts), so the whole title goes in the row's tooltip. Titles
-// come from the content index, which Quartz fetches once per load as
-// fetchData; the explorer builds its tree from the same response.
-var fullTitles = null // slug -> frontmatter title
-var fullTitlesRequested = false
-
-function requestFullTitles() {
-  if (fullTitlesRequested || typeof fetchData === "undefined") return
-  fullTitlesRequested = true
-  Promise.resolve(fetchData)
-    .then(function (data) {
-      var entries = (data && data.content) || data || {}
-      var titles = {}
-      for (var slug in entries) {
-        var entry = entries[slug]
-        if (entry && typeof entry.title === "string") titles[slug] = entry.title
-      }
-      fullTitles = titles
-      var explorer = document.querySelector(".sidebar.left .explorer")
-      if (explorer) titleTreeRows(explorer)
-    })
-    .catch(function (err) {
-      console.error("[roob] content index failed:", err)
-    })
-}
-
-/** The slug a file row links to, the way the content index keys it. */
-function rowSlug(link) {
-  var href = link.getAttribute("href") || ""
-  var base = (document.body && document.body.dataset.basepath) || ""
-  if (base && href.indexOf(base + "/") === 0) href = href.slice(base.length)
-  return href.replace(/[?#].*$/, "").replace(/^\/+/, "")
-}
-
-/** The row's name in a box of its own. A row is a flex line of mark and name,
- *  and a flex container never draws an ellipsis for its own text, so a long
- *  name was cut mid-letter. The explorer sets each name as the row's text. */
+/** The row's name box. The tree is rendered with its labels in place
+ *  (presence-tree); a row without one gets its text wrapped, since a flex
+ *  container never draws an ellipsis for its own text. */
 function treeRowLabel(row) {
-  var only = row.childNodes.length === 1 ? row.firstChild : null
-  if (only && only.nodeType === 1 && only.classList.contains("tpl-tree-label")) return only
+  var existing = row.querySelector(".tpl-tree-label")
+  if (existing) return existing
   var label = el("span", "tpl-tree-label", row.textContent || "")
   row.textContent = ""
   row.appendChild(label)
@@ -375,45 +359,24 @@ function treeRowLabel(row) {
 }
 
 /**
- * A note's row always carries its full title. Any other name that fits is
- * already on screen, and a tooltip repeating it is noise: it covers the rows
- * below, arrives late, and says nothing new. Those rows get one only when the
- * panel had to cut the name, so it depends on the panel's current width and
- * is re-decided when that changes. Every row's name goes in its label first.
+ * A row whose title the tree shortened carries the full title from the
+ * server (data-full-title). Any other name that fits is already on screen,
+ * and a tooltip repeating it is noise, so those rows get one only when the
+ * panel had to cut the name; that depends on the panel's width and is
+ * re-decided when it changes.
  */
 function titleTreeRows(explorer) {
-  requestFullTitles()
-  countFolders(explorer)
-  var rows = explorer.querySelectorAll(".folder-title, a.nav-file-title")
+  var rows = explorer.querySelectorAll(".folder-button, .nav-file-title")
   for (var i = 0; i < rows.length; i += 1) {
     var row = rows[i]
+    if (row.hasAttribute("data-full-title")) continue
     var label = treeRowLabel(row)
-    var full =
-      fullTitles && row.classList.contains("nav-file-title") ? fullTitles[rowSlug(row)] : null
-    var text = typeof full === "string" ? full : ""
-    if (!text && label.scrollWidth > label.clientWidth + 1) text = (label.textContent || "").trim()
+    var text = label.scrollWidth > label.clientWidth + 1 ? (label.textContent || "").trim() : ""
     if (text) {
       if (row.title !== text) row.title = text
     } else if (row.title) {
       row.removeAttribute("title")
     }
-  }
-}
-
-/** Each folder row states how many entries it holds, as data-count, which the
- *  stylesheet prints at the row's end; the label and its ellipsis are left as
- *  they are. Counted from the rendered list, so it follows the explorer's own
- *  filter. */
-function countFolders(explorer) {
-  var containers = explorer.querySelectorAll(".folder-container")
-  for (var i = 0; i < containers.length; i += 1) {
-    var container = containers[i]
-    var outer = container.nextElementSibling
-    var list = outer ? outer.querySelector(":scope > ul") : null
-    if (!list) continue
-    var n = list.querySelectorAll(":scope > li:not(.overflow-end)").length
-    var count = n < 10 ? "0" + n : String(n)
-    if (container.dataset.count !== count) container.dataset.count = count
   }
 }
 
@@ -440,7 +403,20 @@ function ancestorFolders(node) {
   return out
 }
 
+/** A folder's chevron says whether the folder is open. */
+function syncChevrons(explorer) {
+  var containers = explorer.querySelectorAll(".folder-container")
+  for (var i = 0; i < containers.length; i += 1) {
+    var outer = containers[i].nextElementSibling
+    var button = containers[i].querySelector("button.folder-icon")
+    if (outer && button) {
+      button.setAttribute("aria-expanded", outer.classList.contains("open") ? "true" : "false")
+    }
+  }
+}
+
 function persistOpenState(explorer) {
+  syncChevrons(explorer)
   var containers = explorer.querySelectorAll(".folder-container")
   var state = []
   for (var i = 0; i < containers.length; i += 1) {

@@ -3,8 +3,8 @@ import { styleText } from "node:util"
 
 /**
  * Sibling-locale convention:
- *   content/writing/foo.md      -> /writing/foo      (en)
- *   content/writing/foo.zh.md   -> /writing/foo/zh   (zh-Hans)
+ *   content/essays/foo.md      -> /essays/foo      (en)
+ *   content/essays/foo.zh.md   -> /essays/foo/zh   (zh-Hans)
  *   content/index.zh.md         -> /zh
  *
  * Pairs are derived from ctx.allSlugs while the file is processed: foo has a
@@ -34,14 +34,14 @@ function normalizeLang(value) {
   return lang
 }
 
-// index -> zh, writing/index -> writing/zh, writing/foo -> writing/foo/zh
+// index -> zh, essays/index -> essays/zh, essays/foo -> essays/foo/zh
 function translationSlug(base) {
   if (base === "index") return "zh"
   if (base.endsWith("/index")) return `${base.slice(0, -"index".length)}zh`
   return `${base}/zh`
 }
 
-// URL path of a slug: index -> "", writing/index -> "writing/"
+// URL path of a slug: index -> "", essays/index -> "essays/"
 function urlPath(slug) {
   if (slug === "index") return ""
   return slug.endsWith("/index") ? slug.slice(0, -"index".length) : slug

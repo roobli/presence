@@ -3,9 +3,11 @@
 @use "./type" as *;
 
 // ---------------------------------------------------------------------------
-// End matter (presence-end): the series, related work, Linked from and More
-// writing, under an essay or a work. Its rows are the index ledger's
-// (_plates.scss) and the compact work row (_home.scss).
+// End matter (presence-end): under a reading page, the series with its track
+// and neighbours, the project it belongs to, Linked from and More writing;
+// under a project, its log and its series. Each block sets its label in the
+// left margin, the way a notebook's margin carries headings, and its rows are
+// the index's (_notebook.scss).
 // ---------------------------------------------------------------------------
 
 // The block draws its own rule, so the frame's <hr> before the footer slot
@@ -22,127 +24,162 @@
 
 .end {
   margin-top: var(--space-8);
-  padding-top: var(--space-6);
   border-top: 1px solid var(--line-color);
-
-  > section + section {
-    margin-top: var(--space-7);
-  }
-
-  .idx-list {
-    margin-top: var(--space-4);
-  }
 }
 
-// Each block opens with its name as a label over a heavy rule, the index's
-// section head at the reading measure.
-.end-label {
-  @include label;
-  margin: 0 0 var(--space-3);
-  padding-bottom: var(--space-2);
-  border-bottom: 1.5px solid var(--ink-strong-color);
-  font-weight: 600;
-  color: var(--ink-strong-color);
-}
-
-// --- series ------------------------------------------------------------------
-// Every part in order, this one marked with the accent bar the sidebar uses for
-// the open page, then the neighbours as a pair of cards.
-.series-pos {
-  @include label;
-  margin: 0 0 var(--space-3);
-  color: var(--ink-muted-color);
-}
-
-.series-parts {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  counter-reset: part;
-
-  li {
-    counter-increment: part;
-    display: grid;
-    grid-template-columns: 3.2em minmax(0, 1fr);
-    margin: 0;
-    padding: var(--space-2) 0 var(--space-2) var(--space-2);
-    border-left: 2px solid transparent;
-    font-family: var(--font-text);
-    font-size: var(--size-body);
-    line-height: var(--lh-row-title);
-
-    &::before {
-      @include label;
-      content: counter(part, decimal-leading-zero);
-      color: var(--ink-muted-color);
-      line-height: inherit;
-    }
-
-    a {
-      @include ph.quiet-link;
-      @include ph.focus-ring;
-      color: var(--ink-strong-color);
-    }
-  }
-
-  li.is-current {
-    border-left-color: var(--accent-color);
-    background: var(--surface-active-color);
-    font-weight: 600;
-    color: var(--ink-strong-color);
-
-    &::before {
-      color: var(--accent-color);
-    }
-  }
-}
-
-.series-nav {
+.end-block {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-3);
-  margin-top: var(--space-4);
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+  gap: 10px 24px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--rule-soft-color);
 
   @media all and ($mobile) {
     grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
   }
 }
 
-.series-step {
+// A project's log and series take the whole measure, their label above.
+.end-log,
+.end-series-list {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.end-label {
+  @include label;
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.9;
+  color: var(--ink-muted-color);
+}
+
+.end-body {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+// --- series --------------------------------------------------------------------
+.end-series-head {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-block);
-  background: var(--surface-subtle-color);
-  box-shadow: inset 0 0 0 1px var(--line-color);
-  color: var(--ink-strong-color);
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 0;
+
+  > a {
+    @include ph.quiet-link;
+    @include ph.focus-ring;
+    font-family: var(--font-text);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink-strong-color);
+  }
+}
+
+.pn {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.pn-link {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 12px 14px;
+  color: inherit;
+  font-weight: inherit;
   text-decoration: none;
-  transition: box-shadow var(--dur-fade) ease-out;
+  background: var(--leaf-color);
+  border: 1px solid var(--rule-soft-color);
+  border-radius: var(--radius-leaf);
+  transition: border-color var(--dur-fade) ease-out;
 
   &:hover {
-    box-shadow: inset 0 0 0 1px var(--accent-color);
+    border-color: var(--rule-hover-color);
   }
 
-  @include ph.focus-ring;
+  &:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+  }
 }
 
-.series-step--next {
+.pn-link--next {
   text-align: right;
 }
 
-.series-step--none {
+.pn-link--none {
   visibility: hidden;
 }
 
-.series-step-label {
+.pn-dir {
   @include label;
-  color: var(--accent-color);
+  font-size: 10.5px;
+  color: var(--ink-muted-color);
 }
 
-.series-step-title {
+.pn-title {
   font-family: var(--font-text);
-  font-size: var(--size-body);
-  line-height: var(--lh-row-title);
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--ink-strong-color);
+}
+
+@container (max-width: 520px) {
+  .pn {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pn-link--next {
+    text-align: left;
+  }
+
+  .pn-link--none {
+    display: none;
+  }
+}
+
+// --- project --------------------------------------------------------------------
+.end-project-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 0;
+}
+
+.end-project-title {
+  @include ph.quiet-link;
+  @include ph.focus-ring;
+  font-family: var(--font-text);
+  font-size: 17px;
   font-weight: 600;
+  color: var(--ink-strong-color);
+}
+
+// --- more -------------------------------------------------------------------------
+.end-all {
+  @include label;
+  margin: 0;
+  font-size: 10.5px;
+
+  a {
+    @include ph.focus-ring;
+    color: var(--accent-color);
+    font-weight: inherit;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--accent-hover-color);
+    }
+  }
+}
+
+.end .ledger--bare .ledger-row:first-child {
+  padding-top: 2px;
 }

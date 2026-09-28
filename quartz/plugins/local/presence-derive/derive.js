@@ -1,10 +1,13 @@
 import { styleText } from "node:util"
-import { pageKind } from "../presence-shared/sections.js"
+import { entryKind, formerSlugs, layoutOf } from "../presence-shared/sections.js"
 
 /**
  * Page data stored as file.data.presence, read by renderPage (kind), the page
  * header, the index rows and the section spine:
- *   kind            "home" | "essay" | "work" | "folder" | "page"
+ *   kind            the layout: "home" | "folder" | "essay" | "project" | "page".
+ *                   Essays, episodes and notes are all "essay".
+ *   entry           what the page is: "essay" | "episode" | "note" | "project",
+ *                   or the layout for pages outside a section
  *   figures         [{ n, name, title }], live figures in document order
  *   sections        [{ id, title, words }], exactly one per h2
  *   intro           { words } when 50 or more words precede the first h2, else
@@ -14,7 +17,8 @@ import { pageKind } from "../presence-shared/sections.js"
  *   figureOffsets   words before each figure
  *   words           each Han character counts as one word
  *   readingMinutes  ceil(words / 200), or ceil(Han characters / 400) on zh pages
- *   relation        an essay's work slug: frontmatter work, else its first link to a work page
+ *   relation        the project a reading page is about: frontmatter project,
+ *                   else its first link to a project page
  *
  * Word counts include code, diagrams and display math, which take reading time
  * too. They skip script and style, figure frames (so a figure's chrome never
@@ -183,25 +187,57 @@ function derivePage(tree, lang) {
 
 function relationOf(ctx, file, kind) {
   if (kind !== "essay") return null
-  const work = file.data.frontmatter?.work
-  if (typeof work === "string" && work.trim()) {
-    const slug = work.trim().replace(/^\/+|\/+$/g, "")
+  const fm = file.data.frontmatter ?? {}
+  // work: is the field's name from before projects were called projects.
+  const named = typeof fm.project === "string" ? fm.project : fm.work
+  if (typeof named === "string" && named.trim()) {
+    const slug = named.trim().replace(/^\/+|\/+$/g, "")
     if (!ctx.allSlugs.includes(slug)) {
-      warn(`${file.data.relativePath ?? file.data.slug}: work "${work}" is not a page slug`)
+      warn(`${file.data.relativePath ?? file.data.slug}: project "${named}" is not a page slug`)
     }
     return slug
   }
   const links = file.data.links ?? []
-  return links.find((link) => pageKind(link) === "work") ?? null
+  return links.find((link) => entryKind(link) === "project") ?? null
+}
+
+// The same slug under a section's earlier folder name. A retired zh/ prefix
+// (zh/essays/foo, which i18n-slug keeps as an alias) keeps its prefix.
+function formerOf(slug) {
+  if (slug.startsWith("zh/")) return formerSlugs(slug.slice(3)).map((old) => "zh/" + old)
+  return formerSlugs(slug)
+}
+
+/**
+ * Redirects from the URLs a page had before its section was renamed:
+ * essays/foo keeps writing/foo, and its translation keeps writing/foo/zh and
+ * the older forms i18n-slug already redirects from.
+ */
+export function formerAliases(slug, aliases = []) {
+  const own = new Set([slug, ...aliases])
+  const out = []
+  for (const current of own) {
+    for (const old of formerOf(current)) {
+      if (!own.has(old) && !out.includes(old)) out.push(old)
+    }
+  }
+  return out
 }
 
 export function markdownPlugins(_ctx) {
   return [
     () => (_tree, file) => {
-      const kind = pageKind(file.data.i18n?.base ?? file.data.slug)
-      file.data.presence = { kind }
+      const base = file.data.i18n?.base ?? file.data.slug
+      const entry = entryKind(base)
+      const kind = layoutOf(entry)
+      file.data.presence = { kind, entry }
       const fm = (file.data.frontmatter ??= {})
       fm.essayFrame ??= kind === "essay"
+      const slug = file.data.slug
+      if (typeof slug === "string") {
+        const former = formerAliases(slug, file.data.aliases)
+        if (former.length > 0) file.data.aliases = [...(file.data.aliases ?? []), ...former]
+      }
     },
   ]
 }

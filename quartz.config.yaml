@@ -235,12 +235,19 @@ plugins:
     # Tags stay in frontmatter for search and feeds; no thin tag pages.
     enabled: false
   - source: "@quartz-community/explorer"
+    # presence-tree renders the tree with the page, from the section registry.
+    enabled: false
+    layout:
+      position: left
+      priority: 50
+  - source: "./quartz/plugins/local/presence-tree"
     enabled: true
     layout:
       position: left
       priority: 50
   - source: "./quartz/plugins/local/explorer-locale-active"
-    enabled: true
+    # presence-tree marks a translation's original row on the server.
+    enabled: false
     layout:
       position: footer
       priority: 1
@@ -274,7 +281,7 @@ plugins:
       groupOptions:
         grow: true
   - source: "@quartz-community/backlinks"
-    # The end matter lists the real relations between essays and works.
+    # The end matter lists the real relations between entries and projects.
     enabled: false
     layout:
       position: afterBody

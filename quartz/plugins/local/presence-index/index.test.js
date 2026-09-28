@@ -6,13 +6,13 @@ import PresenceFolderPage from "./index.js"
 
 const props = {
   tree: { type: "root", children: [] },
-  fileData: { slug: "writing/index", frontmatter: { title: "Writing" } },
+  fileData: { slug: "essays/index", frontmatter: { title: "Essays" } },
   allFiles: [
     {
-      slug: "writing/spring-essay",
+      slug: "essays/spring-essay",
       frontmatter: { title: "Spring essay", tags: ["design", "motion"] },
     },
-    { slug: "writing/untagged-essay", frontmatter: { title: "Untagged essay" } },
+    { slug: "essays/untagged-essay", frontmatter: { title: "Untagged essay" } },
   ],
   cfg: { locale: "en-US" },
   ctx: {},
@@ -24,8 +24,8 @@ describe("presence-index folder page type", () => {
     const stock = FolderPage()
     assert.equal(pageType.layout, stock.layout)
     assert.equal(pageType.priority, stock.priority)
-    assert.equal(pageType.match({ slug: "writing/index" }), true)
-    assert.equal(pageType.match({ slug: "writing/spring-essay" }), false)
+    assert.equal(pageType.match({ slug: "essays/index" }), true)
+    assert.equal(pageType.match({ slug: "essays/spring-essay" }), false)
     assert.deepStrictEqual(pageType.body(undefined).css, stock.body(undefined).css)
   })
 
@@ -42,5 +42,25 @@ describe("presence-index folder page type", () => {
     assert.match(html, /Untagged essay/)
     assert.doesNotMatch(html, /class="tags"/)
     assert.doesNotMatch(html, /tags\//)
+  })
+
+  test("drops the article that only repeats the description when the note has no body", () => {
+    const html = render(PresenceFolderPage().body(undefined)(props))
+    assert.doesNotMatch(html, /<article/)
+    const withBody = {
+      ...props,
+      tree: {
+        type: "root",
+        children: [
+          {
+            type: "element",
+            tagName: "p",
+            properties: {},
+            children: [{ type: "text", value: "Intro." }],
+          },
+        ],
+      },
+    }
+    assert.match(render(PresenceFolderPage().body(undefined)(withBody)), /<article/)
   })
 })

@@ -14,7 +14,7 @@ tags:
   - teaching
   - systems
   - design
-work: works/cuda-cpp-course
+project: projects/cuda-cpp-course
 ---
 
 Most CUDA tutorials fail the same way: they teach launch syntax, hand you a vector-add, and leave you staring at a machine you don’t have. The hardware barrier is real — no NVIDIA card, driver fights, Colab quotas, cloud bills, “it compiles but I can’t run it.” So people either quit, or they rent a GPU before they know what they would measure on it.

@@ -4,13 +4,21 @@
 // Result labels per section. Mirrors SECTIONS in
 // plugins/local/presence-shared/sections.js; change both together.
 $sections: (
-  writing: (
+  essays: (
     en: "Essay",
     zh: "文章",
   ),
-  works: (
-    en: "Work",
-    zh: "作品",
+  series: (
+    en: "Series",
+    zh: "系列",
+  ),
+  projects: (
+    en: "Project",
+    zh: "项目",
+  ),
+  notes: (
+    en: "Note",
+    zh: "随笔",
   ),
 );
 

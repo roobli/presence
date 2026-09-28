@@ -1,0 +1,1266 @@
+@use "../variables" as *;
+@use "./page-header" as ph;
+@use "./type" as *;
+
+// ---------------------------------------------------------------------------
+// The index surfaces and the pieces the page header and end matter share with
+// them (presence-shared/views.js). One grammar throughout: labels in Source
+// Code Pro small capitals, everything a reader reads in Source Serif, ruled
+// rows on the page, and a hairline leaf only for things that are objects in
+// their own right: the open essay, a card, a screenshot, a next/previous
+// link. One accent, used for figures, links and where the reader is. No tints
+// and no shadows.
+//
+// Layouts respond to the width of their own column, not the window: the
+// column changes with the sidebar drag, so .idx, .home-mast and .end-body
+// are size containers and the rules below query them.
+// ---------------------------------------------------------------------------
+
+$leaf-radius: var(--radius-leaf);
+
+.idx,
+.home-mast,
+.end-body {
+  container-type: inline-size;
+}
+
+// A link that covers its whole card or row. Other links inside sit above it.
+.stretch {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+}
+
+.inline-link {
+  position: relative;
+  z-index: 1;
+}
+
+@mixin leaf {
+  background: var(--leaf-color);
+  border: 1px solid var(--rule-soft-color);
+  border-radius: $leaf-radius;
+  transition: border-color var(--dur-fade) ease-out;
+
+  &:hover {
+    border-color: var(--rule-hover-color);
+  }
+}
+
+@mixin title-link {
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+}
+
+@mixin underline-on($host) {
+  #{$host}:hover & {
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    text-decoration-color: var(--rule-hover-color);
+  }
+}
+
+@mixin small-label($size: 10.5px) {
+  @include label;
+  font-size: $size;
+}
+
+// --- the facts line ------------------------------------------------------------
+.meta {
+  margin: 0;
+  font-family: var(--font-label);
+  font-size: 12px;
+  line-height: 1.6;
+  font-weight: 450;
+  letter-spacing: 0.01em;
+  color: var(--ink-muted-color);
+  font-variant-numeric: tabular-nums;
+
+  .no {
+    color: var(--ink-strong-color);
+    font-weight: 600;
+  }
+
+  a {
+    color: var(--accent-color);
+    font-weight: inherit;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+    }
+  }
+}
+
+.dot {
+  color: var(--line-strong-color);
+}
+
+// 中文: the serif's own Han glyphs, never the label face.
+.zh {
+  font-family: var(--font-text-zh);
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--accent-color);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+}
+
+// --- title blocks ---------------------------------------------------------------
+.titleblock {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 40px;
+  margin: var(--space-5) 0 0;
+  padding: 14px 0 15px;
+  border-block: 1px solid var(--rule-soft-color);
+}
+
+.tb-cell {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  min-width: 0;
+  margin: 0;
+
+  dt {
+    @include small-label;
+    color: var(--ink-muted-color);
+  }
+
+  dd {
+    margin: 0;
+    font-family: var(--font-text);
+    font-size: 16.5px;
+    line-height: 1.3;
+    color: var(--ink-strong-color);
+    font-variant-numeric: lining-nums tabular-nums;
+
+    a {
+      @include ph.ui-link;
+      @include ph.focus-ring;
+      color: var(--accent-color);
+      text-decoration-color: transparent;
+    }
+  }
+}
+
+.tb-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 14px;
+}
+
+// --- section heads ----------------------------------------------------------------
+.sh {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  margin: 0 0 22px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule-soft-color);
+}
+
+.sh-title {
+  @include label;
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--ink-strong-color);
+}
+
+.sh-note {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: 15.5px;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--ink-muted-color);
+}
+
+.sh-more {
+  @include small-label;
+  @include ph.focus-ring;
+  margin-left: auto;
+  color: var(--accent-color);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--accent-hover-color);
+  }
+}
+
+.sh-n {
+  margin-left: 0.45em;
+  color: var(--ink-muted-color);
+}
+
+@container (max-width: 560px) {
+  .sh-more {
+    margin-left: 0;
+  }
+}
+
+// --- homepage -----------------------------------------------------------------------
+.home {
+  margin-bottom: var(--space-7);
+}
+
+.idx + .idx,
+.home-mast + .idx {
+  margin-top: 60px;
+
+  @media all and ($mobile) {
+    margin-top: var(--space-7);
+  }
+}
+
+.home-mast {
+  display: grid;
+  gap: 16px;
+}
+
+.home-thesis {
+  @include display(var(--size-display), var(--lh-display));
+  margin: 0;
+  color: var(--ink-strong-color);
+  text-wrap: balance;
+}
+
+.home-intro {
+  margin: 0;
+  max-width: 36em;
+  font-family: var(--font-text);
+  font-size: var(--size-dek);
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+.titleblock--mast {
+  margin-top: 10px;
+}
+
+// --- the open essay -------------------------------------------------------------------
+// Left page: the essay. Right page: ruled paper with its claims in the margin,
+// set on the ruling's 28px line so the text sits on the rules.
+$ruling: 28px;
+
+.spread {
+  @include leaf;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  border-radius: 10px;
+}
+
+.spread--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.leaf {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 28px 30px 24px;
+
+  > .meta {
+    margin: 0;
+  }
+
+  > .spine {
+    margin-top: 2px;
+  }
+}
+
+.spread-title {
+  @include display(clamp(26px, 1vw + 18px, 34px), 1.1);
+  margin: 0;
+  color: var(--ink-strong-color);
+  text-wrap: balance;
+
+  a {
+    @include title-link;
+    @include underline-on(".spread");
+  }
+}
+
+.spread-dek {
+  margin: 0;
+  max-width: 34em;
+  font-family: var(--font-text);
+  font-size: 16.5px;
+  line-height: 1.62;
+  color: var(--text-color);
+}
+
+.spread-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px 16px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule-soft-color);
+}
+
+.tags,
+.read {
+  @include small-label;
+  color: var(--ink-muted-color);
+}
+
+.read {
+  @include ph.focus-ring;
+  color: var(--accent-color);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--accent-hover-color);
+  }
+}
+
+.leaf--margin {
+  position: relative;
+  gap: 0;
+  padding-block: $ruling;
+  border-left: 1px solid var(--rule-soft-color);
+  border-radius: 0 10px 10px 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent $ruling - 1px,
+    var(--ruling-color) $ruling - 1px,
+    var(--ruling-color) $ruling
+  );
+  background-position: 0 -4px;
+
+  // The gutter: a second hairline just inside the fold.
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 3px;
+    width: 1px;
+    background: var(--rule-soft-color);
+  }
+}
+
+.leaf-label {
+  @include small-label;
+  margin: 0;
+  line-height: $ruling;
+  color: var(--ink-muted-color);
+}
+
+.margin {
+  display: grid;
+  gap: $ruling;
+  margin: $ruling 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: claim;
+
+  // A hanging number, the way the essay's sidenotes are numbered.
+  .claim {
+    margin: 0;
+    padding-left: 1.3em;
+    text-indent: -1.3em;
+    font-family: var(--font-text);
+    font-size: 16.5px;
+    line-height: $ruling;
+    color: var(--ink-strong-color);
+    counter-increment: claim;
+
+    &::before {
+      content: counter(claim);
+      display: inline-block;
+      width: 1.3em;
+      text-indent: 0;
+      font-family: var(--font-label);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-color);
+    }
+
+    strong {
+      color: var(--accent-color);
+      font-weight: 650;
+      font-variant-numeric: lining-nums;
+    }
+  }
+
+  q {
+    font-style: italic;
+    quotes: none;
+  }
+}
+
+@container (max-width: 700px) {
+  .spread {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .leaf {
+    padding: 22px 20px 20px;
+  }
+
+  .leaf--margin {
+    padding-block: $ruling;
+    border-left: 0;
+    border-top: 1px solid var(--rule-soft-color);
+    border-radius: 0 0 10px 10px;
+
+    &::before {
+      top: 3px;
+      bottom: auto;
+      left: 0;
+      right: 0;
+      width: auto;
+      height: 1px;
+    }
+  }
+}
+
+// --- cards ------------------------------------------------------------------------------
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@container (max-width: 700px) {
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.card {
+  @include leaf;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 16px 18px 14px;
+}
+
+.card-spine {
+  min-height: 8px;
+
+  .spine {
+    margin: 0;
+  }
+}
+
+.card-title {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: 19px;
+  line-height: 1.26;
+  font-weight: 650;
+  letter-spacing: -0.006em;
+  color: var(--ink-strong-color);
+  text-wrap: balance;
+
+  a {
+    @include title-link;
+    @include underline-on(".card");
+  }
+}
+
+.card-claim {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: 15px;
+  line-height: 1.52;
+  color: var(--text-color);
+
+  strong {
+    color: var(--accent-color);
+    font-weight: 650;
+    font-variant-numeric: lining-nums;
+  }
+
+  q {
+    font-style: italic;
+    quotes: none;
+  }
+}
+
+.card-foot {
+  @include small-label;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin: auto 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--rule-soft-color);
+  color: var(--ink-muted-color);
+}
+
+// --- ledger -------------------------------------------------------------------------------
+.ledger {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ledger-head,
+.ledger-row {
+  display: grid;
+  grid-template-columns: 3.5rem 7.5rem minmax(0, 1fr) 14rem;
+  gap: 0 18px;
+  margin: 0;
+}
+
+.ledger-head {
+  @include small-label;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--rule-soft-color);
+  color: var(--ink-muted-color);
+
+  span:last-child {
+    text-align: right;
+  }
+}
+
+.ledger-row {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--rule-soft-color);
+}
+
+.ledger-no,
+.ledger-date,
+.ledger-meta {
+  font-family: var(--font-label);
+  font-size: 12px;
+  line-height: 1.95;
+  color: var(--ink-muted-color);
+  font-variant-numeric: tabular-nums;
+}
+
+.ledger-no {
+  color: var(--ink-strong-color);
+  font-weight: 600;
+}
+
+.ledger-meta {
+  font-size: 11.5px;
+  text-align: right;
+}
+
+.ledger-title {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: 18px;
+  line-height: 1.38;
+  font-weight: 600;
+  color: var(--ink-strong-color);
+
+  a {
+    @include ph.quiet-link;
+    @include ph.focus-ring;
+  }
+}
+
+.ledger-dek {
+  display: -webkit-box;
+  margin: 4px 0 0;
+  overflow: hidden;
+  font-family: var(--font-text);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-color);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.ledger-body .spine {
+  margin-top: 10px;
+}
+
+.ledger--compact {
+  .ledger-dek,
+  .spine {
+    display: none;
+  }
+
+  .ledger-row {
+    padding: 11px 0;
+  }
+
+  .ledger-title {
+    font-size: 17px;
+    font-weight: 500;
+  }
+}
+
+.ledger--bare .ledger-row:last-child {
+  border-bottom: 0;
+}
+
+@container (max-width: 600px) {
+  .ledger-head {
+    display: none;
+  }
+
+  .ledger-row {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+  }
+
+  .ledger-body,
+  .ledger-meta {
+    grid-column: 1 / -1;
+  }
+
+  .ledger-meta {
+    text-align: left;
+  }
+}
+
+.idx-group + .idx-group {
+  margin-top: 40px;
+}
+
+.idx-group-label {
+  @include label;
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-strong-color);
+}
+
+// --- a series' track ------------------------------------------------------------------------
+// One stop per episode on a line: published filled, planned hollow on a dashed
+// line, the page's own ringed in the accent.
+.track {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  width: 38px;
+  margin: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 9px;
+    right: 50%;
+    width: 100%;
+    height: 1px;
+    background: var(--ink-strong-color);
+  }
+
+  &:first-child::before {
+    display: none;
+  }
+
+  &.is-planned::before {
+    background: repeating-linear-gradient(
+      to right,
+      var(--rule-hover-color) 0,
+      var(--rule-hover-color) 3px,
+      transparent 3px,
+      transparent 6px
+    );
+  }
+
+  > a,
+  > span {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: center;
+    gap: 7px;
+    padding-top: 4px;
+    color: inherit;
+    text-decoration: none;
+    border-radius: 6px;
+  }
+
+  > a:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+  }
+}
+
+.step-dot {
+  box-sizing: border-box;
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid var(--rule-hover-color);
+  border-radius: 50%;
+  background: var(--canvas-color);
+  transition: transform var(--dur-fade) ease-out;
+
+  .is-done & {
+    background: var(--ink-strong-color);
+    border-color: var(--ink-strong-color);
+  }
+
+  .is-current & {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    box-shadow:
+      0 0 0 3px var(--canvas-color),
+      0 0 0 4px var(--accent-color);
+  }
+
+  a:hover > & {
+    transform: scale(1.2);
+  }
+}
+
+.step-n {
+  font-family: var(--font-label);
+  font-size: 10.5px;
+  line-height: 1;
+  color: var(--ink-muted-color);
+  font-variant-numeric: tabular-nums;
+
+  .is-planned & {
+    opacity: 0.6;
+  }
+
+  .is-current & {
+    color: var(--accent-color);
+    font-weight: 650;
+  }
+}
+
+.track--big .step {
+  width: 56px;
+}
+
+// --- series ---------------------------------------------------------------------------------
+.series-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px 44px;
+  align-items: center;
+
+  & + & {
+    margin-top: 28px;
+    padding-top: 28px;
+    border-top: 1px solid var(--rule-soft-color);
+  }
+}
+
+.sr-main {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sr-title {
+  @include display(23px, 1.2);
+  margin: 0;
+  color: var(--ink-strong-color);
+
+  a {
+    @include title-link;
+    @include underline-on(".series-row");
+  }
+}
+
+.sr-dek {
+  margin: 0;
+  max-width: 34em;
+  font-family: var(--font-text);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-color);
+}
+
+.sr-side {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.sr-next {
+  margin: 0;
+  font-family: var(--font-label);
+  font-size: 11.5px;
+  color: var(--ink-muted-color);
+
+  em {
+    font-family: var(--font-text);
+    font-size: 14px;
+    color: var(--text-color);
+  }
+}
+
+@container (max-width: 640px) {
+  .series-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sr-side {
+    justify-items: start;
+  }
+}
+
+.eps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ep {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: 0 16px;
+  margin: 0;
+  padding: 16px 0;
+  border-top: 1px solid var(--rule-soft-color);
+
+  &:first-child {
+    padding-top: 2px;
+    border-top: 0;
+  }
+
+  .meta {
+    margin-top: 2px;
+  }
+}
+
+.ep-n {
+  font-family: var(--font-label);
+  font-size: 13px;
+  line-height: 1.9;
+  color: var(--accent-color);
+  font-variant-numeric: tabular-nums;
+}
+
+.ep-title {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: 19.5px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--ink-strong-color);
+
+  a {
+    @include ph.quiet-link;
+    @include ph.focus-ring;
+  }
+}
+
+.ep.is-planned {
+  .ep-n {
+    color: var(--ink-muted-color);
+    opacity: 0.7;
+  }
+
+  .ep-title {
+    font-weight: 400;
+    font-style: italic;
+    color: var(--ink-muted-color);
+  }
+}
+
+// --- projects -------------------------------------------------------------------------------
+.proj {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+  gap: 26px;
+  align-items: start;
+
+  & + & {
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid var(--rule-soft-color);
+  }
+}
+
+.proj--bare {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.shot {
+  display: block;
+  overflow: hidden;
+  background: var(--leaf-color);
+  border: 1px solid var(--rule-soft-color);
+  border-radius: 7px;
+
+  img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin: 0;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+  }
+}
+
+.proj-body {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.proj-title {
+  @include display(23px, 1.2);
+  margin: 0;
+  color: var(--ink-strong-color);
+
+  a {
+    @include title-link;
+    @include underline-on(".proj");
+  }
+}
+
+.proj-dek {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-color);
+}
+
+.proj-latest {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-muted-color);
+
+  a {
+    color: var(--accent-color);
+    font-weight: inherit;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+    }
+  }
+}
+
+@container (max-width: 640px) {
+  .proj {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+
+  i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+}
+
+.status--live {
+  color: var(--status-live-color);
+}
+
+.status--building {
+  color: var(--status-building-color);
+}
+
+.status--archived {
+  color: var(--status-archived-color);
+}
+
+.figs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 30px;
+  margin: 2px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule-soft-color);
+
+  > div {
+    display: grid;
+    gap: 2px;
+  }
+
+  dt {
+    @include small-label;
+    color: var(--ink-muted-color);
+  }
+
+  dd {
+    margin: 0;
+    font-family: var(--font-text);
+    font-size: 24px;
+    line-height: 1.1;
+    font-weight: 650;
+    color: var(--ink-strong-color);
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+}
+
+// --- a project's log --------------------------------------------------------------------------
+// A timeline: the date in the margin, a node on the line, the entry. Essays
+// and notes are filled nodes, episodes and series hollow, the project's own
+// entries a small accent square.
+.log {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: grid;
+    grid-template-columns: 7.5rem 14px minmax(0, 1fr);
+    gap: 0 16px;
+    margin: 0;
+  }
+}
+
+.log-date {
+  padding-top: 14px;
+  font-family: var(--font-label);
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--ink-muted-color);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.log-node {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--line-strong-color);
+  }
+
+  &::after {
+    content: "";
+    box-sizing: border-box;
+    position: absolute;
+    left: 1.5px;
+    top: 19px;
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid var(--ink-strong-color);
+    border-radius: 50%;
+    background: var(--canvas-color);
+  }
+
+  .log > li:first-child > &::before {
+    top: 24px;
+  }
+
+  .log > li:last-child > &::before {
+    bottom: auto;
+    height: 24px;
+  }
+
+  .log > li:only-child > &::before {
+    display: none;
+  }
+
+  [data-kind="essay"] > &::after,
+  [data-kind="note"] > &::after {
+    background: var(--ink-strong-color);
+  }
+
+  [data-kind="launch"] > &::after,
+  [data-kind="update"] > &::after {
+    border-color: var(--accent-color);
+    border-radius: 2px;
+    background: var(--accent-color);
+  }
+
+  [data-kind="update"] > &::after {
+    background: var(--canvas-color);
+  }
+}
+
+.log-body {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding-block: 14px;
+}
+
+.log-kind {
+  @include small-label;
+  color: var(--ink-muted-color);
+}
+
+.log-title {
+  font-family: var(--font-text);
+  font-size: 17.5px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--ink-strong-color);
+}
+
+a.log-title {
+  @include ph.quiet-link;
+  @include ph.focus-ring;
+  font-weight: 600;
+}
+
+.log-note {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-muted-color);
+}
+
+@container (max-width: 560px) {
+  .log > li {
+    grid-template-columns: 14px minmax(0, 1fr);
+  }
+
+  .log-node {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+
+  .log-date {
+    grid-column: 2;
+    grid-row: 1;
+    padding-bottom: 0;
+    text-align: left;
+  }
+
+  .log-body {
+    grid-column: 2;
+    grid-row: 2;
+    padding-top: 0;
+  }
+}
+
+// --- notes ------------------------------------------------------------------------------------
+.notes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.note {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 2px 20px;
+  margin: 0;
+  padding: 14px 0;
+  border-top: 1px solid var(--rule-soft-color);
+
+  &:first-child {
+    padding-top: 2px;
+    border-top: 0;
+  }
+}
+
+.note-date {
+  font-family: var(--font-label);
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--ink-muted-color);
+  font-variant-numeric: tabular-nums;
+}
+
+.note-title {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: 18px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--ink-strong-color);
+
+  a {
+    @include ph.quiet-link;
+    @include ph.focus-ring;
+  }
+}
+
+.note-dek {
+  margin: 3px 0 0;
+  font-family: var(--font-text);
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--ink-muted-color);
+}
+
+@container (max-width: 560px) {
+  .note {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// --- section and series pages ------------------------------------------------------------------
+// The page header names the section; its title block follows directly, so the
+// header draws no rule of its own.
+body[data-kind="folder"] .ph {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.home--folder {
+  > .titleblock--section {
+    margin: var(--space-5) 0 44px;
+  }
+
+  > .track--big {
+    margin: -20px 0 44px;
+  }
+}
+
+// On a Chinese page the labels keep Source Code Pro for Latin and digits, and
+// Han characters fall through to the UI face at a size that matches.
+:lang(zh) {
+  .sh-title,
+  .tb-cell dt,
+  .figs dt,
+  .log-kind,
+  .leaf-label {
+    letter-spacing: 0.04em;
+  }
+}

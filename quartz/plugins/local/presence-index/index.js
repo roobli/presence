@@ -2,7 +2,8 @@ import { FolderPage } from "@quartz-community/folder-page"
 
 /**
  * Folder page type: @quartz-community/folder-page with the tag list removed
- * from every row. Its PageList links each tag to tags/<tag>, and this site
+ * from every row, and without the article when the folder note has no body
+ * (the stock page would print the description there a second time). Its PageList links each tag to tags/<tag>, and this site
  * builds no tag pages. Matcher, virtual folder pages, item count, rows and
  * styles stay stock.
  *
@@ -17,10 +18,28 @@ export default function PresenceFolderPage(opts) {
     name: "PresenceFolderPage",
     body: (bodyOpts) => {
       const StockContent = stock.body(bodyOpts)
-      const FolderContent = (props) => dropTagLists(StockContent(props))
+      const FolderContent = (props) => {
+        const out = dropTagLists(StockContent(props))
+        return hasBody(props.tree) ? out : dropArticle(out)
+      }
       return Object.assign(FolderContent, StockContent)
     },
   }
+}
+
+// A folder note with no body of its own: the stock page prints its
+// description in the article instead, which the page header already shows.
+function hasBody(tree) {
+  return (tree?.children ?? []).some((node) => !(node.type === "text" && !node.value.trim()))
+}
+
+function dropArticle(vnode) {
+  if (Array.isArray(vnode))
+    return vnode.filter((child) => child?.type !== "article").map(dropArticle)
+  const props = vnode?.props
+  if (props?.children == null) return vnode
+  props.children = dropArticle(props.children)
+  return vnode
 }
 
 function dropTagLists(vnode) {

@@ -198,10 +198,8 @@
   --size-label: 11.5px;
   --lh-label: 16px;
   --tracking-label: 0.07em;
-  --size-display: clamp(40px, 2.4vw + 18px, 60px);
+  --size-display: clamp(34px, 1.4vw + 22px, 48px);
   --lh-display: 1.04;
-  --size-hero-title: clamp(30px, 1.5vw + 18px, 44px);
-  --lh-hero-title: 1.1;
   // An entry's title in its page header: the theme's title size (1.84 of the
   // base) at the narrowest window, a step larger where there is room.
   --size-page-title: clamp(var(--size-title), 1vw + 22px, 40px);
@@ -209,7 +207,6 @@
   --size-card-title: calc(var(--size-base) * 1.24);
   --lh-card-title: 1.25;
   --size-figure: clamp(52px, 2.8vw + 26px, 76px);
-  --size-figure-hero: clamp(38px, 1.4vw + 24px, 52px);
   --lh-figure: 0.95;
   --tracking-display: -0.012em;
   --tracking-figure: -0.025em;
@@ -238,33 +235,21 @@
 
   // --radius-inline and --radius-block come from the generated tokens.
   --radius-sheet: 12px;
-  --radius-plate: 14px;
+  --radius-leaf: 8px;
 
-  // --- plates -----------------------------------------------------------------
-  // Every plate colour comes from the Typora theme. The night page is the
-  // theme's own dark canvas, ink and accent: the featured essay is printed in
-  // the other theme. Index cards are the theme's code colours (symbol blue,
-  // string green, the accent) let down to paper strength, like coloured index
-  // cards on the page. Each pair is at least 4.5:1: text 10:1 or more, muted
-  // text 5.3:1 or more, the mark (figures, the card's edge) 4.7:1 or more.
-  --night-bg: #22201e;
-  --night-ink: #f1eee8;
-  --night-muted: #b4aea5;
-  --night-rule: rgba(241, 238, 232, 0.16);
-  --night-mark: #e0a07a;
-  --slate-bg: #e6ecf1;
-  --slate-ink: #22384d;
-  --slate-muted: #4d6275;
-  --slate-mark: #2f5378;
-  --sage-bg: #e6ede4;
-  --sage-ink: #243a28;
-  --sage-muted: #4f6553;
-  --sage-mark: #3b6641;
-  --clay-bg: #f3e5dc;
-  --clay-ink: #4a2615;
-  --clay-muted: #7a4a33;
-  --clay-mark: #9a522f;
-  --plate-shadow: 0 1px 2px rgba(32, 30, 28, 0.05), 0 12px 28px -22px rgba(32, 30, 28, 0.5);
+  // --- notebook surfaces --------------------------------------------------------
+  // One accent, no tints and no shadows. The page is the theme's canvas; things
+  // that are objects in their own right (the open essay, a card, a screenshot)
+  // are a leaf a step lighter with a soft hairline, which darkens on hover. The
+  // right page of the open essay is ruled like notebook paper.
+  --leaf-color: #fffefc;
+  --rule-soft-color: #e8e4dd;
+  --rule-hover-color: #bcb4a8;
+  --ruling-color: rgba(32, 30, 28, 0.06);
+  --status-live-color: var(--alert-tip-color);
+  --status-building-color: var(--accent-color);
+  --status-archived-color: var(--ink-muted-color);
+  --tree-lit-color: var(--ink-strong-color);
 
   // --- motion ---------------------------------------------------------------
   // Unitless so scripts can parseFloat them. --dur-fade is for colour and
@@ -288,21 +273,10 @@
 
 [saved-theme="dark"] {
   --scrim-color: rgba(0, 0, 0, 0.56);
-  // The night page cannot be darker than a dark canvas, so it lifts to the
-  // theme's raised surface and draws a hairline; the cards take the same code
-  // colours at night strength.
-  --night-bg: #2b2926;
-  --slate-bg: #1f2830;
-  --slate-ink: #dce6ef;
-  --slate-muted: #9fb2c2;
-  --slate-mark: #9dc0e0;
-  --sage-bg: #1f2720;
-  --sage-ink: #dde8db;
-  --sage-muted: #a2b6a0;
-  --sage-mark: #a6d0a2;
-  --clay-bg: #2d221d;
-  --clay-ink: #f1e2d8;
-  --clay-muted: #c2a797;
-  --clay-mark: #e8a47c;
-  --plate-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 12px 28px -20px rgba(0, 0, 0, 0.8);
+  // A leaf lifts a step off the dark canvas instead of going lighter than paper.
+  --leaf-color: #262522;
+  --rule-soft-color: #34322e;
+  --rule-hover-color: #5a564f;
+  --ruling-color: rgba(241, 238, 232, 0.055);
+  --tree-lit-color: var(--ink-strong-color);
 }

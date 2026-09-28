@@ -1,6 +1,6 @@
 import { h } from "preact"
 import { langOf, t } from "../../presence-shared/locale.js"
-import { joined } from "../../presence-shared/rows.js"
+import { joined } from "../../presence-shared/views.js"
 
 /**
  * Colophon: the site line under every page. It renders into the footer slot,
@@ -28,11 +28,10 @@ export const Colophon = () => {
       h(
         "p",
         null,
-        joined([
-          cfg.pageTitle,
-          ...LINKS.map((link) => h("a", { href: link.href }, link.label)),
-          credit,
-        ]),
+        joined(
+          [cfg.pageTitle, ...LINKS.map((link) => h("a", { href: link.href }, link.label)), credit],
+          "sep",
+        ),
       ),
     )
   }
