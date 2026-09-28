@@ -1,5 +1,6 @@
 import { Fragment, h } from "preact"
 import { pageUrl } from "../i18n-slug/index.js"
+import { isSeriesIndex, seriesIdOf, seriesIndexSlug } from "../presence-shared/sections.js"
 
 /**
  * Tags added to every page head through additionalHead.
@@ -19,9 +20,11 @@ import { pageUrl } from "../i18n-slug/index.js"
  * without a fallback face in between. The face stays in document.fonts, so
  * later SPA navigations reuse it.
  *
- * JSON-LD (WebSite / Person / Article) is emitted per page from the same
- * additionalHead hook. Person always uses PERSON_ID so About and every Article
- * author resolve to one entity.
+ * JSON-LD is emitted per page from the same additionalHead hook: WebSite and
+ * Person everywhere, Article for essays, episodes and notes, CreativeWork for
+ * projects, CollectionPage for section pages and CreativeWorkSeries for a
+ * series. Person always uses PERSON_ID so About and every author resolve to one
+ * entity, and an episode points at its series' #series node.
  */
 
 export const BODY_FONT_HREF = "/static/fonts/source-serif-4-latin-wght-normal.woff2"
@@ -156,9 +159,22 @@ export function websiteNode(description) {
   return node
 }
 
+/** The latest of a project's own dates and its log's, for dateModified. */
+function latestDate(fm) {
+  const dates = [fm.updated, fm.published ?? fm.date]
+  if (Array.isArray(fm.log)) dates.push(...fm.log.map((item) => item?.date))
+  return dates
+    .map(frontmatterDate)
+    .filter(Boolean)
+    .sort()
+    .at(-1)
+}
+
 /**
- * Build the JSON-LD @graph for a page, or null when the page gets none (v1).
- * Homepage: WebSite + Person. About: Person (+ WebSite). Essays: Article + Person + WebSite.
+ * Build the JSON-LD @graph for a page, or null when the page gets none.
+ * Homepage: WebSite + Person. About: Person (+ WebSite). Essays, episodes and
+ * notes: Article. Projects: CreativeWork. Section pages: CollectionPage, and a
+ * series' page adds its CreativeWorkSeries. Each of those adds Person + WebSite.
  */
 export function buildJsonLdGraph(cfg, fileData) {
   const slug = fileData.slug
@@ -181,17 +197,71 @@ export function buildJsonLdGraph(cfg, fileData) {
     return { "@context": "https://schema.org", "@graph": graph }
   }
 
+  const fm = fileData.frontmatter ?? {}
+  const name = typeof fm.title === "string" ? fm.title : undefined
+  const lang = pageLang(fileData)
+  const base = fileData.i18n?.base ?? slug
+
+  if (kind === "folder") {
+    const page = {
+      "@type": "CollectionPage",
+      "@id": url,
+      name,
+      description,
+      url,
+      inLanguage: lang,
+      isPartOf: { "@id": WEBSITE_ID },
+    }
+    graph.push(page)
+    if (isSeriesIndex(base)) {
+      const series = {
+        "@type": "CreativeWorkSeries",
+        "@id": `${url}#series`,
+        name,
+        description,
+        url,
+        inLanguage: lang,
+        author: { "@id": PERSON_ID },
+        isPartOf: { "@id": WEBSITE_ID },
+      }
+      page.mainEntity = { "@id": series["@id"] }
+      graph.push(series)
+    }
+    graph.push(person, websiteNode())
+    return { "@context": "https://schema.org", "@graph": graph }
+  }
+
+  if (kind === "project") {
+    const datePublished = frontmatterDate(fm.published ?? fm.date)
+    const dateModified = latestDate(fm)
+    const project = {
+      "@type": "CreativeWork",
+      "@id": `${url}#project`,
+      name,
+      description,
+      url,
+      mainEntityOfPage: { "@type": "WebPage", "@id": url },
+      inLanguage: lang,
+      author: { "@id": PERSON_ID },
+      isPartOf: { "@id": WEBSITE_ID },
+    }
+    if (typeof fm.status === "string" && fm.status.trim()) {
+      project.creativeWorkStatus = fm.status.trim()
+    }
+    if (datePublished) project.datePublished = datePublished
+    if (dateModified) project.dateModified = dateModified
+    graph.push(project, person, websiteNode())
+    return { "@context": "https://schema.org", "@graph": graph }
+  }
+
   if (kind === "essay") {
-    const fm = fileData.frontmatter ?? {}
-    const headline = typeof fm.title === "string" ? fm.title : undefined
     const datePublished = frontmatterDate(fm.published ?? fm.date)
     const dateModified = frontmatterDate(fm.updated) || datePublished
-    const lang = pageLang(fileData)
 
     const article = {
       "@type": "Article",
       "@id": `${url}#article`,
-      headline,
+      headline: name,
       description,
       url,
       mainEntityOfPage: { "@type": "WebPage", "@id": url },
@@ -201,6 +271,14 @@ export function buildJsonLdGraph(cfg, fileData) {
     }
     if (datePublished) article.datePublished = datePublished
     if (dateModified) article.dateModified = dateModified
+
+    // An episode is part of its series as well as the site, at its place in it.
+    const seriesId = fileData.presence?.entry === "episode" ? seriesIdOf(base) : null
+    if (seriesId) {
+      const seriesUrl = absoluteUrl(baseUrl, seriesIndexSlug(seriesId))
+      article.isPartOf = [{ "@id": WEBSITE_ID }, { "@id": `${seriesUrl}#series` }]
+      if (Number.isInteger(fm.part)) article.position = fm.part
+    }
 
     // Optional alternates only when i18n-slug already paired them.
     // English pages list translations; zh pages already point at the original via URL.

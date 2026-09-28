@@ -27,17 +27,22 @@ export default (() => {
     const baseDir = fileData.slug === "404" ? path : pathToRoot(fileData.slug!)
     const iconPath = joinSegments(baseDir, "static/icon.png")
 
-    // Url of current page (index maps to site root, not /index)
+    // Url of current page, in the same form as the canonical link: index maps to
+    // the site root and a folder's index to the folder, essays/index to essays/.
+    const slug = fileData.slug!
     const socialUrl =
-      fileData.slug === "404" || fileData.slug === "index"
+      slug === "404" || slug === "index"
         ? `https://${cfg.baseUrl}/`
-        : joinSegments(url.toString(), fileData.slug!)
+        : slug.endsWith("/index")
+          ? joinSegments(url.toString(), slug.slice(0, -"index".length))
+          : joinSegments(url.toString(), slug)
 
-    // Essays and works are articles. published_time is the frontmatter date as
-    // written (a YYYY-MM-DD date or an ISO 8601 timestamp); reading it through a
-    // Date in the build machine's time zone can move a day.
+    // Essays (with episodes and notes) and projects are articles. published_time
+    // is the frontmatter date as written (a YYYY-MM-DD date or an ISO 8601
+    // timestamp); reading it through a Date in the build machine's time zone can
+    // move a day.
     const kind = (fileData as { presence?: { kind?: string } }).presence?.kind
-    const isArticle = kind === "essay" || kind === "work"
+    const isArticle = kind === "essay" || kind === "project"
     const date = (fileData.frontmatter as Record<string, unknown> | undefined)?.date
     const publishedTime =
       isArticle &&
@@ -107,6 +112,7 @@ export default (() => {
 
         <link rel="icon" href={iconPath} />
         <meta name="description" content={description} />
+        {slug === "404" && <meta name="robots" content="noindex" />}
         <meta name="generator" content="Quartz" />
 
         {css.map((resource) => CSSResourceToStyleElement(resource, true))}
