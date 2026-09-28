@@ -4,6 +4,8 @@ lang: en
 alt: /essays/why-america-builds-productivity-tools/zh
 description: "Not ‘America loves Todoist.’ English-speaking professional strata, expensive labor, and ARR capital built a symptom market: micro-control for sale, responsibility sunk onto the self."
 date: 2026-09-15
+# Its feed ID from before the move to /essays/; see notes/every-old-url-still-works.
+guid: https://www.roobli.org/writing/why-america-builds-productivity-tools
 claims:
   - figure: "54%"
     text: "of 2024 global software spend landed in the U.S., $368.5 billion."

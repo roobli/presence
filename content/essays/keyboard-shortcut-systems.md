@@ -4,6 +4,8 @@ lang: en
 alt: /essays/keyboard-shortcut-systems/zh
 description: "From Emacs prefixes and vi modes to Spotlight, command palettes, and Cmd+K: why power users treat keybindings as a namespace, and how KeyCombiner turns that into a practice system."
 date: 2026-09-11
+# Its feed ID from before the move to /essays/; see notes/every-old-url-still-works.
+guid: https://www.roobli.org/writing/keyboard-shortcut-systems
 claims:
   - figure: "3"
     text: "jobs for any command bar, in Chris Coyier's split: run, jump, search."

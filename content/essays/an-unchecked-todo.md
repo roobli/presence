@@ -5,6 +5,8 @@ alt: /essays/an-unchecked-todo/zh
 description: "A reminder I set for myself, an essay scolding the young for their philosophy habit, and a message calling someone a “desperate illiterate.” I looked at the three of them together for a long time and came away without a conclusion."
 socialDescription: "A todo I set for myself came back and caught me. A night’s notes on comparison, envy, AI, and the gap between wanting to have done a thing and doing it."
 date: 2026-09-28
+# Its feed ID from before the move to /essays/; see notes/every-old-url-still-works.
+guid: https://www.roobli.org/writing/an-unchecked-todo
 aliases:
   - writing/between-comparison-and-love
 claims:

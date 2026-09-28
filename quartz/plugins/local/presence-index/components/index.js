@@ -130,7 +130,17 @@ function latest(ctx) {
   const writing = selectWriting(allFiles)
   if (writing.length === 0) return null
   const [first, ...rest] = writing
-  const cards = rest.slice(0, HOME_CARDS)
+  // One card per series, its newest episode: the series row below shows the rest.
+  const seen = new Set([seriesIdOf(first.slug)])
+  const cards = rest
+    .filter((file) => {
+      const id = seriesIdOf(file.slug)
+      if (!id) return true
+      if (seen.has(id)) return false
+      seen.add(id)
+      return true
+    })
+    .slice(0, HOME_CARDS)
   const essays = sectionById("essays")
   return h(
     "section",

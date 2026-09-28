@@ -97,7 +97,19 @@ function generateSitemap(baseUrl, pages) {
   ].join("\n")
 }
 
-function generateFeed(cfg, pages) {
+/**
+ * An item's ID. A page that moved keeps the ID it was first published under
+ * (frontmatter guid), so readers do not list it again as new; every other
+ * page is identified by its URL.
+ */
+export function guidLine(fm, url) {
+  const guid = typeof fm.guid === "string" ? fm.guid.trim() : ""
+  return guid
+    ? `      <guid isPermaLink="false">${escapeXml(guid)}</guid>`
+    : `      <guid isPermaLink="true">${url}</guid>`
+}
+
+export function generateFeed(cfg, pages) {
   const items = pages
     .map((data) => {
       const fm = data.frontmatter ?? {}
@@ -124,7 +136,7 @@ function generateFeed(cfg, pages) {
         `    <item>`,
         `      <title>${escapeXml(title)}</title>`,
         `      <link>${url}</link>`,
-        `      <guid isPermaLink="true">${url}</guid>`,
+        guidLine(fm, url),
       ]
       if (description) lines.push(`      <description>${escapeXml(description)}</description>`)
       if (date) lines.push(`      <pubDate>${date.toUTCString()}</pubDate>`)

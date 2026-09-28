@@ -2,6 +2,8 @@
 title: You can finish a CUDA course without a GPU — if the course is designed for it
 description: What “no GPU required” actually covers, what each of the four browser labs deliberately cuts, and when you still need a real card and Nsight.
 date: 2026-09-11
+# Its feed ID from before the move to /essays/; see notes/every-old-url-still-works.
+guid: https://www.roobli.org/writing/cuda-course-without-a-gpu
 claims:
   - figure: "0"
     text: "local GPUs needed to finish the conceptual path."

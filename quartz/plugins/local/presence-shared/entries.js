@@ -69,12 +69,21 @@ function isEntryOf(file, section) {
 const orderOf = (file) =>
   Number.isInteger(file.frontmatter?.order) ? file.frontmatter.order : Infinity
 
-// Newest first, then frontmatter order, then title.
+// On one day, a standalone essay comes before an episode, and an episode
+// before a note or a project; within a series the later part comes first.
+const KIND_RANK = { essay: 0, episode: 1, note: 2, project: 3 }
+const kindRank = (file) => KIND_RANK[entryKind(file.slug)] ?? 9
+const partDesc = (file) => (Number.isInteger(file.frontmatter?.part) ? -file.frontmatter.part : 0)
+
+// Newest first; then frontmatter order, kind, later part and title, so that
+// entries published on the same day always list the same way.
 function compareEntries(a, b) {
   const dateA = dateOf(a) ?? ""
   const dateB = dateOf(b) ?? ""
   if (dateA !== dateB) return dateA < dateB ? 1 : -1
   if (orderOf(a) !== orderOf(b)) return orderOf(a) - orderOf(b)
+  if (kindRank(a) !== kindRank(b)) return kindRank(a) - kindRank(b)
+  if (partDesc(a) !== partDesc(b)) return partDesc(a) - partDesc(b)
   return titleOf(a).localeCompare(titleOf(b), undefined, { numeric: true })
 }
 

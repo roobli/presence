@@ -1,6 +1,6 @@
 import test, { describe } from "node:test"
 import assert from "node:assert"
-import { generateLlmsTxt } from "./index.js"
+import { generateLlmsTxt, guidLine } from "./index.js"
 
 describe("presence-feeds llms.txt", () => {
   test("lists site map and English essays from page data", () => {
@@ -71,5 +71,16 @@ describe("presence-feeds llms.txt", () => {
     assert.ok(!txt.includes("## Projects"))
     assert.ok(txt.includes("Internal RooB notes are not published"))
     assert.ok(txt.includes("中文："))
+  })
+})
+
+describe("presence-feeds index.xml", () => {
+  test("a moved page keeps the feed ID it was first published under", () => {
+    const url = "https://www.roobli.org/essays/keyboard"
+    assert.equal(
+      guidLine({ guid: "https://www.roobli.org/writing/keyboard" }, url).trim(),
+      '<guid isPermaLink="false">https://www.roobli.org/writing/keyboard</guid>',
+    )
+    assert.equal(guidLine({}, url).trim(), `<guid isPermaLink="true">${url}</guid>`)
   })
 })

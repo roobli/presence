@@ -261,6 +261,23 @@ describe("the content model", () => {
     ])
   })
 
+  test("on one day an essay lists before an episode, and a later part before an earlier one", () => {
+    const day = "2026-10-20"
+    const sameDay = [
+      { ...ep1, frontmatter: { ...ep1.frontmatter, date: day } },
+      { ...ep3, frontmatter: { ...ep3.frontmatter, date: day } },
+      { ...note, frontmatter: { ...note.frontmatter, date: day } },
+      { ...apple, frontmatter: { ...apple.frontmatter, date: day } },
+      { ...ep2, frontmatter: { ...ep2.frontmatter, date: day } },
+    ]
+    assert.deepStrictEqual(slugs(selectWriting(sameDay)), [
+      "essays/apple",
+      "series/kernels/03",
+      "series/kernels/02",
+      "series/kernels/01",
+    ])
+  })
+
   test("a series reads its folder: parts in order, planned episodes, facts", () => {
     const [series] = selectSeries(allFiles)
     assert.equal(series.id, "kernels")
@@ -516,6 +533,13 @@ describe("components", () => {
     assert.match(html, /<h1 class="home-thesis">Fewer pages. Harder claims.<\/h1>/)
     assert.equal(html.match(/<article class="spread/g).length, 1)
     assert.equal(html.match(/<li class="card"/g).length, 3)
+    // One card per series: its newest episode, not all three.
+    const cards = html.slice(
+      html.indexOf('<ul class="cards">'),
+      html.indexOf("</ul>", html.indexOf('<ul class="cards">')),
+    )
+    assert.equal(cards.match(/Ep \d\d/g).length, 1)
+    assert.match(cards, /Coalescing/)
     assert.equal(html.match(/<article class="series-row">/g).length, 1)
     assert.equal(html.match(/<article class="proj"/g).length, 1)
     assert.equal(html.match(/<li class="note"/g).length, 1)
