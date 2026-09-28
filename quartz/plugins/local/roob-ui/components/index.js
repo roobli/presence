@@ -1,4 +1,5 @@
 import { readFileSync } from "fs"
+import { indexSlugOf, SECTIONS } from "../../presence-shared/sections.js"
 
 /**
  * RooB UI: the browser half of the typora-plugin-lite chrome.
@@ -57,6 +58,8 @@ const SIDEBAR_PREFS = {
   columnReserve: 480,
   // Text width mode, a plain string: default, wide or full (width.js).
   modeKey: "roob-editor-width",
+  // Folders expanded on a first visit, as the explorer's fileTree state.
+  openFolders: SECTIONS.filter((section) => section.open).map(indexSlugOf),
 }
 
 const prefsArg = JSON.stringify(SIDEBAR_PREFS)

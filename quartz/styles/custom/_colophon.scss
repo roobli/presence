@@ -1,4 +1,5 @@
 @use "./page-header" as ph;
+@use "./type" as *;
 
 // ---------------------------------------------------------------------------
 // Colophon (presence-colophon). It renders into the footer slot, which already
@@ -6,16 +7,15 @@
 // sidebar drag like the text above it.
 // ---------------------------------------------------------------------------
 .page > #quartz-body > footer.colophon {
-  font-family: var(--font-interface);
   line-height: var(--lh-ui);
   color: var(--ink-muted-color);
 
   // The footer keeps the body size, because the column width is em of it.
-  // The small text goes on the line inside.
+  // The line inside is set as the index's labels are, closing the page the
+  // way its title block opened it.
   p {
+    @include label;
     margin: 0;
-    font-size: var(--size-ui-sm);
-    line-height: inherit;
     color: inherit;
   }
 

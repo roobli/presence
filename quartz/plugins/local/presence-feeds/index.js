@@ -1,6 +1,8 @@
 import fs from "node:fs/promises"
 import path from "node:path"
 import { languageVersions, pageUrl } from "../i18n-slug/index.js"
+import { t } from "../presence-shared/locale.js"
+import { indexSlugOf, SECTIONS, sectionOf } from "../presence-shared/sections.js"
 
 /**
  * sitemap.xml, index.xml, and llms.txt — replacing the feeds content-index writes
@@ -11,7 +13,7 @@ import { languageVersions, pageUrl } from "../i18n-slug/index.js"
  * fills up with them. This emitter reads only real content files:
  *   sitemap.xml  every listed page plus translations, with xhtml:link alternates
  *                for each language pair (the same set as the hreflang head tags)
- *   index.xml    RSS 2.0 of English pages under writing/ and works/, newest first
+ *   index.xml    RSS 2.0 of English entries in feed sections (sections.js), newest first
  *                by frontmatter date
  *   llms.txt     short English-primary map of the public site for generative engines
  *
@@ -19,7 +21,11 @@ import { languageVersions, pageUrl } from "../i18n-slug/index.js"
  */
 
 const EN = "en"
-const FEED_SECTIONS = ["writing/", "works/"]
+
+// An entry (not a section's own page) of a section that goes into the feeds.
+function isFeedEntry(slug) {
+  return sectionOf(slug)?.feed === true && !slug.endsWith("/index")
+}
 
 function escapeXml(value) {
   return String(value)
@@ -91,7 +97,19 @@ function generateSitemap(baseUrl, pages) {
   ].join("\n")
 }
 
-function generateFeed(cfg, pages) {
+/**
+ * An item's ID. A page that moved keeps the ID it was first published under
+ * (frontmatter guid), so readers do not list it again as new; every other
+ * page is identified by its URL.
+ */
+export function guidLine(fm, url) {
+  const guid = typeof fm.guid === "string" ? fm.guid.trim() : ""
+  return guid
+    ? `      <guid isPermaLink="false">${escapeXml(guid)}</guid>`
+    : `      <guid isPermaLink="true">${url}</guid>`
+}
+
+export function generateFeed(cfg, pages) {
   const items = pages
     .map((data) => {
       const fm = data.frontmatter ?? {}
@@ -118,7 +136,7 @@ function generateFeed(cfg, pages) {
         `    <item>`,
         `      <title>${escapeXml(title)}</title>`,
         `      <link>${url}</link>`,
-        `      <guid isPermaLink="true">${url}</guid>`,
+        guidLine(fm, url),
       ]
       if (description) lines.push(`      <description>${escapeXml(description)}</description>`)
       if (date) lines.push(`      <pubDate>${date.toUTCString()}</pubDate>`)
@@ -133,7 +151,7 @@ function generateFeed(cfg, pages) {
     `  <channel>`,
     `    <title>${siteTitle}</title>`,
     `    <link>${escapeXml(pageUrl(cfg.baseUrl, "index"))}</link>`,
-    `    <description>Writing and works on ${siteTitle}</description>`,
+    `    <description>Essays, series, projects and notes on ${siteTitle}</description>`,
     `    <language>${EN}</language>`,
     `    <atom:link href="https://${escapeXml(cfg.baseUrl)}/index.xml" rel="self" type="application/rss+xml"/>`,
     ...items,
@@ -144,8 +162,9 @@ function generateFeed(cfg, pages) {
 }
 
 /**
- * Concise generative-engine map. English primary; one brief CN line.
- * Essays are English public writing/* pages (not translations, not indexes).
+ * Concise generative-engine map. English primary; one brief CN line. Each feed
+ * section lists its English public entries (not translations), newest first;
+ * Essays is always there, the others once they have an entry.
  */
 export function generateLlmsTxt(cfg, pages) {
   const baseUrl = cfg.baseUrl
@@ -155,64 +174,65 @@ export function generateLlmsTxt(cfg, pages) {
     (typeof cfg.description === "string" ? cfg.description : "") ||
     "Fewer pages. Harder claims."
 
-  const essays = pages
-    .filter(
-      (data) =>
-        data.unlisted !== true &&
-        (data.i18n?.lang ?? EN) === EN &&
-        data.slug.startsWith("writing/") &&
-        !data.slug.endsWith("/index") &&
-        (data.presence?.kind === "essay" || data.presence?.kind === undefined),
-    )
-    .map((data) => {
-      const fm = data.frontmatter ?? {}
-      return {
-        title: String(fm.title ?? data.slug),
-        url: pageUrl(baseUrl, data.slug),
-        description: pageDescription(data),
-        date: toDate(fm.published ?? fm.date),
-      }
-    })
-    .sort((a, b) => {
-      if (a.date && b.date && a.date.getTime() !== b.date.getTime()) {
-        return b.date.getTime() - a.date.getTime()
-      }
-      return a.title.localeCompare(b.title)
-    })
+  const entriesOf = (section) =>
+    pages
+      .filter(
+        (data) =>
+          data.unlisted !== true &&
+          (data.i18n?.lang ?? EN) === EN &&
+          isFeedEntry(data.slug) &&
+          sectionOf(data.slug) === section,
+      )
+      .map((data) => {
+        const fm = data.frontmatter ?? {}
+        return {
+          title: String(fm.title ?? data.slug),
+          url: pageUrl(baseUrl, data.slug),
+          description: pageDescription(data),
+          date: toDate(fm.published ?? fm.date),
+        }
+      })
+      .sort((a, b) => {
+        if (a.date && b.date && a.date.getTime() !== b.date.getTime()) {
+          return b.date.getTime() - a.date.getTime()
+        }
+        return a.title.localeCompare(b.title)
+      })
 
+  const feedSections = SECTIONS.filter((section) => section.feed)
   const lines = [
     `# RoobLi`,
     ``,
     `> ${purpose}`,
     ``,
-    `Public site for selected works and deep writing.`,
+    `Public site for essays, series, projects and short notes.`,
     ``,
     `- Site: ${pageUrl(baseUrl, "index")}`,
     `- About: ${pageUrl(baseUrl, "about")}`,
-    `- Writing: ${pageUrl(baseUrl, "writing/index")}`,
-    `- Works: ${pageUrl(baseUrl, "works/index")}`,
+    ...feedSections.map(
+      (section) => `- ${t(EN, section.label)}: ${pageUrl(baseUrl, indexSlugOf(section))}`,
+    ),
     `- RSS: https://${baseUrl}/index.xml`,
-    ``,
-    `## Essays`,
     ``,
   ]
 
-  if (essays.length === 0) {
-    lines.push(`(none yet)`)
-    lines.push(``)
-  } else {
-    for (const essay of essays) {
-      const desc = essay.description ? ` — ${essay.description}` : ""
-      lines.push(`- [${essay.title}](${essay.url})${desc}`)
+  for (const section of feedSections) {
+    const entries = entriesOf(section)
+    if (entries.length === 0 && section.kind !== "essay") continue
+    lines.push(`## ${t(EN, section.label)}`, ``)
+    if (entries.length === 0) lines.push(`(none yet)`)
+    for (const entry of entries) {
+      const desc = entry.description ? ` — ${entry.description}` : ""
+      lines.push(`- [${entry.title}](${entry.url})${desc}`)
     }
     lines.push(``)
   }
 
-  lines.push(`## Notes`)
+  lines.push(`## Private notes`)
   lines.push(``)
   lines.push(`Internal RooB notes are not published from this site.`)
   lines.push(``)
-  lines.push(`中文：精选作品与深度文章；内部 RooB 笔记不在此发布。`)
+  lines.push(`中文：文章、系列、项目与随笔；内部 RooB 笔记不在此发布。`)
   lines.push(``)
   return lines.join("\n")
 }
@@ -233,11 +253,7 @@ export function PresenceFeeds() {
     const pages = content.map(([, file]) => file.data).filter(isContentPage)
     const sitemapPages = pages.filter((data) => data.unlisted !== true || isTranslation(data))
     const feedPages = pages.filter(
-      (data) =>
-        data.unlisted !== true &&
-        (data.i18n?.lang ?? EN) === EN &&
-        FEED_SECTIONS.some((section) => data.slug.startsWith(section)) &&
-        !data.slug.endsWith("/index"),
+      (data) => data.unlisted !== true && (data.i18n?.lang ?? EN) === EN && isFeedEntry(data.slug),
     )
 
     return Promise.all([

@@ -76,6 +76,33 @@
   line-gap-override: 0%;
 }
 
+// Label face: Source Code Pro, Source Serif's sibling in Adobe's Source
+// family, so the labels share the text face's proportions. Variable wght,
+// latin subset, from @fontsource-variable/source-code-pro 5.3.0 under the SIL
+// OFL 1.1 (static/fonts/LICENSE-source-code-pro). Not preloaded: labels are
+// short and swap in over a metric-matched fallback. The file's default
+// instance is weight 200, so every rule that uses it sets --label-weight.
+@font-face {
+  font-family: "Source Code Pro Variable";
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("/static/fonts/source-code-pro-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+// Source Code Pro advances 600 units like Menlo (602), so the fallback needs
+// no size-adjust, only its vertical metrics: hhea 984 / -273, unitsPerEm 1000,
+// lineGap 0 (read with fontTools from the latin wght file).
+@font-face {
+  font-family: "SCP Fallback Menlo";
+  src: local("Menlo"), local("DejaVu Sans Mono"), local("Consolas");
+  ascent-override: 98.4%;
+  descent-override: 27.3%;
+  line-gap-override: 0%;
+}
+
 :root {
   // --- font roles -----------------------------------------------------------
   // Latin letters in Source Serif 4. Han in the Typora theme's Songti SC
@@ -94,6 +121,13 @@
   --font-interface: "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Source Han Sans SC",
     "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
   --font-code: Menlo, Monaco, "SF Mono", Consolas, "Sarasa Mono SC", "Cascadia Code", monospace;
+  // The index and the page headers. Titles and figures stay in the text face,
+  // so the notebook keeps one voice; labels take the Source family's mono.
+  // --font-display follows --font-text, so Chinese pages set their titles in
+  // the zh serif (_i18n.scss swaps --font-text).
+  --font-display: var(--font-text);
+  --font-label: "Source Code Pro Variable", "SCP Fallback Menlo", Menlo, "PingFang SC",
+    "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", monospace;
 
   // Quartz's font slots and the generated theme names, pointed at the roles,
   // for base.scss, component CSS strings and scripts that read the old names.
@@ -154,6 +188,29 @@
   // Colophon, model line and figure number.
   --size-ui-sm: 12.5px;
 
+  // --- index type -------------------------------------------------------------
+  // Titles and figures in Source Serif 4, heavier and tighter than the prose;
+  // labels in Source Code Pro, small, upper case and tracked open, the way a
+  // casebook or a drawing's title block sets its field names.
+  --display-weight: 650;
+  --figure-weight: 700;
+  --label-weight: 500;
+  --size-label: 11.5px;
+  --lh-label: 16px;
+  --tracking-label: 0.07em;
+  --size-display: clamp(34px, 1.4vw + 22px, 48px);
+  --lh-display: 1.04;
+  // An entry's title in its page header: the theme's title size (1.84 of the
+  // base) at the narrowest window, a step larger where there is room.
+  --size-page-title: clamp(var(--size-title), 1vw + 22px, 40px);
+  --lh-page-title: 1.14;
+  --size-card-title: calc(var(--size-base) * 1.24);
+  --lh-card-title: 1.25;
+  --size-figure: clamp(52px, 2.8vw + 26px, 76px);
+  --lh-figure: 0.95;
+  --tracking-display: -0.012em;
+  --tracking-figure: -0.025em;
+
   // --- prose rhythm -----------------------------------------------------------
   // The theme's vertical rhythm. Block margins are em of the text they sit in.
   // The theme gives heading space in rem, its base size; here it is a multiple
@@ -178,6 +235,21 @@
 
   // --radius-inline and --radius-block come from the generated tokens.
   --radius-sheet: 12px;
+  --radius-leaf: 8px;
+
+  // --- notebook surfaces --------------------------------------------------------
+  // One accent, no tints and no shadows. The page is the theme's canvas; things
+  // that are objects in their own right (the open essay, a card, a screenshot)
+  // are a leaf a step lighter with a soft hairline, which darkens on hover. The
+  // right page of the open essay is ruled like notebook paper.
+  --leaf-color: #fffefc;
+  --rule-soft-color: #e8e4dd;
+  --rule-hover-color: #bcb4a8;
+  --ruling-color: rgba(32, 30, 28, 0.06);
+  --status-live-color: var(--alert-tip-color);
+  --status-building-color: var(--accent-color);
+  --status-archived-color: var(--ink-muted-color);
+  --tree-lit-color: var(--ink-strong-color);
 
   // --- motion ---------------------------------------------------------------
   // Unitless so scripts can parseFloat them. --dur-fade is for colour and
@@ -201,4 +273,10 @@
 
 [saved-theme="dark"] {
   --scrim-color: rgba(0, 0, 0, 0.56);
+  // A leaf lifts a step off the dark canvas instead of going lighter than paper.
+  --leaf-color: #262522;
+  --rule-soft-color: #34322e;
+  --rule-hover-color: #5a564f;
+  --ruling-color: rgba(241, 238, 232, 0.055);
+  --tree-lit-color: var(--ink-strong-color);
 }

@@ -6,12 +6,17 @@ A new page needs only markdown. Type, colour, spacing, the column and every elem
 
 | Page | File | URL |
 | --- | --- | --- |
-| Essay | `content/writing/<slug>.md` | `/writing/<slug>` |
-| Work | `content/works/<slug>.md` | `/works/<slug>` |
+| Essay | `content/essays/<slug>.md` | `/essays/<slug>` |
+| Series | `content/series/<series>/index.md` | `/series/<series>/` |
+| Episode | `content/series/<series>/<slug>.md` | `/series/<series>/<slug>` |
+| Project | `content/projects/<slug>.md` | `/projects/<slug>` |
+| Note | `content/notes/<slug>.md` | `/notes/<slug>` |
 | About | `content/about.md` | `/about` |
 | Homepage intro | `content/index.md` | `/` |
 
-The homepage and the Writing and Works folder pages list essays and works on their own. Slugs are lowercase and hyphenated, and the slug is the URL.
+The homepage, the sidebar and each section's page list entries on their own; a section appears once it has an entry. Slugs are lowercase and hyphenated, and the slug is the URL. Sections are defined in `quartz/plugins/local/presence-shared/sections.js`.
+
+Essays used to live under `/writing/` and projects under `/works/`. Every old URL still redirects to the new one; a section renamed later keeps its old name in `formerly` in `sections.js`, and the redirects follow from that.
 
 ## Frontmatter
 
@@ -22,31 +27,65 @@ An essay:
 title: Why command palettes won
 description: One or two sentences. They are the subtitle under the title and the summary on the homepage.
 date: 2026-09-11
-updated: 2026-10-02            # optional; the header adds "Revised"
-work: works/cuda-cpp-course    # optional; links the essay to a work page
-order: 1                       # optional; lists sort by this number first
-tags: [keyboard, ux]           # optional
+updated: 2026-10-02                 # optional; the header adds "Revised"
+project: projects/cuda-cpp-course   # optional; the essay shows under the project and in its log
+order: 1                            # optional; lists sort by this number first
+tags: [keyboard, ux]                # optional
+claims:                             # optional; the homepage card and the margin of the open essay
+  - figure: "54%"
+    text: "of 2024 global software spend landed in the U.S."
+  - quote: "Harsh can be faked. Precise can't."
 ---
 ```
 
-A work:
+A series is a folder. Its `index.md` describes it, and every other page in the folder is an episode:
+
+```yaml
+---
+title: Kernels from zero
+description: Writing CUDA kernels one idea at a time.
+status: in-progress                 # in-progress, complete or paused; planned episodes imply in-progress
+cadence: Weekly                     # optional
+project: projects/cuda-cpp-course   # optional; every episode shows under the project
+start: essays/cuda-course-without-a-gpu   # optional; "Start here" on the series page
+planned:                            # optional; shown in grey on the track and in the sidebar
+  - Warp shuffles
+  - Measuring it for real, with Nsight
+---
+```
+
+An episode is written like an essay, plus `part: 2` for its place in the series. Episodes are read in `part` order, whatever their dates.
+
+A project:
 
 ```yaml
 ---
 title: CUDA C++ Course
 description: Fifteen lessons and four in-browser GPU labs.
-date: 2026-09-11
+date: 2026-09-11                    # when it started
+status: live                        # live, building or archived
 live: https://lr00rl.github.io/cuda-cpp-course/
 source: https://github.com/lr00rl/cuda-cpp-course
 live_zh: https://lr00rl.github.io/cuda-cpp-course/zh/   # optional
-image: works/cuda-cpp-course-home.webp                   # a 1280x800 screenshot stored under content/
+image: projects/cuda-cpp-course-home.webp               # a 1280x800 screenshot stored under content/
 image_alt: CUDA C++ Course home page
+figures:                            # optional; large numbers under the title
+  - label: Lessons
+    value: 15
+log:                                # optional; the project's own entries in its log
+  - date: 2026-09-11
+    kind: launch                    # launch or update
+    text: Fifteen lessons and four browser labs go live.
 ---
 ```
 
+A project's log also gathers, on its own, every essay, episode and note whose `project` is the project, and the start of each of its series.
+
+A note is short and dated: `title`, `description` and `date`, like an essay without the claims. Notes are listed by month.
+
 `draft: true` keeps a page out of the build. `unlisted: true` builds it but keeps it out of the lists, search and the sidebar.
 
-Reading time, the live figure count, the section spine on the homepage and the English and 中文 links are derived. Do not write them by hand.
+Reading time, the live figure count, the section spine, essay and episode numbers, a series' progress and the English and 中文 links are derived. Do not write them by hand.
 
 ## Structure
 
@@ -56,7 +95,7 @@ Reading time, the live figure count, the section spine on the homepage and the E
 
 ## Chinese translations
 
-Put the translation next to the original with `.zh` before `.md`: `content/writing/<slug>.zh.md` publishes at `/writing/<slug>/zh`. The two pages link each other on their meta lines, and switching keeps the reader's place when both versions have the same `##` and `###` headings.
+Put the translation next to the original with `.zh` before `.md`: `content/essays/<slug>.zh.md` publishes at `/essays/<slug>/zh`. The two pages link each other on their meta lines, and switching keeps the reader's place when both versions have the same `##` and `###` headings.
 
 Translate `title` and `description`, keep `date`, and leave out `lang` and `alt`, which are set for you. Translations stay out of the lists and search.
 
@@ -65,13 +104,13 @@ In Chinese text, type a space between Chinese and Latin words or numbers; the si
 ## Markdown the site styles
 
 - Emphasis, strong, links, inline code and ~~strikethrough~~.
-- Internal links: `[[writing/other-essay]]` or `[[writing/other-essay|label]]`.
+- Internal links: `[[essays/other-essay]]` or `[[essays/other-essay|label]]`.
 - Lists, nested lists and task lists (`- [ ] item`, shown as read-only boxes).
 - Blockquotes, and callouts: `> [!note] Title` followed by `> text` lines. Types with their own colour: note, tip, success, important, question, abstract, example, warning, caution, danger, failure, bug and quote.
 - Tables. A table wider than the column scrolls inside its frame.
 - Code blocks with a language after the opening fence, for example ` ```ts `.
 - Footnotes: `text[^1]` in the prose and `[^1]: the note` at the end.
-- Images: `![alt text](works/picture.webp)` on a line of its own is centred and shown at its own size, never enlarged. Store the file under `content/`.
+- Images: `![alt text](projects/picture.webp)` on a line of its own is centred and shown at its own size, never enlarged. Store the file under `content/`.
 - Math: `$x^2$` inline. Display math needs `$$` on its own line before and after the equation:
 
   ```
@@ -80,7 +119,7 @@ In Chinese text, type a space between Chinese and Latin words or numbers; the si
   $$
   ```
 
-- Mermaid diagrams in a ` ```mermaid ` block. Labels stay at 12px or more, and a diagram wider than the column scrolls sideways.
+- Mermaid diagrams in a ` ```mermaid ` block. A diagram scales to fit the column. When that makes its labels smaller than 12px, it shows a Full size tab, and a tap or click opens it full screen, fitted when it stays legible and panning when it does not.
 - A horizontal rule: `---` on its own line, with blank lines around it.
 - A contents block: `[TOC]` alone on a line, outside quotes, callouts and lists, lists the page's `#` to `###` headings as links, as in Typora. It needs at least two such headings; with fewer, or with `enableToc: false` in the frontmatter, the marker is dropped.
 

@@ -1,42 +1,25 @@
-@use "sass:map";
+@use "../variables" as *;
+@use "./type" as *;
 
-// The mark says what kind of thing the row is. A bare sheet outline read as
-// an empty file, so a note carries two ruled lines on the page. Everything
-// else keys off the extension in the href, which is how anything that is not
-// a published note arrives: a note's slug has no extension at all, so it
-// falls through to the note mark without needing a rule of its own.
+// ---------------------------------------------------------------------------
+// The sidebar tree (presence-tree), in the explorer's markup.
 //
-// Adding a type is one line in $file-marks: extensions on the left, the path
-// data on the right, both drawn on the same 24 grid at the same 1.7 stroke.
-$mark-head: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E";
-$mark-tail: "%3C/svg%3E";
-$page: "%3Cpath d='M13.6 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7.4z'/%3E%3Cpath d='M13.6 3v4.4H18'/%3E";
+// Each section is a heading, not a folder: its name in the label face with its
+// count at the end of the row, and space above it, so Essays, Series,
+// Projects and Notes read as four kinds of thing at a glance. Under it the
+// entries hang off guide lines, one level every 18px. Rows carry no file
+// marks; what tells them apart is what each kind has: an episode its number,
+// a planned episode grey italics, a project its status dot, a note its date.
+//
+// The open page is not a filled row. Its name is set in the ink at weight
+// 600, the guide branch that leads to it is drawn again in the ink, and the
+// branch ends in a node beside the name (roob-ui's tree.js draws the lines).
+// The folders on its path keep their names in the ink too.
+// ---------------------------------------------------------------------------
 
-$file-marks: (
-  // 笔记：页面加两条正文线，跟空白页区分开
-  "note": "#{$page}%3Cpath d='M9 13h6M9 16.4h4'/%3E",
-  // 代码：尖括号，一眼跟文档分开
-  "code": "%3Cpath d='m9 9-4 3 4 3M15 9l4 3-4 3'/%3E",
-  // PDF 与其它成品文档：页面加底部实心条
-  "doc": "#{$page}%3Cpath d='M9 17.6h6'/%3E%3Cpath d='M9 13.6h3'/%3E",
-  // 图片：画框加一座山和一个太阳
-  "image": "%3Crect x='3.5' y='5' width='17' height='14' rx='2'/%3E%3Ccircle cx='9' cy='10' r='1.6'/%3E%3Cpath d='m4.5 17 4.2-4.2 3 3 3-3 4.8 4.8'/%3E",
-  // 表格与数据
-  "data": "%3Crect x='3.5' y='4.5' width='17' height='15' rx='2'/%3E%3Cpath d='M3.5 9.5h17M9.5 9.5V19.5'/%3E",
-);
+$indent: 18px;
+$chevron: 18px;
 
-$mark-ext: (
-  "code": (js, ts, tsx, jsx, py, go, rs, rb, java, c, h, cpp, sh, zsh, fish, lua, php, swift, kt, vim, el, scm, sql, toml, yaml, yml, json, ini, conf),
-  "doc": (pdf, epub, docx, doc, rtf),
-  "image": (png, jpg, jpeg, gif, svg, webp, avif, bmp),
-  "data": (csv, tsv, xlsx, xls, parquet),
-);
-
-@function mark($kind) {
-  @return url("#{$mark-head}#{map.get($file-marks, $kind)}#{$mark-tail}");
-}
-
-// --- file tree -------------------------------------------------------------
 .sidebar.left .explorer {
   margin: 0;
   padding: 0;
@@ -44,11 +27,9 @@ $mark-ext: (
   overflow: visible;
 }
 
-// Quartz marks these lists `.overflow` and makes each one its own scroll box
-// capped at max-height:100%. Inside one scrolling panel that turns the tree
-// into a dead scroller: it can never scroll itself, and it swallows the wheel
-// instead of handing it to the panel. Only the sliver of padding beside it
-// still worked, which is what made the tree feel unscrollable.
+// Quartz marks its sidebar lists `.overflow` and makes each one its own scroll
+// box capped at max-height:100%. Inside one scrolling panel that turns a list
+// into a dead scroller that swallows the wheel, so they scroll with the panel.
 .sidebar.left {
   div:has(> .overflow) {
     max-height: none;
@@ -66,33 +47,30 @@ $mark-ext: (
   }
 }
 
-// The guide lines are drawn as SVG paths by roob-ui, one stroke per group,
-// into a single overlay. Quartz draws its own full-height border-left on each
-// group, which is the stray vertical that used to run past every last item;
-// it goes, along with the per-row box borders this used to be built from.
 .explorer-content {
   position: relative;
   // The owner's Typora theme sets its file tree in the body face, so the tree
-  // here reads as part of the page it lists rather than as app chrome.
+  // reads as part of the page it lists rather than as app chrome.
   font-family: var(--font-text);
   font-size: var(--size-ui);
+  margin: 0;
   padding: 0 0 0 3px;
-  max-height: none;
-  overflow: visible;
 
-  ul.tree-item-children {
+  ul {
     margin: 0;
     padding: 0;
-    border-left: 0; // Quartz's own indent line; the overlay replaces it
+    list-style: none;
   }
 
+  li {
+    margin: 0;
+  }
+
+  // Levels step $indent. The trunk sits under the parent's chevron, so its
+  // arms run to the child's row and a few pixels into its padding.
   ul.tree-item-children > li {
     position: relative;
-    margin: 0;
-    // The Typora tree steps 28px a level. The trunk sits under the parent's
-    // chevron, 14px into this box, so its arms run 14px to the child's row and
-    // on into the row's padding.
-    padding-left: 28px;
+    padding-left: $indent;
   }
 
   .tree-item-self {
@@ -100,35 +78,35 @@ $mark-ext: (
     z-index: 1; // above the guide overlay
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     box-sizing: border-box;
     min-height: 26px;
-    // Even vertical padding so icon+label sit on the midline (Typora rail).
-    padding: 4px 8px 4px 7px;
-    border-radius: 5px;
+    padding: 4px 8px 4px 12px;
     color: var(--ink-color);
-    background-image: none;
+    background: none;
     line-height: 18px;
-
-    &:hover {
-      background-color: var(--item-hover-bg-color);
-      color: var(--ink-strong-color);
-    }
+    text-decoration: none;
+    transition: color var(--dur-fade) ease-out;
   }
 
-  // Keyboard focus takes the site's ring, drawn inside the row: the tree's
-  // lists clip their overflow, and a ring outside the row would be cut.
+  a.nav-file-title:hover,
+  .folder-container:hover .folder-title {
+    color: var(--ink-strong-color);
+  }
+
+  // Keyboard focus takes the site's ring, drawn inside the row: the lists
+  // clip their overflow while a folder turns, and a ring outside would be cut.
   a.nav-file-title:focus-visible {
     outline: 2px solid var(--accent-color);
     outline-offset: -2px;
+    border-radius: 4px;
   }
 
-  // A folder's link covers only its name, so the ring goes round the whole
-  // row, the shape a file row's ring takes.
   @supports selector(:has(*)) {
     .folder-container:has(.folder-button:focus-visible) {
       outline: 2px solid var(--accent-color);
       outline-offset: -2px;
+      border-radius: 4px;
     }
 
     .folder-button:focus-visible {
@@ -136,133 +114,231 @@ $mark-ext: (
     }
   }
 
-  // A folder row is icon plus label; a file row is the label itself, so only
-  // the folder row becomes a flex line. Truncation needs a block box.
+  // --- folders ----------------------------------------------------------------
   .folder-container {
-    display: flex;
-    align-items: center;
-    gap: 3px;
+    padding-left: 2px;
+    gap: 2px;
 
     > div {
-      min-width: 0;
       flex: 1;
+      min-width: 0;
     }
   }
 
-  a.nav-file-title,
-  a.folder-button {
+  .folder-button {
     display: flex;
     align-items: center;
     min-width: 0;
     color: inherit;
-    background-image: none;
+    font-weight: inherit;
     text-decoration: none;
-    font-weight: 400;
   }
 
-  // Quartz sets folder names in its heading face. Both kinds of row use the
-  // panel's UI face here.
-  .folder-container div > a,
-  .folder-container div > button {
-    font-family: inherit;
-  }
-
-  // A flex container never draws an ellipsis for its own text, so roob-ui
-  // puts the name in .tpl-tree-label (tree.js). The label is the box that is
-  // cut; the row only clips.
-  .folder-title,
-  a.nav-file-title {
+  .folder-title {
     display: flex;
     align-items: center;
     min-width: 0;
-    font-size: var(--size-ui);
-    line-height: 18px;
     overflow: hidden;
+    white-space: nowrap;
+    color: var(--ink-strong-color);
+    font-weight: 500;
+  }
+
+  // The chevron is a button of its own, the folder's name a link to its page.
+  button.folder-icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: $chevron;
+    height: 22px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    color: var(--ink-muted-color);
+    cursor: pointer;
+
+    svg {
+      display: block;
+      width: 10px;
+      height: 10px;
+      // A little past the end and back: the turn reads as a mechanism
+      // rather than a fade between two pictures of an arrow.
+      transition: transform 300ms cubic-bezier(0.34, 1.42, 0.52, 1);
+    }
+
+    &:hover {
+      color: var(--ink-strong-color);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent-color);
+      outline-offset: -2px;
+    }
+  }
+
+  .folder-container:has(+ .folder-outer:not(.open)) > .folder-icon svg {
+    transform: rotate(-90deg);
+  }
+
+  // A folder opens by its rows' track growing from nothing; while closed its
+  // links are out of the tab order and the accessibility tree.
+  .folder-outer {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition:
+      grid-template-rows 300ms ease-in-out,
+      visibility 300ms;
+
+    &.open {
+      grid-template-rows: 1fr;
+      visibility: visible;
+    }
+
+    > ul {
+      min-height: 0;
+      overflow: hidden;
+    }
+  }
+
+  // --- rows -------------------------------------------------------------------
+  a.nav-file-title,
+  .nav-file-title {
+    min-width: 0;
+    font-size: var(--size-ui);
+    font-weight: 400;
     white-space: nowrap;
   }
 
+  // A flex container never draws an ellipsis for its own text, so each name
+  // is its own box; the label is what is cut.
   .tpl-tree-label {
+    flex: 0 1 auto;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  // The folder's mark sits inside the title rather than on the row, so it
-  // needs the row's gap of its own to stand as far off as a note's does.
-  .folder-title {
-    gap: 5px;
-    font-weight: 500;
-    color: var(--ink-strong-color);
-  }
-
-  // A folder and a note read alike once the names get long, and the chevron
-  // only marks folders that have something to open. Both rows carry a small
-  // grey mark instead. Drawn as a mask so it takes the ink colour rather than
-  // shipping a second copy for the dark theme, and as a pseudo-element so
-  // nothing is inserted into markup Quartz rebuilds on every navigation.
-  .folder-title::before,
-  a.nav-file-title::before {
-    content: "";
+  // An episode's number, set before its title.
+  .tree-no {
     flex: none;
-    display: block;
-    width: 14px;
-    height: 14px;
-    margin-right: 0; // gap on the flex row handles spacing
-    background-color: var(--ink-muted-color);
-    mask-repeat: no-repeat;
-    mask-position: center;
-    mask-size: 14px 14px;
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    -webkit-mask-size: 14px 14px;
+    width: 1.9em;
+    font-family: var(--font-label);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink-muted-color);
+    font-variant-numeric: tabular-nums;
   }
 
-  // A solid folder in the ink colour, as the Typora tree draws folders; notes
-  // keep their outlined page, so the two kinds of row still read apart.
-  .folder-title::before {
-    $folder: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z'/%3E%3C/svg%3E";
+  .nav-file-title.is-planned {
+    color: var(--ink-muted-color);
+    font-style: italic;
+    cursor: default;
 
-    background-color: var(--ink-color);
-    mask-image: url($folder);
-    -webkit-mask-image: url($folder);
-  }
-
-  a.nav-file-title::before {
-    mask-image: mark("note");
-    -webkit-mask-image: mark("note");
-  }
-
-  @each $kind, $exts in $mark-ext {
-    @each $ext in $exts {
-      a.nav-file-title[href$=".#{$ext}"]::before {
-        mask-image: mark($kind);
-        -webkit-mask-image: mark($kind);
-      }
+    .tree-no {
+      font-style: normal;
+      opacity: 0.6;
     }
   }
 
-  a.nav-file-title.active::before,
-  a.nav-file-title.is-active::before {
-    background-color: var(--accent-color);
-  }
-
-  .folder-icon {
+  // What sits at a row's end: a note's date, a project's status.
+  .tree-meta {
     flex: none;
-    color: var(--ink-muted-color);
-    // A little past the end and back: the turn reads as a mechanism rather
-    // than a fade between two pictures of an arrow.
-    transition:
-      transform 300ms cubic-bezier(0.34, 1.42, 0.52, 1),
-      color 180ms ease-out;
+    margin-left: auto;
+    padding-left: 8px;
   }
 
-  // Quartz opens a folder by growing the row from 0fr, which pulls the whole
-  // block down at once like a blind. The rows arrive one after another
-  // instead, each sliding out along its own arm from the trunk, so opening a
-  // folder unfolds rather than uncovers. Only on a folder the reader just
-  // clicked: the class goes on for one animation and comes straight off, so
-  // navigation, filtering and the state restored at load stay still.
+  .tree-date {
+    font-family: var(--font-label);
+    font-size: 10.5px;
+    color: var(--ink-muted-color);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tree-status {
+    width: 6px;
+    height: 6px;
+    margin-right: 2px;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--ink-muted-color);
+  }
+
+  .tree-status--live {
+    background: var(--status-live-color);
+  }
+
+  .tree-status--building {
+    background: var(--status-building-color);
+  }
+
+  // --- where the reader is --------------------------------------------------
+  a.nav-file-title.active,
+  a.nav-file-title.is-active {
+    color: var(--ink-strong-color);
+    font-weight: 600;
+  }
+
+  .folder-container.is-on-path .folder-title,
+  .folder-container.is-current .folder-title {
+    color: var(--ink-strong-color);
+  }
+
+  .folder-container.is-current .tpl-tree-label {
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 4px;
+  }
+
+  // --- sections -----------------------------------------------------------------
+  // The top-level folders are the site's sections: a label, its count at the
+  // row's end (the count the section's title block states), and room above.
+  > ul > li.tree-section + li.tree-section {
+    margin-top: 14px;
+  }
+
+  > ul > li.tree-section > .folder-container .folder-title {
+    font-family: var(--font-label);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-muted-color);
+  }
+
+  > ul > li.tree-section > .folder-container:is(.is-on-path, .is-current, :hover) .folder-title {
+    color: var(--ink-strong-color);
+  }
+
+  .folder-container[data-count]::after {
+    content: attr(data-count);
+    flex: none;
+    margin-left: auto;
+    padding-left: var(--space-2);
+    font-family: var(--font-label);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--ink-muted-color);
+    font-variant-numeric: tabular-nums;
+  }
+
+  // Pages outside the sections close the tree, under a hairline.
+  > ul > li.tree-section + li.tree-loose {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid var(--rule-soft-color);
+  }
+
+  > ul > li.tree-loose > a.nav-file-title {
+    padding-left: 6px;
+  }
+
+  // Rows that arrive one after another when a folder is opened by hand
+  // (tree.js puts .tpl-unfold on for one animation).
   .folder-outer.tpl-unfold > ul.tree-item-children > li {
     animation: tpl-row-unfold 240ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
   }
@@ -276,11 +352,6 @@ $mark-ext: (
   .folder-outer.tpl-unfold > ul.tree-item-children > li:nth-child(n + 15) {
     animation-delay: 308ms;
   }
-
-  // The chevron that did it picks up the accent for the length of the turn.
-  .folder-container:has(+ .folder-outer.tpl-unfold) .folder-icon {
-    color: var(--accent-color);
-  }
 }
 
 // Horizontal only: the guides are measured from the row boxes every frame
@@ -288,7 +359,7 @@ $mark-ext: (
 @keyframes tpl-row-unfold {
   from {
     opacity: 0;
-    transform: translate3d(-10px, 0, 0);
+    transform: translate3d(-8px, 0, 0);
   }
 
   to {
@@ -298,43 +369,24 @@ $mark-ext: (
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .explorer-content .folder-outer.tpl-unfold > ul.tree-item-children > li {
-    animation: none;
-  }
+  .explorer-content {
+    .folder-outer {
+      transition: none;
+    }
 
-  .explorer-content .folder-icon {
-    transition: none;
-  }
-}
+    .folder-outer.tpl-unfold > ul.tree-item-children > li {
+      animation: none;
+    }
 
-.explorer-content {
-
-  // The open note, as the Typora theme marks it: a filled row with a 2px accent
-  // bar down its left edge. The row's left corners are square so the bar stays
-  // straight (a rounded row bent it into an arc), and the guide arm runs into it.
-  a.nav-file-title.active,
-  a.nav-file-title.is-active {
-    border-radius: 0 5px 5px 0;
-    background-color: var(--surface-active-color);
-    box-shadow: inset 2px 0 0 var(--accent-color);
-    color: var(--ink-strong-color);
-    font-weight: 500;
-  }
-
-  // The folders above the open note carry a hairline and a faint shadow, as in
-  // the Typora tree, so the path down to the note reads at a glance. Both are
-  // shadows, so the row keeps the 26px the crumbs are counted in.
-  @supports selector(:has(*)) {
-    .folder-container:has(+ .folder-outer a.nav-file-title:is(.active, .is-active)) {
-      border-radius: 5px 5px 0 0;
-      box-shadow:
-        inset 0 -1px 0 var(--line-color),
-        0 1px 2px var(--overlay-shadow-color);
+    button.folder-icon svg {
+      transition: none;
     }
   }
-
 }
 
+// --- guides ----------------------------------------------------------------------
+// One overlay, one stroke per group, drawn by roob-ui's tree.js; the open
+// page's branch again on top in the ink, ending in a node.
 svg.tpl-tree-guides {
   position: absolute;
   left: 0;
@@ -353,32 +405,33 @@ svg.tpl-tree-guides {
     shape-rendering: geometricPrecision;
   }
 
-  // The branch the open note sits on, drawn over the rest.
-  // Enough to find the branch at a glance, not enough to be the first thing
-  // the panel says. The accent is pulled most of the way toward the muted ink
-  // before it is faded, so it settles rather than glows.
   path.tpl-guide-lit {
-    stroke: color-mix(in srgb, var(--accent-color) 55%, var(--ink-muted-color));
+    stroke: var(--tree-lit-color);
     stroke-width: 1.3;
-    opacity: 0.42;
+    opacity: 0.7;
+  }
+
+  path.tpl-guide-node {
+    fill: var(--tree-lit-color);
+    stroke: none;
   }
 }
 
 // A touch screen wide enough for the rail still needs finger-sized rows and
-// folder toggles. The chevron's box grows into the row's own padding and over
-// the start of its label, so the drawing and the row height stay as they are.
+// folder toggles. The chevron's box grows into the row's own padding, so the
+// drawing and the row height stay as they are.
 @media (min-width: 801px) and (pointer: coarse) {
   .explorer-content {
     .tree-item-self {
       min-height: 44px;
     }
 
-    .folder-icon {
+    button.folder-icon {
       position: relative;
       z-index: 1;
       box-sizing: content-box;
-      padding: 16px;
-      margin: -16px -13px -16px -16px;
+      padding: 11px 13px;
+      margin: -11px -13px;
     }
   }
 }

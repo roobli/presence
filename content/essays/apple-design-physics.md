@@ -4,7 +4,14 @@ lang: en
 # omit alt until zh exists
 description: "Rubber-band bounce, continuous corners, and one-handed MacBook open are not taste. They are damping ratios, G2 curvature, and rigid-body torque inequalities you can model."
 date: 2026-09-11
+# Its feed ID from before the move to /essays/; see notes/every-old-url-still-works.
+guid: https://www.roobli.org/writing/apple-design-physics
 essayFrame: true
+claims:
+  - figure: "ζ = 1"
+    text: "Critical damping: the fastest settle that still refuses to oscillate."
+  - figure: "G2"
+    text: "Curvature continuity, the threshold that removes a corner's most obvious optical breakpoint."
 tags:
   - design
   - hci

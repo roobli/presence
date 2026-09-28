@@ -2,12 +2,21 @@
 title: You can finish a CUDA course without a GPU — if the course is designed for it
 description: What “no GPU required” actually covers, what each of the four browser labs deliberately cuts, and when you still need a real card and Nsight.
 date: 2026-09-11
+# Its feed ID from before the move to /essays/; see notes/every-old-url-still-works.
+guid: https://www.roobli.org/writing/cuda-course-without-a-gpu
+claims:
+  - figure: "0"
+    text: "local GPUs needed to finish the conceptual path."
+  - figure: "4"
+    text: "browser labs that simulate pieces of the GPU execution model."
+  - figure: "9"
+    text: "compilable CUDA samples with timing and checks, for when you have a card."
 tags:
   - cuda
   - teaching
   - systems
   - design
-work: works/cuda-cpp-course
+project: projects/cuda-cpp-course
 ---
 
 Most CUDA tutorials fail the same way: they teach launch syntax, hand you a vector-add, and leave you staring at a machine you don’t have. The hardware barrier is real — no NVIDIA card, driver fights, Colab quotas, cloud bills, “it compiles but I can’t run it.” So people either quit, or they rent a GPU before they know what they would measure on it.

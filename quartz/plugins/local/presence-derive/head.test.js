@@ -165,7 +165,7 @@ describe("presence-derive JSON-LD", () => {
 
   test("essay emits Article with author @id matching Person and isPartOf WebSite", () => {
     const data = jsonLdFor({
-      slug: "writing/keyboard-shortcut-systems",
+      slug: "essays/keyboard-shortcut-systems",
       presence: { kind: "essay" },
       frontmatter: {
         title: "Keyboard shortcut systems",
@@ -175,8 +175,8 @@ describe("presence-derive JSON-LD", () => {
       },
       i18n: {
         lang: "en",
-        base: "writing/keyboard-shortcut-systems",
-        alternates: [{ lang: "zh-Hans", slug: "writing/keyboard-shortcut-systems/zh" }],
+        base: "essays/keyboard-shortcut-systems",
+        alternates: [{ lang: "zh-Hans", slug: "essays/keyboard-shortcut-systems/zh" }],
       },
     })
     const article = data["@graph"].find((n) => n["@type"] === "Article")
@@ -191,12 +191,12 @@ describe("presence-derive JSON-LD", () => {
     assert.equal(person["@id"], PERSON_ID)
     assert.equal(article.isPartOf["@id"], WEBSITE_ID)
     assert.equal(site["@id"], WEBSITE_ID)
-    assert.equal(article.url, "https://www.roobli.org/writing/keyboard-shortcut-systems")
+    assert.equal(article.url, "https://www.roobli.org/essays/keyboard-shortcut-systems")
     assert.equal(article.mainEntityOfPage["@id"], article.url)
     assert.deepEqual(article.workTranslation, [
       {
         "@type": "Article",
-        url: "https://www.roobli.org/writing/keyboard-shortcut-systems/zh",
+        url: "https://www.roobli.org/essays/keyboard-shortcut-systems/zh",
         inLanguage: "zh-Hans",
       },
     ])
@@ -204,10 +204,10 @@ describe("presence-derive JSON-LD", () => {
 
   test("zh essay uses zh-Hans and omits workTranslation when unpaired", () => {
     const data = jsonLdFor({
-      slug: "writing/keyboard-shortcut-systems/zh",
+      slug: "essays/keyboard-shortcut-systems/zh",
       presence: { kind: "essay" },
       frontmatter: { title: "快捷键系统", description: "简述", date: "2026-09-11" },
-      i18n: { lang: "zh-Hans", base: "writing/keyboard-shortcut-systems", alternates: [] },
+      i18n: { lang: "zh-Hans", base: "essays/keyboard-shortcut-systems", alternates: [] },
     })
     const article = data["@graph"].find((n) => n["@type"] === "Article")
     assert.equal(article.inLanguage, "zh-Hans")
@@ -215,12 +215,83 @@ describe("presence-derive JSON-LD", () => {
     assert.equal(article.author["@id"], PERSON_ID)
   })
 
-  test("works and folder pages skip JSON-LD in v1", () => {
-    assert.equal(
-      jsonLdFor({ slug: "works/cuda-cpp-course", presence: { kind: "work" }, frontmatter: {} }),
-      null,
-    )
-    assert.equal(jsonLdFor({ slug: "writing/index", presence: { kind: "folder" }, frontmatter: {} }), null)
+  test("an episode is part of the site and of its series, at its part", () => {
+    const data = jsonLdFor({
+      slug: "series/kernels/02-coalescing",
+      presence: { kind: "essay", entry: "episode" },
+      frontmatter: { title: "Coalescing", description: "x", date: "2026-09-28", part: 2 },
+    })
+    const article = data["@graph"].find((n) => n["@type"] === "Article")
+    assert.deepEqual(article.isPartOf, [
+      { "@id": WEBSITE_ID },
+      { "@id": "https://www.roobli.org/series/kernels/#series" },
+    ])
+    assert.equal(article.position, 2)
+  })
+
+  test("a note is an Article with no series", () => {
+    const data = jsonLdFor({
+      slug: "notes/a-finding",
+      presence: { kind: "essay", entry: "note" },
+      frontmatter: { title: "A finding", description: "x", date: "2026-09-28", part: 2 },
+    })
+    const article = data["@graph"].find((n) => n["@type"] === "Article")
+    assert.deepEqual(article.isPartOf, { "@id": WEBSITE_ID })
+    assert.equal(article.position, undefined)
+  })
+
+  test("a project is a CreativeWork modified at its latest log entry", () => {
+    const data = jsonLdFor({
+      slug: "projects/cuda-cpp-course",
+      presence: { kind: "project", entry: "project" },
+      frontmatter: {
+        title: "CUDA C++ Course",
+        description: "Fifteen lessons.",
+        date: "2026-09-11",
+        status: "live",
+        log: [
+          { date: "2026-09-11", text: "Launch." },
+          { date: "2026-09-20", text: "A lab." },
+        ],
+      },
+    })
+    const project = data["@graph"].find((n) => n["@type"] === "CreativeWork")
+    assert.equal(project["@id"], "https://www.roobli.org/projects/cuda-cpp-course#project")
+    assert.equal(project.name, "CUDA C++ Course")
+    assert.equal(project.creativeWorkStatus, "live")
+    assert.equal(project.datePublished, "2026-09-11")
+    assert.equal(project.dateModified, "2026-09-20")
+    assert.equal(project.author["@id"], PERSON_ID)
+  })
+
+  test("a section page is a CollectionPage at the folder URL", () => {
+    const data = jsonLdFor({
+      slug: "essays/index",
+      presence: { kind: "folder", entry: "folder" },
+      frontmatter: { title: "Essays", description: "Long pieces." },
+    })
+    const types = data["@graph"].map((n) => n["@type"])
+    assert.deepEqual(types, ["CollectionPage", "Person", "WebSite"])
+    assert.equal(data["@graph"][0]["@id"], "https://www.roobli.org/essays/")
+    assert.equal(data["@graph"][0].mainEntity, undefined)
+  })
+
+  test("a series page adds the CreativeWorkSeries its episodes point at", () => {
+    const data = jsonLdFor({
+      slug: "series/kernels/index",
+      presence: { kind: "folder", entry: "folder" },
+      frontmatter: { title: "Kernels", description: "One kernel, rewritten." },
+    })
+    const page = data["@graph"].find((n) => n["@type"] === "CollectionPage")
+    const series = data["@graph"].find((n) => n["@type"] === "CreativeWorkSeries")
+    assert.equal(series["@id"], "https://www.roobli.org/series/kernels/#series")
+    assert.equal(series.name, "Kernels")
+    assert.equal(page.mainEntity["@id"], series["@id"])
+  })
+
+  test("plain pages and the 404 page skip JSON-LD", () => {
+    assert.equal(jsonLdFor({ slug: "colophon", presence: { kind: "page" }, frontmatter: {} }), null)
+    assert.equal(jsonLdFor({ slug: "404", presence: { kind: "page" }, frontmatter: {} }), null)
   })
 
   test("safeJsonLd escapes angle brackets for script embedding", () => {
@@ -228,7 +299,7 @@ describe("presence-derive JSON-LD", () => {
       structuredDataHead(
         { baseUrl: "www.roobli.org" },
         {
-          slug: "writing/demo",
+          slug: "essays/demo",
           presence: { kind: "essay" },
           frontmatter: { title: "A <script> title", description: "x", date: "2026-09-11" },
         },

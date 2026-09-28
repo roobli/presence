@@ -1,7 +1,13 @@
+@use "../variables" as *;
+@use "./page-header" as ph;
+@use "./type" as *;
+
 // ---------------------------------------------------------------------------
-// End matter (presence-end): Related work and More writing under an essay,
-// Essays about this work and More writing under a work. The rows themselves
-// are the homepage's (_home.scss).
+// End matter (presence-end): under a reading page, the series with its track
+// and neighbours, the project it belongs to, Linked from and More writing;
+// under a project, its log and its series. Each block sets its label in the
+// left margin, the way a notebook's margin carries headings, and its rows are
+// the index's (_notebook.scss).
 // ---------------------------------------------------------------------------
 
 // The block draws its own rule, so the frame's <hr> before the footer slot
@@ -18,24 +24,162 @@
 
 .end {
   margin-top: var(--space-8);
-  padding-top: var(--space-6);
   border-top: 1px solid var(--line-color);
+}
 
-  > section + section {
-    margin-top: var(--space-7);
-  }
+.end-block {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+  gap: 10px 24px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--rule-soft-color);
 
-  .idx-list {
-    margin-top: var(--space-4);
+  @media all and ($mobile) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
   }
 }
 
+// A project's log and series take the whole measure, their label above.
+.end-log,
+.end-series-list {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
 .end-label {
+  @include label;
   margin: 0;
-  font-family: var(--font-interface);
-  font-size: var(--size-ui);
-  line-height: var(--lh-ui);
+  font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0;
+  line-height: 1.9;
   color: var(--ink-muted-color);
+}
+
+.end-body {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+// --- series --------------------------------------------------------------------
+.end-series-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 0;
+
+  > a {
+    @include ph.quiet-link;
+    @include ph.focus-ring;
+    font-family: var(--font-text);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink-strong-color);
+  }
+}
+
+.pn {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.pn-link {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 12px 14px;
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: none;
+  background: var(--leaf-color);
+  border: 1px solid var(--rule-soft-color);
+  border-radius: var(--radius-leaf);
+  transition: border-color var(--dur-fade) ease-out;
+
+  &:hover {
+    border-color: var(--rule-hover-color);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+  }
+}
+
+.pn-link--next {
+  text-align: right;
+}
+
+.pn-link--none {
+  visibility: hidden;
+}
+
+.pn-dir {
+  @include label;
+  font-size: 10.5px;
+  color: var(--ink-muted-color);
+}
+
+.pn-title {
+  font-family: var(--font-text);
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--ink-strong-color);
+}
+
+@container (max-width: 520px) {
+  .pn {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pn-link--next {
+    text-align: left;
+  }
+
+  .pn-link--none {
+    display: none;
+  }
+}
+
+// --- project --------------------------------------------------------------------
+.end-project-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 0;
+}
+
+.end-project-title {
+  @include ph.quiet-link;
+  @include ph.focus-ring;
+  font-family: var(--font-text);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink-strong-color);
+}
+
+// --- more -------------------------------------------------------------------------
+.end-all {
+  @include label;
+  margin: 0;
+  font-size: 10.5px;
+
+  a {
+    @include ph.focus-ring;
+    color: var(--accent-color);
+    font-weight: inherit;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--accent-hover-color);
+    }
+  }
+}
+
+.end .ledger--bare .ledger-row:first-child {
+  padding-top: 2px;
 }

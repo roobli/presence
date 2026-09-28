@@ -75,14 +75,18 @@ function roobSidebarPrepaint(prefs) {
 }
 
 /**
- * A first visit opens on Writing. Quartz's explorer reads its folder state
- * from this key and keys folders by slug, and it never reads a default of its
- * own, so the seed has to be in place before its script runs.
+ * A first visit opens the sections marked open in sections.js. Quartz's
+ * explorer reads its folder state from this key and keys folders by slug, and
+ * it never reads a default of its own, so the seed has to be in place before
+ * its script runs.
  */
-function roobSeedFileTree() {
+function roobSeedFileTree(prefs) {
   try {
     if (localStorage.getItem("fileTree") === null) {
-      localStorage.setItem("fileTree", '[{"path":"writing/index","collapsed":false}]')
+      var state = (prefs.openFolders || []).map(function (path) {
+        return { path: path, collapsed: false }
+      })
+      localStorage.setItem("fileTree", JSON.stringify(state))
     }
   } catch (e) {
     /* private mode */
@@ -91,4 +95,4 @@ function roobSeedFileTree() {
 
 roobDevCacheBust()
 roobSidebarPrepaint(prefs)
-roobSeedFileTree()
+roobSeedFileTree(prefs)

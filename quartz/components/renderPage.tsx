@@ -14,6 +14,9 @@ import { GlobalConfiguration } from "../cfg"
 import { i18n } from "../i18n"
 import { styleText } from "util"
 import { resolveFrame } from "./frames"
+// Page kind from the slug alone, for pages presence-derive never sees, such as
+// the virtual folder listings. Same rules as presence-derive.
+import { entryKind, pageKind } from "../plugins/local/presence-shared/sections.js"
 import type { TreeTransform } from "../plugins/types"
 import type { BuildCtx } from "../util/ctx"
 
@@ -297,18 +300,6 @@ export function renderTranscludes(
   walk(root)
 }
 
-/**
- * Page kind from the slug alone, for pages presence-derive never sees, such as
- * the virtual folder listings. Same rules as presence-derive.
- */
-function pageKind(slug: FullSlug): string {
-  if (slug === "index") return "home"
-  if (slug.endsWith("/index")) return "folder"
-  if (slug.startsWith("writing/")) return "essay"
-  if (slug.startsWith("works/")) return "work"
-  return "page"
-}
-
 export function renderPage(
   cfg: GlobalConfiguration,
   slug: FullSlug,
@@ -349,12 +340,15 @@ export function renderPage(
 
   const fileData = componentData.fileData as typeof componentData.fileData & {
     i18n?: { lang?: string }
-    presence?: { kind?: string }
+    presence?: { kind?: string; entry?: string }
   }
   // The same value i18n-slug writes to meta[name=page-lang]. body carries it
   // too, because SPA navigation morphs body attributes but never html's.
   const lang = fileData.i18n?.lang ?? fileData.frontmatter?.lang ?? "en"
+  // kind is the layout (essay covers episodes and notes); entry is what the
+  // page is, for the few rules that tell those apart.
   const kind = fileData.presence?.kind ?? pageKind(slug)
+  const entry = fileData.presence?.entry ?? entryKind(slug)
   const direction = i18n(cfg.locale).direction ?? "ltr"
   // During local dev (--serve), the dev server serves from root without the
   // baseUrl subpath, so basePath must be empty to avoid broken links.
@@ -372,6 +366,7 @@ export function renderPage(
       <body
         lang={lang}
         data-kind={kind}
+        data-entry={entry}
         data-slug={slug}
         data-basepath={basePath}
         {...(essayFrame ? { "data-essay-frame": "true" } : {})}

@@ -2,7 +2,7 @@
 
 RoobLi public site — **www.roobli.org**.
 
-Quartz 5 fork with the Typora Claude-Like visual system (ported from `roob-note-site`). This is the org homepage and writing/works surface — **not** a RooB notes mirror.
+Quartz 5 fork with the Typora Claude-Like visual system (ported from `roob-note-site`). This is the org homepage: essays, series, projects and short public notes — **not** a RooB notes mirror.
 
 ## Run
 

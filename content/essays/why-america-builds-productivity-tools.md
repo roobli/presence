@@ -1,9 +1,18 @@
 ---
 title: Why America builds productivity tools
 lang: en
-alt: /writing/why-america-builds-productivity-tools/zh
+alt: /essays/why-america-builds-productivity-tools/zh
 description: "Not ‘America loves Todoist.’ English-speaking professional strata, expensive labor, and ARR capital built a symptom market: micro-control for sale, responsibility sunk onto the self."
 date: 2026-09-15
+# Its feed ID from before the move to /essays/; see notes/every-old-url-still-works.
+guid: https://www.roobli.org/writing/why-america-builds-productivity-tools
+claims:
+  - figure: "54%"
+    text: "of 2024 global software spend landed in the U.S., $368.5 billion."
+  - figure: "<0.5%"
+    text: "of DingTalk's 25 million organizations paid for software by end-2023."
+  - figure: "72.0%"
+    text: "of Japanese IT talent sits inside IT vendors, against 34.6% in the U.S."
 tags:
   - SaaS
   - productivity
@@ -27,7 +36,7 @@ One vocabulary trap first. “America” and “the English-speaking world” ge
 
 ## The phenomenon is real: spend, firms, and capital concentrate in the U.S.
 
-![More than half of global software spend is American](writing/why-america-builds-productivity-tools/fig_software_spend_2024.webp)
+![More than half of global software spend is American](essays/why-america-builds-productivity-tools/fig_software_spend_2024.webp)
 
 S&P Global Market Intelligence (cited by WIPO in June 2025) puts 2024 global software spend near $675 billion, with the U.S. alone at $368.5 billion — over 54%. China is second at $61.8 billion, about one-sixth of the U.S. The U.S. is also the only economy where software spend exceeds 1% of GDP. Firm counts rhyme: Statista’s 2024 estimate (secondhand, magnitude only) has roughly 30,800 SaaS companies worldwide — about 17,000 in the U.S., 1,500 in the U.K., 992 in Canada, 711 in India. On CB Insights’ 2025 unicorn tally: U.S. 712, China 157, Korea 14, Japan 9. BVP’s Emerging Cloud Index in September 2026 lists 66 constituents and none from China, Japan, or Korea — partly an artifact of U.S. listing, but the shape is still the shape. These are all-software or all-industry slices; productivity tools are not broken out separately. Direction is unambiguous.
 
@@ -35,7 +44,7 @@ China compresses into a few numbers. A late-2023 China Telecom Think Tank report
 
 Japan is a different geometry. IPA’s 2015 international comparison: 72.0% of Japanese IT talent sits inside IT vendors (integrators, outsourcers, software houses), versus 34.6% in the U.S., 38.6% in Germany, 46.1% in France. American firms mostly select and assemble software with their own engineers; Japanese firms mostly commission SIer customization. METI’s 2018 DX report warned that un-updated legacy systems could cost up to ¥12 trillion a year after 2025.
 
-![Japanese IT engineers sit mostly on the vendor side; American ones mostly on the buyer side](writing/why-america-builds-productivity-tools/fig_it_staff_placement.webp)
+![Japanese IT engineers sit mostly on the vendor side; American ones mostly on the buyer side](essays/why-america-builds-productivity-tools/fig_it_staff_placement.webp)
 
 Japanese SaaS is growing fast lately. Sansan, freee, and Money Forward posted 24–31% annual revenue growth across 2025–2026 disclosures; SmartHR announced ¥30 billion ARR in July 2026; in 2020 the government struck 14,909 of 14,992 seal-required administrative rules. Growth is real. The historical buyer structure still explains why standardization arrived late.
 
@@ -51,13 +60,13 @@ Taken together: Protestant values measurably affect how long people will work an
 
 ### If diligence were the cause, East Asia should build more
 
-![Diligence and the price of labor are different variables](writing/why-america-builds-productivity-tools/fig_hours_wages_2025.webp)
+![Diligence and the price of labor are different variables](essays/why-america-builds-productivity-tools/fig_hours_wages_2025.webp)
 
 OECD 2025: Korea averages 1,833 hours per employed person per year, the U.S. 1,800, Japan 1,598, Germany 1,332 (relative ranks only, per OECD caveats). Americans work long hours; they are not the longest. Koreans work longer still and earn roughly 30% less annually — diligence and labor price are separate. Japanese overwork has not vanished: MHLW’s FY2024 figures show 1,055 recognized mental-health work-injury cases, first time past 1,000, a sixth consecutive record. China had 996.ICU in 2019; the Supreme People’s Court called 996 illegal in 2021. Korea cut the weekly cap from 68 to 52 hours in 2018; a 2023 proposal to loosen toward 69 hours was withdrawn under youth and union pressure.
 
 Values surveys make the folk story look stranger still.
 
-![China and Korea put work first more than the U.S.; Americans believe effort pays more than Japan or Korea](writing/why-america-builds-productivity-tools/fig_work_values_wvs7.webp)
+![China and Korea put work first more than the U.S.; Americans believe effort pays more than Japan or Korea](essays/why-america-builds-productivity-tools/fig_work_values_wvs7.webp)
 
 World Values Survey Wave 7 (King’s College London Policy Institute, 2023): agreement that “work should always come first” is 82% in China, 47% in Korea, 29% in Germany, 28% in the U.S., 10% in Japan. “Work is a duty toward society”: China 83%, U.S. 59%, Japan 58%.
 
@@ -79,7 +88,7 @@ A working guess: in societies where fewer people believe individual effort moves
 
 Ask who invented the methods and America’s center thins.
 
-![Methods are born everywhere; scale happens in the English market](writing/why-america-builds-productivity-tools/fig_method_origin_timeline.webp)
+![Methods are born everywhere; scale happens in the English market](essays/why-america-builds-productivity-tools/fig_method_origin_timeline.webp)
 
 The Pomodoro Technique is Francesco Cirillo’s, late-1980s Italy, spread first as a free PDF past two million downloads before Currency (Penguin Random House) issued a formal English book in 2018. Zettelkasten is Niklas Luhmann’s, ~90,000 cards from 1951–1996, and rode Roam Research and Obsidian into English internet fashion around 2020. Kanban is Toyota’s — Taiichi Ohno built it from late-1940s–1960s supermarket restocking ideas; “lean” is John Krafcik’s 1988 *Sloan Management Review* coinage, globalized by MIT’s 1990 *The Machine That Changed the World*, then democratized by Trello in 2011.
 
@@ -141,13 +150,13 @@ As of September 2026 the English self-improvement YouTube tier runs from multi-m
 
 Put East Asia on the same page and the picture is not one-sided.
 
-![Self-improvement content is a large business in Japan and Korea too](writing/why-america-builds-productivity-tools/fig_creator_scale.webp)
+![Self-improvement content is a large business in Japan and Korea too](essays/why-america-builds-productivity-tools/fig_creator_scale.webp)
 
 Japan’s personal-finance / self-improvement channel “両学長 リベラルアーツ大学” has 9.76M subscribers — more than Ali Abdaal; comedian Atsuhiko Nakata’s knowledge channel has 5.48M. Korea’s money-and-self-improvement “신사임당” has 2.82M; “김작가 TV” ~2.73M. Japan’s population is ~120 million, Korea’s ~51 million; English hosts face a global English audience. Per potential viewer, East Asian head channels punch harder. China’s analogue sits on Bilibili: Chen Rui said in 2021 that general-knowledge content was 45% of Bilibili playback; a 2023 industry report counted 243 million users watching knowledge content in the prior year; criminal-law lecturer Luo Xiang had 32.08 million fans by early 2026. East Asian audiences buy “make yourself better” content. Market-size estimates agree: Grand View Research puts the 2025 global personal-development market near $51 billion, North America only 34.8% — while the U.S. alone takes over half of global software spend. Demand for self-improvement is spread far more evenly than the software industry.
 
 The gap is money, and how far content can travel.
 
-![Per thousand views, a U.S. audience is worth nearly 4× a Japanese one](writing/why-america-builds-productivity-tools/fig_rpm_by_country.webp)
+![Per thousand views, a U.S. audience is worth nearly 4× a Japanese one](essays/why-america-builds-productivity-tools/fig_rpm_by_country.webp)
 
 Google does not publish country RPMs; third-party estimates often differ by 2× — magnitude only. Lenos (April 2026): creator RPM ~$10.81 for a U.S. audience, $7.12 U.K., $2.90 Japan, $0.46 India, $0.15 Philippines. Business Insider checked Ali Abdaal’s backend: 2022 average RPM $8.23. Same content, English audience: several times Japan’s value per view, tens of times Southeast Asia’s. That decides who can fund teams, editing, and research — and how many people the category can attract.
 
@@ -159,7 +168,7 @@ Belief remains a last variable. Section three: 55% of U.S. respondents believe e
 
 An awkward backdrop: the industry’s boom years were among America’s slowest productivity-growth years.
 
-![In the boom years for productivity tools, productivity growth slowed](writing/why-america-builds-productivity-tools/fig_productivity_by_cycle.webp)
+![In the boom years for productivity tools, productivity growth slowed](essays/why-america-builds-productivity-tools/fig_productivity_by_cycle.webp)
 
 BLS nonfarm business labor productivity by cycle: 2.7% a year 1947–1973, 2.8% 2001–2007; only 1.5% from end-2007 to end-2019 — second-slowest postwar stretch. Those twelve years cover iPhone ubiquity and the mass arrival of Slack, Notion, Asana-class collaboration tools. The cycle since end-2019 recovered to 2.1%, with 3.0% for full-year 2024 — and Kansas City Fed analysis doubts attributing that lift to AI (see section eight). The series does not prove tools slowed productivity; the financial crisis and weak investment sit in the same window. What it does show: tool prosperity did not cash out as macro efficiency. Solow’s July 1987 *New York Times Book Review* line — the computer age everywhere except the productivity statistics — travels cleanly onto SaaS.
 
@@ -193,7 +202,7 @@ Billing changes are more concrete. Intercom’s AI support agent Fin charges $0.
 
 ### Efficiency evidence lags the efficiency story
 
-![Felt faster; measured slower](writing/why-america-builds-productivity-tools/fig_metr_perception_gap.webp)
+![Felt faster; measured slower](essays/why-america-builds-productivity-tools/fig_metr_perception_gap.webp)
 
 METR’s July 2025 RCT: 16 experienced open-source developers, 246 real tasks — AI tools *lengthened* completion time 19%; developers expected a 24% speedup beforehand and still felt 20% faster afterward. METR’s February 2026 update flipped the point estimate toward speedup (veteran participants 18% faster, CI crossing zero) while finding 30–50% of developers avoid tasks they would not do without AI — the team itself called the signal unreliable.
 
@@ -203,7 +212,7 @@ Same old productivity-tool problem: the feeling of “I got faster” arrives so
 
 ### Build and use split apart
 
-![The countries that build frontier AI are not the ones that use it most](writing/why-america-builds-productivity-tools/fig_ai_diffusion_2026q1.webp)
+![The countries that build frontier AI are not the ones that use it most](essays/why-america-builds-productivity-tools/fig_ai_diffusion_2026q1.webp)
 
 Microsoft AI Economy Institute’s public data, 2026 Q1: share of working-age population that has used generative AI — UAE 70.1%, Singapore 63.4%, Korea 37.1%, Taiwan 31.8%, U.S. 31.3% (21st of 147 economies with data, ranked from the public set); Japan 22.5%, mainland China 16.4%. The metric is inferred from Microsoft anonymous telemetry, then adjusted for OS/device share, internet penetration, and population — likely understating mainland China where domestic apps dominate. Anthropic’s September 2025 per-capita usage index rhymes: Israel 7.0, Singapore 4.57, Korea 3.73, U.S. 3.62, Japan 1.86. Korean willingness to pay stands out: OpenAI said in 2025 that Korea’s ChatGPT paid-user count ranked second only to the U.S.
 

@@ -3,8 +3,12 @@
  * so fences arrive as syntax-highlighted code[data-language="mermaid"] blocks.
  * Sources are read synchronously when a page mounts, rendered off-DOM with
  * theme "base" and the site tokens, and each block is swapped once for a
- * .mermaid-paper container, which scrolls a diagram too wide for the column.
- * themechange re-renders from the kept sources.
+ * .mermaid-paper container. themechange re-renders from the kept sources.
+ *
+ * A diagram always fits its column. When fitting shrinks its smallest label
+ * below MIN_LABEL_PX, the container becomes a button that opens the diagram
+ * in a full-screen viewer, where it fits the screen if it can stay legible and
+ * pans otherwise. That is what a phone shows for any diagram wider than it.
  */
 
 function mermaidPaper() {
@@ -94,28 +98,37 @@ function mermaidPaper() {
     ".cluster-label .nodeLabel{font-size:12.5px;font-weight:600}",
   ].join("")
 
-  // Labels never render smaller than this. A diagram that would have to shrink
-  // below it keeps its width and scrolls inside its container instead.
+  // The smallest label size a diagram is read at. Below it, the column's copy
+  // offers the full-size viewer.
   var MIN_LABEL_PX = 12
 
-  // The container can scroll, so it takes focus and needs a name.
-  var REGION_LABEL = { en: "Diagram, scrolls sideways", zh: "图表，可横向滚动" }
-
-  function regionLabel() {
-    return /^zh(-|$)/i.test((document.body && document.body.lang) || "")
-      ? REGION_LABEL.zh
-      : REGION_LABEL.en
+  var STRINGS = {
+    en: {
+      region: "Diagram",
+      open: "Diagram. Open at full size",
+      hint: "Full size",
+      close: "Close",
+      zoomIn: "Tap the diagram to zoom in",
+      zoomOut: "Tap to fit the screen",
+    },
+    zh: {
+      region: "图表",
+      open: "图表，点按查看原图",
+      hint: "查看原图",
+      close: "关闭",
+      zoomIn: "点按图表放大",
+      zoomOut: "点按适配屏幕",
+    },
   }
 
-  // Mermaid sizes a flowchart to its container (width 100%, max-width the
-  // viewBox width), so a narrow column scales every label down with it. A
-  // min-width at the scale that draws the smallest label at MIN_LABEL_PX stops
-  // the shrinking; the viewBox width caps it. The column itself still sets the
-  // width above that, so sidebar drags and resizes need no script.
-  function holdLabelSize(box) {
-    var svg = box.querySelector(":scope > svg")
-    var viewBox = svg && svg.viewBox && svg.viewBox.baseVal
-    if (!viewBox || !viewBox.width) return
+  function strings() {
+    return /^zh(-|$)/i.test((document.body && document.body.lang) || "") ? STRINGS.zh : STRINGS.en
+  }
+
+  // The smallest label's size at the diagram's own scale, in CSS pixels. Mermaid
+  // sizes a flowchart to its container (width 100%, max-width the viewBox
+  // width), so on screen every label is this times the rendered/viewBox ratio.
+  function smallestLabel(svg) {
     var smallest = Infinity
     var walker = document.createTreeWalker(svg, NodeFilter.SHOW_TEXT)
     for (var node = walker.nextNode(); node; node = walker.nextNode()) {
@@ -124,10 +137,155 @@ function mermaidPaper() {
       var size = parseFloat(window.getComputedStyle(parent).fontSize)
       if (size > 0 && size < smallest) smallest = size
     }
-    if (smallest === Infinity) return
-    var width = Math.min(viewBox.width, Math.ceil((viewBox.width * MIN_LABEL_PX) / smallest))
-    svg.style.minWidth = width + "px"
+    return smallest === Infinity ? 0 : smallest
   }
+
+  // Marks a container whose diagram the column has shrunk past legibility, and
+  // makes it the button that opens the viewer. Re-run whenever its width changes.
+  function fit(box) {
+    var svg = box.querySelector(":scope > svg")
+    var viewBox = svg && svg.viewBox && svg.viewBox.baseVal
+    if (!viewBox || !viewBox.width) return
+    if (!box.dataset.smallest) box.dataset.smallest = String(smallestLabel(svg))
+    var smallest = Number(box.dataset.smallest)
+    var scale = svg.getBoundingClientRect().width / viewBox.width
+    var shrunk = smallest > 0 && smallest * scale < MIN_LABEL_PX - 0.25
+    var text = strings()
+    if (shrunk === box.hasAttribute("data-zoom")) return
+    if (shrunk) {
+      box.setAttribute("data-zoom", "")
+      box.setAttribute("data-hint", text.hint)
+      box.setAttribute("role", "button")
+      box.setAttribute("aria-label", text.open)
+      box.tabIndex = 0
+    } else {
+      box.removeAttribute("data-zoom")
+      box.removeAttribute("data-hint")
+      box.setAttribute("role", "group")
+      box.setAttribute("aria-label", text.region)
+      box.removeAttribute("tabindex")
+    }
+  }
+
+  var resizer =
+    typeof ResizeObserver === "function"
+      ? new ResizeObserver(function (entries) {
+          for (var i = 0; i < entries.length; i++) fit(entries[i].target)
+        })
+      : null
+
+  // --- the full-size viewer ------------------------------------------------------
+  // The diagram itself moves into a modal dialog and back, so its ids and the
+  // style rules scoped to them stay unique. The column keeps the box's height
+  // while it is away.
+  //
+  // It opens fitted to the screen, so the whole diagram is in view. Where that
+  // is still too small to read, a tap zooms to the size at which the smallest
+  // label reads at MIN_LABEL_PX, keeping the tapped spot under the finger, and
+  // the stage pans; another tap fits it again.
+  var viewer = null
+
+  function openViewer(box) {
+    var svg = box.querySelector(":scope > svg")
+    var viewBox = svg && svg.viewBox && svg.viewBox.baseVal
+    if (viewer || !viewBox || !viewBox.width || typeof HTMLDialogElement !== "function") return
+    var text = strings()
+    var smallest = Number(box.dataset.smallest) || MIN_LABEL_PX
+    var readable = Math.min(viewBox.width, Math.ceil((viewBox.width * MIN_LABEL_PX) / smallest))
+
+    var dialog = document.createElement("dialog")
+    dialog.className = "mermaid-viewer"
+    dialog.setAttribute("aria-label", text.region)
+    var stage = document.createElement("div")
+    stage.className = "mermaid-viewer-stage"
+    var close = document.createElement("button")
+    close.type = "button"
+    close.className = "mermaid-viewer-close"
+    close.setAttribute("aria-label", text.close)
+    close.innerHTML =
+      '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
+    var hint = document.createElement("p")
+    hint.className = "mermaid-viewer-hint"
+
+    box.style.minHeight = box.offsetHeight + "px"
+    stage.appendChild(svg)
+    dialog.appendChild(stage)
+    dialog.appendChild(close)
+    dialog.appendChild(hint)
+    document.body.appendChild(dialog)
+    document.documentElement.classList.add("mermaid-viewing")
+    viewer = { dialog: dialog, box: box, svg: svg }
+
+    var zoomed = false
+    function zoomable() {
+      return readable > svg.getBoundingClientRect().width + 1 || zoomed
+    }
+    function sync() {
+      var can = zoomable()
+      stage.setAttribute("data-zoom", can ? (zoomed ? "in" : "out") : "none")
+      hint.hidden = !can
+      hint.textContent = zoomed ? text.zoomOut : text.zoomIn
+    }
+
+    close.addEventListener("click", closeViewer)
+    dialog.addEventListener("cancel", function (event) {
+      event.preventDefault()
+      closeViewer()
+    })
+    dialog.addEventListener("click", function (event) {
+      // A click on the backdrop or the empty stage closes it.
+      if (event.target === dialog || event.target === stage) return closeViewer()
+      if (!svg.contains(event.target) || !zoomable()) return
+      var before = svg.getBoundingClientRect()
+      var rx = (event.clientX - before.left) / before.width
+      var ry = (event.clientY - before.top) / before.height
+      zoomed = !zoomed
+      if (zoomed) svg.style.minWidth = readable + "px"
+      else svg.style.removeProperty("min-width")
+      var after = svg.getBoundingClientRect()
+      stage.scrollLeft += after.left + rx * after.width - event.clientX
+      stage.scrollTop += after.top + ry * after.height - event.clientY
+      sync()
+    })
+    dialog.showModal()
+    sync()
+    close.focus({ preventScroll: true })
+  }
+
+  function closeViewer() {
+    if (!viewer) return
+    var v = viewer
+    viewer = null
+    v.svg.style.removeProperty("min-width")
+    // A theme change while it was open re-rendered the box; keep the new one.
+    if (v.box.isConnected && !v.box.querySelector(":scope > svg")) v.box.appendChild(v.svg)
+    v.box.style.removeProperty("min-height")
+    if (v.dialog.open) v.dialog.close()
+    v.dialog.remove()
+    document.documentElement.classList.remove("mermaid-viewing")
+    if (v.box.isConnected) {
+      fit(v.box)
+      if (v.box.hasAttribute("data-zoom")) v.box.focus({ preventScroll: true })
+    }
+  }
+
+  // Taken on the document: micromorph can hand a node to another element after
+  // a navigation, and a listener on the node would go with it.
+  document.addEventListener("click", function (event) {
+    var box =
+      event.target && event.target.closest
+        ? event.target.closest(".mermaid-paper[data-zoom]")
+        : null
+    if (box) openViewer(box)
+  })
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Enter" && event.key !== " ") return
+    var box = event.target
+    if (!box || !box.matches || !box.matches(".mermaid-paper[data-zoom]")) return
+    event.preventDefault()
+    openViewer(box)
+  })
+  document.addEventListener("prenav", closeViewer)
 
   var loading = null
   var items = []
@@ -193,20 +351,24 @@ function mermaidPaper() {
       if (!item.box) {
         item.box = document.createElement("div")
         item.box.className = "mermaid-paper"
-        item.box.tabIndex = 0
-        item.box.setAttribute("role", "region")
-        item.box.setAttribute("aria-label", regionLabel())
+        item.box.setAttribute("role", "group")
+        item.box.setAttribute("aria-label", strings().region)
       }
       item.box.innerHTML = res.svg
+      delete item.box.dataset.smallest
       if (item.el !== item.box) {
         item.el.replaceWith(item.box)
         item.el = item.box
       }
       if (res.bindFunctions) res.bindFunctions(item.box)
     }
-    // Every theme re-render replaces the SVG, so its min-width is set again.
+    // Every render replaces the SVG, so the fit is decided again, and again
+    // whenever the column's width changes.
     for (var k = 0; k < batch.length; k++) {
-      if (results[k] && batch[k].box && batch[k].box.isConnected) holdLabelSize(batch[k].box)
+      var box = batch[k].box
+      if (!results[k] || !box || !box.isConnected) continue
+      fit(box)
+      if (resizer) resizer.observe(box)
     }
   }
 
@@ -236,6 +398,8 @@ function mermaidPaper() {
 
   function unmount() {
     generation++
+    closeViewer()
+    if (resizer) resizer.disconnect()
     items = []
     captured = new WeakSet()
     cleanupQueued = false

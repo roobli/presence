@@ -110,14 +110,19 @@ async function _navigate(url: URL, isBack: boolean = false) {
   document.querySelector(".navigation-progress")?.remove()
   micromorph(document.body, html.body)
 
-  // scroll into place and add history
+  // scroll into place and add history. A new page opens at its top (or its
+  // hash) at once: the site's smooth scrolling is for moving within a page,
+  // and animating from the previous page's position could be cut short by the
+  // new page's layout, leaving it where the last one ended.
   if (!isBack) {
-    if (url.hash) {
-      const el = document.getElementById(decodeURIComponent(url.hash.substring(1)))
-      el?.scrollIntoView()
-    } else {
-      window.scrollTo({ top: 0 })
-    }
+    jumpWithoutAnimation(() => {
+      if (url.hash) {
+        const el = document.getElementById(decodeURIComponent(url.hash.substring(1)))
+        el?.scrollIntoView()
+      } else {
+        window.scrollTo({ top: 0 })
+      }
+    })
   }
 
   // now, patch head, re-executing scripts
@@ -134,6 +139,19 @@ async function _navigate(url: URL, isBack: boolean = false) {
 
   notifyNav(getFullSlug(window))
   delete announcer.dataset.persist
+}
+
+// Runs a scroll with CSS scroll-behavior switched off, so it lands in one step
+// even where the stylesheet asks for smooth scrolling.
+function jumpWithoutAnimation(scroll: () => void) {
+  const root = document.documentElement
+  const previous = root.style.scrollBehavior
+  root.style.scrollBehavior = "auto"
+  try {
+    scroll()
+  } finally {
+    root.style.scrollBehavior = previous
+  }
 }
 
 async function navigate(url: URL, isBack: boolean = false) {

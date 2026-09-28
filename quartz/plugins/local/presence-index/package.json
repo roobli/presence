@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "Derived writing and works rows for the homepage and folder pages, and the folder page type",
+  "description": "The homepage, section and series pages, and the folder page type",
   "exports": {
     ".": "./index.js",
     "./components": "./components/index.js",
