@@ -7,20 +7,19 @@ import {
   joined,
   renderWorkRow,
   renderWritingRow,
-  selectEssays,
-  selectWorks,
+  selectEntries,
 } from "../../presence-shared/rows.js"
+import { indexSlugOf, SECTIONS, sectionOfIndex } from "../../presence-shared/sections.js"
 
 /**
  * Home index. On the homepage: the thesis (frontmatter description), intro and
- * links from index.md, then the newest essays and the works. On /writing/:
- * every essay, grouped under year headings once the dates span more than one
- * year. On /works/: the works. Both folder pages hide FolderPage's stock list
- * (_folder-listing.scss), and their page header already names the folder.
- * Every other page renders nothing.
+ * links from index.md, then each homepage section from sections.js in order:
+ * the newest essays of an essay section, every work of a work section. On a
+ * section's own page (/writing/, /works/): every entry, essays grouped under
+ * year headings once the dates span more than one year. Section pages hide
+ * FolderPage's stock list (_folder-listing.scss), and their page header
+ * already names the section. Every other page renders nothing.
  */
-
-const VIEWS = { index: "home", "writing/index": "writing", "works/index": "works" }
 
 function mast(fm) {
   const links = (Array.isArray(fm.links) ? fm.links : []).filter(
@@ -61,25 +60,58 @@ function byYear(essays, list) {
 
 export const HomeIndex = () => {
   const Component = ({ fileData, allFiles }) => {
-    const view = VIEWS[fileData.slug]
-    if (!view) return null
+    const isHome = fileData.slug === "index"
+    const own = isHome ? null : sectionOfIndex(fileData.slug)
+    if (!isHome && !own) return null
     const lang = langOf(fileData)
     const ctx = { lang, allFiles }
-    const essays = selectEssays(allFiles)
-    const works = selectWorks(allFiles)
     const essayList = (files) =>
       h("ul", { class: "idx-list" }, files.map((file) => renderWritingRow(file, ctx)))
-    const workList = () =>
-      h("ul", { class: "idx-list" }, works.map((work) => renderWorkRow(work, ctx)))
+    const workList = (files) =>
+      h("ul", { class: "idx-list" }, files.map((work) => renderWorkRow(work, ctx)))
 
-    if (view === "writing") {
-      return h("section", { class: "home home--folder" }, byYear(essays, essayList))
-    }
-    if (view === "works") {
+    if (own) {
+      const entries = selectEntries(allFiles, own)
+      if (own.kind === "essay") {
+        return h("section", { class: "home home--folder" }, byYear(entries, essayList))
+      }
       return h(
         "section",
         { class: "home home--folder" },
-        h("section", { class: "idx idx--works" }, workList()),
+        h("section", { class: "idx idx--works" }, workList(entries)),
+      )
+    }
+
+    // One homepage block per section, in sections.js order.
+    const block = (section) => {
+      const entries = selectEntries(allFiles, section)
+      if (entries.length === 0) return null
+      const id = `idx-${section.id}`
+      const label = h("h2", { id, class: "idx-label" }, t(lang, section.label))
+      if (section.kind !== "essay") {
+        return h(
+          "section",
+          { class: "idx idx--works", "aria-labelledby": id },
+          label,
+          workList(entries),
+        )
+      }
+      return h(
+        "section",
+        { class: "idx", "aria-labelledby": id },
+        label,
+        essayList(entries.slice(0, HOME_ROWS)),
+        entries.length > HOME_ROWS
+          ? h(
+              "p",
+              { class: "idx-more" },
+              h(
+                "a",
+                { href: hrefOf(indexSlugOf(section)) },
+                t(lang, "allWriting", { n: entries.length }),
+              ),
+            )
+          : null,
       )
     }
 
@@ -87,33 +119,7 @@ export const HomeIndex = () => {
       "section",
       { class: "home" },
       mast(fileData.frontmatter ?? {}),
-      essays.length > 0
-        ? h(
-            "section",
-            { class: "idx", "aria-labelledby": "idx-writing" },
-            h("h2", { id: "idx-writing", class: "idx-label" }, t(lang, "writing")),
-            essayList(essays.slice(0, HOME_ROWS)),
-            essays.length > HOME_ROWS
-              ? h(
-                  "p",
-                  { class: "idx-more" },
-                  h(
-                    "a",
-                    { href: hrefOf("writing/index") },
-                    t(lang, "allWriting", { n: essays.length }),
-                  ),
-                )
-              : null,
-          )
-        : null,
-      works.length > 0
-        ? h(
-            "section",
-            { class: "idx idx--works", "aria-labelledby": "idx-works" },
-            h("h2", { id: "idx-works", class: "idx-label" }, t(lang, "works")),
-            workList(),
-          )
-        : null,
+      SECTIONS.filter((section) => section.home).map(block),
     )
   }
   return Component

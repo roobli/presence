@@ -2,6 +2,7 @@ import { readFileSync } from "fs"
 import { h } from "preact"
 import { formatDate, isoDate } from "../../presence-shared/dates.js"
 import { langOf, t, ZH } from "../../presence-shared/locale.js"
+import { indexSlugOf, sectionOf } from "../../presence-shared/sections.js"
 import {
   hrefOf,
   joined,
@@ -23,9 +24,10 @@ import {
 
 const client = readFileSync(new URL("./client.js", import.meta.url), "utf8")
 
-const KICKERS = {
-  essay: { key: "writing", slug: "writing/index" },
-  work: { key: "works", slug: "works/index" },
+// The kicker names the page's section and links to the section's own page.
+function kickerOf(slug) {
+  const section = sectionOf(slug)
+  return section ? { key: section.label, slug: indexSlugOf(section) } : null
 }
 
 const LANGUAGE_NAMES = { en: "English", [ZH]: "中文" }
@@ -76,7 +78,9 @@ export const PageHeader = () => {
     const fm = fileData.frontmatter ?? {}
     const kind = fileData.presence?.kind
     const lang = langOf(fileData)
-    const kicker = KICKERS[kind]
+    // Entries only: a section's own page is titled with the section's name.
+    const isEntry = kind !== "home" && kind !== "folder" && kind !== "page"
+    const kicker = isEntry ? kickerOf(fileData.i18n?.base ?? fileData.slug) : null
 
     let dek = null
     let meta = null

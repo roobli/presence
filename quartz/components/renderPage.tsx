@@ -14,6 +14,9 @@ import { GlobalConfiguration } from "../cfg"
 import { i18n } from "../i18n"
 import { styleText } from "util"
 import { resolveFrame } from "./frames"
+// Page kind from the slug alone, for pages presence-derive never sees, such as
+// the virtual folder listings. Same rules as presence-derive.
+import { pageKind } from "../plugins/local/presence-shared/sections.js"
 import type { TreeTransform } from "../plugins/types"
 import type { BuildCtx } from "../util/ctx"
 
@@ -295,18 +298,6 @@ export function renderTranscludes(
   }
 
   walk(root)
-}
-
-/**
- * Page kind from the slug alone, for pages presence-derive never sees, such as
- * the virtual folder listings. Same rules as presence-derive.
- */
-function pageKind(slug: FullSlug): string {
-  if (slug === "index") return "home"
-  if (slug.endsWith("/index")) return "folder"
-  if (slug.startsWith("writing/")) return "essay"
-  if (slug.startsWith("works/")) return "work"
-  return "page"
 }
 
 export function renderPage(

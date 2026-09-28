@@ -3,6 +3,7 @@ import { langOf, t } from "../../presence-shared/locale.js"
 import {
   essaysForWork,
   hrefOf,
+  listingSlugOf,
   relatedWork,
   renderWorkRow,
   renderWritingRow,
@@ -64,7 +65,7 @@ export const EndMatter = () => {
             ? h(
                 "p",
                 { class: "idx-more" },
-                h("a", { href: hrefOf("writing/index") }, t(lang, "allWriting", { n: all.length })),
+                h("a", { href: hrefOf(listingSlugOf("essay")) }, t(lang, "allWriting", { n: all.length })),
               )
             : null,
         ),

@@ -1,6 +1,8 @@
 import fs from "node:fs/promises"
 import path from "node:path"
 import { languageVersions, pageUrl } from "../i18n-slug/index.js"
+import { t } from "../presence-shared/locale.js"
+import { indexSlugOf, SECTIONS, sectionOf } from "../presence-shared/sections.js"
 
 /**
  * sitemap.xml, index.xml, and llms.txt — replacing the feeds content-index writes
@@ -11,7 +13,7 @@ import { languageVersions, pageUrl } from "../i18n-slug/index.js"
  * fills up with them. This emitter reads only real content files:
  *   sitemap.xml  every listed page plus translations, with xhtml:link alternates
  *                for each language pair (the same set as the hreflang head tags)
- *   index.xml    RSS 2.0 of English pages under writing/ and works/, newest first
+ *   index.xml    RSS 2.0 of English entries in feed sections (sections.js), newest first
  *                by frontmatter date
  *   llms.txt     short English-primary map of the public site for generative engines
  *
@@ -19,7 +21,11 @@ import { languageVersions, pageUrl } from "../i18n-slug/index.js"
  */
 
 const EN = "en"
-const FEED_SECTIONS = ["writing/", "works/"]
+
+// An entry (not a section's own page) of a section that goes into the feeds.
+function isFeedEntry(slug) {
+  return sectionOf(slug)?.feed === true && !slug.endsWith("/index")
+}
 
 function escapeXml(value) {
   return String(value)
@@ -145,7 +151,7 @@ function generateFeed(cfg, pages) {
 
 /**
  * Concise generative-engine map. English primary; one brief CN line.
- * Essays are English public writing/* pages (not translations, not indexes).
+ * Essays are English public essay-kind entries of feed sections (not translations).
  */
 export function generateLlmsTxt(cfg, pages) {
   const baseUrl = cfg.baseUrl
@@ -160,8 +166,8 @@ export function generateLlmsTxt(cfg, pages) {
       (data) =>
         data.unlisted !== true &&
         (data.i18n?.lang ?? EN) === EN &&
-        data.slug.startsWith("writing/") &&
-        !data.slug.endsWith("/index") &&
+        isFeedEntry(data.slug) &&
+        sectionOf(data.slug).kind === "essay" &&
         (data.presence?.kind === "essay" || data.presence?.kind === undefined),
     )
     .map((data) => {
@@ -189,8 +195,9 @@ export function generateLlmsTxt(cfg, pages) {
     ``,
     `- Site: ${pageUrl(baseUrl, "index")}`,
     `- About: ${pageUrl(baseUrl, "about")}`,
-    `- Writing: ${pageUrl(baseUrl, "writing/index")}`,
-    `- Works: ${pageUrl(baseUrl, "works/index")}`,
+    ...SECTIONS.filter((section) => section.feed).map(
+      (section) => `- ${t(EN, section.label)}: ${pageUrl(baseUrl, indexSlugOf(section))}`,
+    ),
     `- RSS: https://${baseUrl}/index.xml`,
     ``,
     `## Essays`,
@@ -233,11 +240,7 @@ export function PresenceFeeds() {
     const pages = content.map(([, file]) => file.data).filter(isContentPage)
     const sitemapPages = pages.filter((data) => data.unlisted !== true || isTranslation(data))
     const feedPages = pages.filter(
-      (data) =>
-        data.unlisted !== true &&
-        (data.i18n?.lang ?? EN) === EN &&
-        FEED_SECTIONS.some((section) => data.slug.startsWith(section)) &&
-        !data.slug.endsWith("/index"),
+      (data) => data.unlisted !== true && (data.i18n?.lang ?? EN) === EN && isFeedEntry(data.slug),
     )
 
     return Promise.all([

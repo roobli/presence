@@ -1,4 +1,18 @@
+@use "sass:map";
 @use "../variables" as *;
+
+// Result labels per section. Mirrors SECTIONS in
+// plugins/local/presence-shared/sections.js; change both together.
+$sections: (
+  writing: (
+    en: "Essay",
+    zh: "文章",
+  ),
+  works: (
+    en: "Work",
+    zh: "作品",
+  ),
+);
 
 // ---------------------------------------------------------------------------
 // Quick open (plugins/fuzzy-search)
@@ -314,12 +328,10 @@
               color: var(--ink-muted-color);
             }
 
-            &[id^="writing/"]::before {
-              content: "Essay";
-            }
-
-            &[id^="works/"]::before {
-              content: "Work";
+            @each $id, $labels in $sections {
+              &[id^="#{$id}/"]::before {
+                content: map.get($labels, en);
+              }
             }
 
             &[id$="/index"]::before {
@@ -369,12 +381,10 @@
       content: "页面";
     }
 
-    &[id^="writing/"]::before {
-      content: "文章";
-    }
-
-    &[id^="works/"]::before {
-      content: "作品";
+    @each $id, $labels in $sections {
+      &[id^="#{$id}/"]::before {
+        content: map.get($labels, zh);
+      }
     }
 
     &[id$="/index"]::before {

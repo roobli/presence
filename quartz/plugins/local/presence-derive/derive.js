@@ -1,4 +1,5 @@
 import { styleText } from "node:util"
+import { pageKind } from "../presence-shared/sections.js"
 
 /**
  * Page data stored as file.data.presence, read by renderPage (kind), the page
@@ -13,7 +14,7 @@ import { styleText } from "node:util"
  *   figureOffsets   words before each figure
  *   words           each Han character counts as one word
  *   readingMinutes  ceil(words / 200), or ceil(Han characters / 400) on zh pages
- *   relation        an essay's work slug: frontmatter work, else its first works/* link
+ *   relation        an essay's work slug: frontmatter work, else its first link to a work page
  *
  * Word counts include code, diagrams and display math, which take reading time
  * too. They skip script and style, figure frames (so a figure's chrome never
@@ -60,15 +61,6 @@ const INLINE_TAGS = new Set([
 
 function warn(message) {
   console.warn(styleText("yellow", "warning:") + " presence-derive: " + message)
-}
-
-// A translation passes its original's slug, so writing/foo/zh is an essay.
-function pageKind(slug) {
-  if (slug === "index") return "home"
-  if (slug.endsWith("/index")) return "folder"
-  if (slug.startsWith("writing/")) return "essay"
-  if (slug.startsWith("works/")) return "work"
-  return "page"
 }
 
 /** Words in a run of text, where each Han character is a word of its own. */
@@ -200,7 +192,7 @@ function relationOf(ctx, file, kind) {
     return slug
   }
   const links = file.data.links ?? []
-  return links.find((link) => link.startsWith("works/") && link !== "works/index") ?? null
+  return links.find((link) => pageKind(link) === "work") ?? null
 }
 
 export function markdownPlugins(_ctx) {

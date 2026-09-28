@@ -1,6 +1,7 @@
 import { h } from "preact"
 import { formatDate, isoDate } from "./dates.js"
 import { isZh, langOf, t, ZH } from "./locale.js"
+import { indexSlugOf, SECTIONS, sectionOfKind } from "./sections.js"
 import { renderSpine } from "./spine.js"
 
 // Row data and row markup for the homepage, the folder pages, the page header
@@ -36,10 +37,10 @@ const isListed = (file) => file.unlisted !== true && file.frontmatter?.unlisted 
 // i18n-slug gives a translation its original's slug as base.
 const isTranslation = (file) => Boolean(file.i18n?.base) && file.i18n.base !== file.slug
 
-function isEntryOf(file, folder) {
+function isEntryOf(file, section) {
   const slug = file.slug ?? ""
   return (
-    slug.startsWith(`${folder}/`) &&
+    slug.startsWith(`${section.id}/`) &&
     !slug.endsWith("/index") &&
     isListed(file) &&
     !isTranslation(file)
@@ -58,14 +59,32 @@ function compareEntries(a, b) {
   return titleOf(a).localeCompare(titleOf(b), undefined, { numeric: true })
 }
 
-/** Listed essays without translations or folder pages, newest first. */
+/** A section's listed entries without translations or its own page, newest first. */
+export function selectEntries(allFiles, section) {
+  return allFiles.filter((file) => isEntryOf(file, section)).sort(compareEntries)
+}
+
+// Entries of every section whose entries are of this kind.
+function selectKind(allFiles, kind) {
+  return SECTIONS.filter((section) => section.kind === kind)
+    .flatMap((section) => allFiles.filter((file) => isEntryOf(file, section)))
+    .sort(compareEntries)
+}
+
+/** Listed essays, newest first. */
 export function selectEssays(allFiles) {
-  return allFiles.filter((file) => isEntryOf(file, "writing")).sort(compareEntries)
+  return selectKind(allFiles, "essay")
 }
 
 /** Listed works, newest first. */
 export function selectWorks(allFiles) {
-  return allFiles.filter((file) => isEntryOf(file, "works")).sort(compareEntries)
+  return selectKind(allFiles, "work")
+}
+
+/** The page that lists every entry of this kind: writing/index for essays. */
+export function listingSlugOf(kind) {
+  const section = sectionOfKind(kind)
+  return section ? indexSlugOf(section) : "index"
 }
 
 const findSlug = (allFiles, slug) => allFiles.find((file) => file.slug === slug) ?? null
@@ -91,7 +110,7 @@ export function readingMinutes(file, allFiles) {
 export function relatedWork(file, allFiles) {
   const slug = file.presence?.relation ?? originalOf(file, allFiles)?.presence?.relation
   const work = slug ? findSlug(allFiles, slug) : null
-  return work && isEntryOf(work, "works") ? work : null
+  return work && selectWorks([work]).length > 0 ? work : null
 }
 
 /** Essays whose relation is this work, plus essays the work page links to. */
