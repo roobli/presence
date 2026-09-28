@@ -3,6 +3,7 @@ import path from "node:path"
 import { languageVersions, pageUrl } from "../i18n-slug/index.js"
 import { t } from "../presence-shared/locale.js"
 import { indexSlugOf, SECTIONS, sectionOf } from "../presence-shared/sections.js"
+import { generateRedirects } from "./redirects.js"
 
 /**
  * sitemap.xml, index.xml, and llms.txt — replacing the feeds content-index writes
@@ -16,6 +17,7 @@ import { indexSlugOf, SECTIONS, sectionOf } from "../presence-shared/sections.js
  *   index.xml    RSS 2.0 of English entries in feed sections (sections.js), newest first
  *                by frontmatter date
  *   llms.txt     short English-primary map of the public site for generative engines
+ *   _redirects   a 301 from every page alias for Cloudflare Pages (redirects.js)
  *
  * URLs come from i18n-slug's pageUrl, so <loc> always equals the canonical link.
  */
@@ -260,6 +262,7 @@ export function PresenceFeeds() {
       write(ctx, "sitemap.xml", generateSitemap(cfg.baseUrl, sitemapPages)),
       write(ctx, "index.xml", generateFeed(cfg, feedPages)),
       write(ctx, "llms.txt", generateLlmsTxt(cfg, pages)),
+      write(ctx, "_redirects", generateRedirects(pages)),
     ])
   }
 

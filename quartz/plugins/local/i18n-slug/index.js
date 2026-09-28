@@ -41,8 +41,8 @@ function translationSlug(base) {
   return `${base}/zh`
 }
 
-// URL path of a slug: index -> "", essays/index -> "essays/"
-function urlPath(slug) {
+/** URL path of a slug: index -> "", essays/index -> "essays/". */
+export function urlPath(slug) {
   if (slug === "index") return ""
   return slug.endsWith("/index") ? slug.slice(0, -"index".length) : slug
 }

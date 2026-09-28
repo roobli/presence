@@ -72,6 +72,7 @@ async function _navigate(url: URL, isBack: boolean = false) {
     .then((res) => {
       const contentType = res.headers.get("content-type")
       if (contentType?.startsWith("text/html")) {
+        url = landedUrl(url, res)
         return res.text()
       } else {
         window.location.assign(url)
@@ -139,6 +140,19 @@ async function _navigate(url: URL, isBack: boolean = false) {
 
   notifyNav(getFullSlug(window))
   delete announcer.dataset.persist
+}
+
+// The address a fetched page actually came from. An old URL is answered by a
+// 301 from the host or by an alias page that fetchCanonical follows; either
+// way the page is resolved against, and recorded in history at, its own
+// address, keeping the hash that was asked for. Without this, relative links
+// on /essays/foo/zh reached through /zh/writing/foo would resolve a level off.
+function landedUrl(requested: URL, res: Response): URL {
+  if (!res.url) return requested
+  const landed = new URL(res.url)
+  if (landed.pathname === requested.pathname) return requested
+  landed.hash = requested.hash
+  return landed
 }
 
 // Runs a scroll with CSS scroll-behavior switched off, so it lands in one step
