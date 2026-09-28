@@ -16,7 +16,7 @@ A new page needs only markdown. Type, colour, spacing, the column and every elem
 
 The homepage, the sidebar and each section's page list entries on their own; a section appears once it has an entry. Slugs are lowercase and hyphenated, and the slug is the URL. Sections are defined in `quartz/plugins/local/presence-shared/sections.js`.
 
-Essays used to live under `/writing/` and projects under `/works/`. Every old URL still redirects to the new one; a section renamed later keeps its old name in `formerly` in `sections.js`, and the redirects follow from that.
+Essays used to live under `/writing/` and projects under `/works/`. Every old URL still redirects to the new one; a section renamed later keeps its old name in `formerly` in `sections.js`, and the redirects follow from that. The same goes for `aliases:` in a page's frontmatter. Cloudflare Pages answers each old URL with a 301 from the generated `_redirects`, and the build also writes an HTML redirect page there for any other host.
 
 ## Frontmatter
 
