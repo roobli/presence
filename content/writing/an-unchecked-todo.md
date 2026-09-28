@@ -1,8 +1,9 @@
 ---
 title: An unchecked todo
 lang: en
-alt: /writing/between-comparison-and-love/zh
+alt: /writing/an-unchecked-todo/zh
 description: "A reminder I set for myself, an essay scolding the young for their philosophy habit, and a message calling someone a “desperate illiterate.” I looked at the three of them together for a long time and came away without a conclusion."
+socialDescription: "A todo I set for myself came back and caught me. A night’s notes on comparison, envy, AI, and the gap between wanting to have done a thing and doing it."
 date: 2026-09-28
 tags:
   - philosophy
