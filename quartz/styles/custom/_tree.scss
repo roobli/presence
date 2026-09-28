@@ -382,3 +382,73 @@ svg.tpl-tree-guides {
     }
   }
 }
+
+// --- presence layer ----------------------------------------------------------
+// The tree speaks the index's voice (_plates.scss). A section, the top-level
+// folder, is a title-block label with a swatch for a mark and its entry count
+// at the end (data-count, from roob-ui's tree.js). Entries are set in the
+// display face. The open page is a small ink plate with a signal edge, the
+// same object the homepage links it from.
+.explorer-content {
+  > ul > li > .folder-container {
+    .folder-title {
+      font-family: var(--font-label);
+      font-size: var(--size-label);
+      font-weight: 550;
+      font-stretch: var(--label-stretch);
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+      color: var(--ink-strong-color);
+    }
+
+    .folder-title::before {
+      width: 8px;
+      height: 8px;
+      margin-inline: 3px;
+      border-radius: 2px;
+      background-color: var(--plate-ink);
+      mask-image: none;
+      -webkit-mask-image: none;
+
+      // The ink plate sinks into the dark sidebar; the swatch takes the
+      // signal there, as the ink plate's own marks do.
+      [saved-theme="dark"] & {
+        background-color: var(--signal);
+      }
+    }
+  }
+
+  .folder-container[data-count]::after {
+    content: attr(data-count);
+    flex: none;
+    margin-left: auto;
+    padding-left: var(--space-2);
+    font-family: var(--font-label);
+    font-size: 10.5px;
+    font-stretch: var(--label-stretch);
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-muted-color);
+  }
+
+  a.nav-file-title {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 500;
+    font-stretch: 94%;
+    letter-spacing: 0;
+  }
+
+  a.nav-file-title.active,
+  a.nav-file-title.is-active {
+    background-color: var(--plate-ink);
+    box-shadow: inset 3px 0 0 var(--signal);
+    color: var(--on-ink);
+    font-weight: 600;
+  }
+
+  a.nav-file-title.active::before,
+  a.nav-file-title.is-active::before {
+    background-color: var(--signal);
+  }
+}

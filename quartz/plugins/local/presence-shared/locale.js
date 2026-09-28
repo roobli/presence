@@ -26,6 +26,19 @@ const STRINGS = {
     // "Built with <a>Quartz</a>": the text before and after the link.
     builtWithBefore: "Built with ",
     builtWithAfter: "",
+    // Homepage plates and the index ledger.
+    latest: "Latest",
+    latestNote: ({ n }) =>
+      `The newest essay${n > 0 ? ` and the ${["one", "two", "three"][n - 1] ?? n} before it` : ""}. Every essay is in the index below.`,
+    index: "Index",
+    readEssay: "Read the essay",
+    read: "Read",
+    openWork: "Open the work",
+    essaysCount: ({ n }) => (n === 1 ? "1 essay" : `${n} essays`),
+    worksCount: ({ n }) => (n === 1 ? "1 work" : `${n} works`),
+    updated: ({ date }) => `Updated ${date}`,
+    minShort: ({ n }) => `${n} min`,
+    figuresShort: ({ n }) => (n === 1 ? "1 live figure" : `${n} live figures`),
   },
   [ZH]: {
     writing: "文章",
@@ -45,6 +58,18 @@ const STRINGS = {
     designEssay: "设计文章",
     builtWithBefore: "用 ",
     builtWithAfter: " 构建",
+    latest: "最新",
+    latestNote: ({ n }) =>
+      `最新的一篇${n > 0 ? `，和它之前的${["一", "两", "三"][n - 1] ?? n}篇` : ""}。全部文章都在下面的索引里。`,
+    index: "索引",
+    readEssay: "阅读全文",
+    read: "阅读",
+    openWork: "查看作品",
+    essaysCount: ({ n }) => `${n} 篇文章`,
+    worksCount: ({ n }) => `${n} 件作品`,
+    updated: ({ date }) => `更新于 ${date}`,
+    minShort: ({ n }) => `${n} 分钟`,
+    figuresShort: ({ n }) => `${n} 个交互图`,
   },
 }
 

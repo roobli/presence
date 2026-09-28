@@ -1,12 +1,13 @@
 import { h } from "preact"
-import { formatDate, isoDate } from "./dates.js"
+import { isoDate } from "./dates.js"
 import { isZh, langOf, t, ZH } from "./locale.js"
 import { indexSlugOf, SECTIONS, sectionOfKind } from "./sections.js"
-import { renderSpine } from "./spine.js"
 
-// Row data and row markup for the homepage, the folder pages, the page header
-// and the end matter. Everything is derived from allFiles and
-// file.data.presence, so nothing about an essay or a work is typed twice.
+// Entry data shared by the index surfaces, the page header and the end matter:
+// section selectors, reading time, essay-work relations, work links and the
+// compact work row. The essay rows, plates and ledger are in plates.js.
+// Everything is derived from allFiles and file.data.presence, so nothing about
+// an essay or a work is typed twice.
 
 /** Essay rows on the homepage before the "All writing (N)" link. */
 export const HOME_ROWS = 8
@@ -169,50 +170,6 @@ export function workLinks(work, lang, { zh = true, essays = [] } = {}) {
 // A row in a language other than the page's says so; its chrome lines say
 // they are in the page's language.
 const langIfOther = (own, other) => (own === other ? undefined : own)
-
-/**
- * One essay row: full title, dek, meta line (date, reading time, live
- * figures, and a 中文 link when a translation exists) and the section spine.
- * lang is the page's chrome language.
- */
-export function renderWritingRow(file, { lang, allFiles }) {
-  const fm = file.frontmatter ?? {}
-  const own = langOf(file)
-  const facts = []
-  const date = isoDate(fm.date)
-  if (date) facts.push(h("time", { datetime: date }, formatDate(date, lang)))
-  const minutes = readingMinutes(file, allFiles)
-  if (minutes) facts.push(t(lang, "minRead", { n: minutes }))
-  const figures = file.presence?.figures?.length ?? 0
-  if (figures > 0) facts.push(t(lang, "liveFigures", { n: figures }))
-  const translation = file.i18n?.alternates?.find((alternate) => isZh(alternate.lang))
-  if (translation) {
-    facts.push(
-      h(
-        "a",
-        {
-          class: "idx-alt",
-          href: hrefOf(translation.slug),
-          lang: ZH,
-          hreflang: ZH,
-          rel: "alternate",
-        },
-        "中文",
-      ),
-    )
-  }
-
-  return h(
-    "li",
-    { class: "idx-row", lang: langIfOther(own, lang) },
-    h("h3", { class: "idx-title" }, h("a", { href: hrefOf(file.slug) }, titleOf(file))),
-    fm.description ? h("p", { class: "idx-dek" }, fm.description) : null,
-    facts.length > 0
-      ? h("p", { class: "idx-meta", lang: langIfOther(lang, own) }, joined(facts))
-      : null,
-    renderSpine(file.presence),
-  )
-}
 
 /**
  * One work row. compact is the Related work card under an essay: a smaller

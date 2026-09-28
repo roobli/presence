@@ -2,51 +2,11 @@
 @use "./page-header" as ph;
 
 // ---------------------------------------------------------------------------
-// Homepage and folder index (presence-index): thesis, intro and links, then
-// the derived Writing and Works rows, each essay with its section spine. The
-// end matter reuses .idx-list, .idx-row and .work-row, so those rules stand
-// on their own outside .home.
+// What the index surfaces share with the end matter: section labels, the
+// "All writing" link, the section spine and the compact work row under an
+// essay. The homepage and section pages themselves are in _plates.scss.
 // ---------------------------------------------------------------------------
-.home-mast {
-  margin-bottom: var(--space-8);
-
-  @media all and ($mobile) {
-    margin-bottom: var(--space-7);
-  }
-}
-
-.home .home-thesis {
-  margin: 0;
-  font-family: var(--font-text);
-  font-size: var(--size-title);
-  line-height: var(--lh-title);
-  font-weight: 600;
-  letter-spacing: 0;
-  color: var(--ink-strong-color);
-  overflow-wrap: break-word;
-}
-
-.home-intro {
-  margin: var(--space-3) 0 0;
-  font-family: var(--font-text);
-  font-size: var(--size-body);
-  line-height: var(--lh-body);
-  color: var(--ink-muted-color);
-}
-
-.home-links {
-  margin: var(--space-4) 0 0;
-  font-family: var(--font-interface);
-  font-size: var(--size-ui);
-  line-height: var(--lh-ui);
-  color: var(--ink-muted-color);
-
-  a {
-    @include ph.ui-link;
-    @include ph.focus-ring;
-    @include ph.touch-target;
-  }
-}
+// The mast (thesis, intro, links) is styled with the plates, _plates.scss.
 
 // --- sections ---------------------------------------------------------------
 .idx + .idx {
@@ -125,25 +85,6 @@
   font-size: var(--size-row-dek);
   line-height: var(--lh-row-dek);
   color: var(--text-color);
-}
-
-.idx-meta {
-  margin: 6px 0 0;
-  font-family: var(--font-interface);
-  font-size: var(--size-ui);
-  line-height: var(--lh-ui);
-  color: var(--ink-muted-color);
-  font-variant-numeric: tabular-nums;
-
-  @media all and ($mobile) {
-    font-size: 13.5px;
-  }
-
-  a {
-    @include ph.ui-link;
-    @include ph.focus-ring;
-    @include ph.touch-target;
-  }
 }
 
 // 中文 is two glyphs wide: pad it out to a 44px square target in place.

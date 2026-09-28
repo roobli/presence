@@ -4,13 +4,13 @@ import { render } from "preact-render-to-string"
 import { formatDate, isoDate } from "./dates.js"
 import { t } from "./locale.js"
 import { renderSpine, spineLength } from "./spine.js"
+import { claimsOf, renderCard, renderHero, renderLedgerRow } from "./plates.js"
 import {
   essaysForWork,
   hrefOf,
   readingMinutes,
   relatedWork,
   renderWorkRow,
-  renderWritingRow,
   selectEssays,
   selectWorks,
 } from "./rows.js"
@@ -167,16 +167,16 @@ describe("row data", () => {
 describe("rows", () => {
   const ctx = { lang: "en", allFiles }
 
-  test("an essay row states date, minutes and live figures", () => {
-    const html = render(renderWritingRow(apple, ctx))
+  test("a ledger row states date, minutes and live figures", () => {
+    const html = render(renderLedgerRow(apple, ctx))
     assert.match(html, /<time datetime="2026-09-11">Sep 11, 2026<\/time>/)
-    assert.match(html, /24 min read/)
+    assert.match(html, /24 min/)
     assert.match(html, /4 live figures/)
     assert.doesNotMatch(html, /idx-alt/)
   })
 
   test("only a paired essay links its translation", () => {
-    const html = render(renderWritingRow(keyboard, ctx))
+    const html = render(renderLedgerRow(keyboard, ctx))
     assert.match(
       html,
       /<a class="idx-alt" href="\/writing\/keyboard\/zh" lang="zh-Hans" hreflang="zh-Hans" rel="alternate">中文<\/a>/,
@@ -185,11 +185,11 @@ describe("rows", () => {
   })
 
   test("on a zh page an English row says so and keeps zh chrome", () => {
-    const html = render(renderWritingRow(apple, { lang: "zh-Hans", allFiles }))
-    assert.match(html, /<li class="idx-row" lang="en">/)
-    assert.match(html, /<p class="idx-meta" lang="zh-Hans">/)
+    const html = render(renderLedgerRow(apple, { lang: "zh-Hans", allFiles }))
+    assert.match(html, /<li class="ledger-row" lang="en">/)
+    assert.match(html, /<p class="ledger-meta" lang="zh-Hans">/)
     assert.match(html, /2026年9月11日/)
-    assert.match(html, /约 24 分钟/)
+    assert.match(html, /24 分钟/)
   })
 
   test("a work row links the site, the source, the zh site and its essay", () => {
@@ -238,9 +238,13 @@ describe("components", () => {
     const html = render(HomeIndex()(props(home)))
     assert.equal(html.match(/<h1/g).length, 1)
     assert.match(html, /<h1 class="home-thesis">Fewer pages. Harder claims.<\/h1>/)
-    assert.equal(html.match(/class="idx-row"/g).length, 3)
-    assert.equal(html.match(/class="work-row"/g).length, 1)
-    assert.equal(render(HomeIndex()(props(writingFolder))).match(/class="idx-row"/g).length, 3)
+    // The newest essay is the hero, the rest are cards, and the ledger lists all.
+    assert.equal(html.match(/class="plate plate--ink hero"/g).length, 1)
+    assert.equal(html.match(/class="plate plate--\w+ card"/g).length, 2)
+    assert.equal(html.match(/class="ledger-row"/g).length, 3)
+    assert.equal(html.match(/class="plate plate--paper work-plate"/g).length, 1)
+    assert.match(html, /3 essays/)
+    assert.equal(render(HomeIndex()(props(writingFolder))).match(/class="ledger-row"/g).length, 3)
     assert.equal(render(HomeIndex()(props(apple))), "")
   })
 
@@ -250,17 +254,66 @@ describe("components", () => {
     assert.match(underCuda, /href="\/works\/course"/)
     const underApple = render(EndMatter()(props(apple)))
     assert.doesNotMatch(underApple, /Related work/)
-    assert.equal(underApple.match(/class="idx-row"/g).length, 2)
+    assert.equal(underApple.match(/class="ledger-row"/g).length, 2)
     const underZh = render(EndMatter()(props(keyboardZh)))
     assert.match(underZh, /更多文章/)
     assert.doesNotMatch(underZh, /href="\/writing\/keyboard"/)
     const underWork = render(EndMatter()(props(course)))
     assert.match(underWork, /Essays about this work/)
-    assert.equal(underWork.match(/class="idx-row"/g).length, 3)
+    assert.equal(underWork.match(/class="ledger-row"/g).length, 3)
   })
 
   test("colophon credit in both languages", () => {
     assert.match(render(Colophon()(props(apple))), /Built with <a href="https:\/\/quartz.jzhao.xyz\/">Quartz<\/a>/)
     assert.match(render(Colophon()(props(keyboardZh))), /用 <a href="https:\/\/quartz.jzhao.xyz\/">Quartz<\/a> 构建/)
+  })
+})
+
+describe("plates", () => {
+  const ctx = { lang: "en", allFiles }
+
+  test("claims read figures, quotes and plain strings, and drop the rest", () => {
+    const file = {
+      frontmatter: {
+        claims: [
+          { figure: "54%", text: "of spend" },
+          { quote: "Harsh can be faked." },
+          "A plain line.",
+          { figure: 9 },
+          { text: "no figure" },
+          42,
+        ],
+      },
+    }
+    assert.deepStrictEqual(claimsOf(file), [
+      { figure: "54%", text: "of spend" },
+      { quote: "Harsh can be faked." },
+      { quote: "A plain line." },
+      { figure: "9", text: "" },
+    ])
+    assert.deepStrictEqual(claimsOf({ frontmatter: {} }), [])
+  })
+
+  test("a hero sets its claims beside the title, units smaller", () => {
+    const file = {
+      ...apple,
+      frontmatter: {
+        ...apple.frontmatter,
+        claims: [{ figure: "54%", text: "of spend" }, { quote: "A line." }],
+      },
+    }
+    const html = render(renderHero(file, ctx))
+    assert.match(html, /<p class="claim-figure">54<span class="fig-unit">%<\/span><\/p>/)
+    assert.match(html, /<li class="claim claim--quote"><q>A line.<\/q><\/li>/)
+    assert.match(html, /Read the essay/)
+  })
+
+  test("cards cycle tones and fall back to the dek without claims", () => {
+    assert.match(render(renderCard(apple, 0, ctx)), /plate--vellum card/)
+    assert.match(render(renderCard(apple, 1, ctx)), /plate--ink card/)
+    assert.match(render(renderCard(apple, 2, ctx)), /plate--clay card/)
+    const html = render(renderCard(apple, 0, ctx))
+    assert.match(html, /class="card-caption"/)
+    assert.doesNotMatch(html, /card-figure|card-quote/)
   })
 })

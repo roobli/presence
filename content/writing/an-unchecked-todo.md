@@ -7,6 +7,10 @@ socialDescription: "A todo I set for myself came back and caught me. A night’s
 date: 2026-09-28
 aliases:
   - writing/between-comparison-and-love
+claims:
+  - quote: "Harsh can be faked. Precise can't."
+  - quote: "What it took from me wasn't my worth. It was my shortcut."
+  - quote: "The todo is still there, unchecked."
 tags:
   - philosophy
   - AI

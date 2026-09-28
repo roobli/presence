@@ -1,0 +1,756 @@
+@use "../variables" as *;
+@use "./page-header" as ph;
+@use "./type" as *;
+
+// ---------------------------------------------------------------------------
+// Index surfaces (presence-index, presence-shared/plates.js): the homepage
+// mast, Latest (hero plate and cards), work plates and the index ledger, which
+// the section pages and the end matter share.
+//
+// Reading pages keep the paper and the text face. The index is a ledger of
+// claims set on plates: cyanotype ink, pale vellum and fired clay, each
+// scribed along its top edge like a drawing's scale bar. Headlines and figures
+// are Bricolage Grotesque, labels Martian Mono; every instance comes from the
+// tokens in _site-tokens.scss, since both files default to an extreme one.
+// Loads after _home.scss, which keeps the spine and the compact work row.
+// ---------------------------------------------------------------------------
+
+// --- the wider index column ---------------------------------------------------
+// The homepage and section pages set their plates on a wider measure. The
+// note column (_shell.scss) still clamps it to the track, so a narrow window
+// or a wide sidebar takes it back.
+body[data-kind="home"],
+body[data-kind="folder"] {
+  --measure: 66em;
+}
+
+// --- mast -----------------------------------------------------------------------
+.home .home-mast {
+  margin-bottom: var(--space-8);
+
+  @media all and ($mobile) {
+    margin-bottom: var(--space-7);
+  }
+}
+
+.plate-label,
+.home-label {
+  @include label;
+  margin: 0;
+}
+
+.home-label {
+  color: var(--ink-muted-color);
+}
+
+.home .home-thesis {
+  @include display(var(--size-display), var(--lh-display));
+  margin: var(--space-4) 0 0;
+  max-width: 14em;
+  color: var(--ink-strong-color);
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+.home .home-intro {
+  max-width: 38em;
+  margin: var(--space-4) 0 0;
+  font-family: var(--font-text);
+  font-size: var(--size-dek);
+  line-height: var(--lh-dek);
+  color: var(--ink-muted-color);
+}
+
+.home .home-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    margin: 0;
+  }
+
+  a {
+    @include label;
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--line-strong-color);
+    border-radius: 999px;
+    color: var(--ink-color);
+    text-decoration: none;
+    transition:
+      background-color var(--dur-fade) ease-out,
+      border-color var(--dur-fade) ease-out,
+      color var(--dur-fade) ease-out;
+
+    &:hover {
+      border-color: var(--ink-strong-color);
+      background: var(--ink-strong-color);
+      color: var(--canvas-color);
+    }
+
+    @include ph.focus-ring;
+
+    @media (pointer: coarse), #{$mobile} {
+      min-height: 44px;
+    }
+  }
+}
+
+// --- section heads --------------------------------------------------------------
+// On the index, a section opens with its name set large over a heavy rule,
+// and a note on the right says what the section holds.
+.home .idx-label,
+.feat-head .idx-label {
+  @include display(clamp(28px, 1.2vw + 20px, 38px), 1.05);
+  padding: 0;
+  border: 0;
+  color: var(--ink-strong-color);
+}
+
+.feat-head,
+.home .idx > .idx-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-5);
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-5);
+  border-bottom: 1.5px solid var(--ink-strong-color);
+}
+
+.feat-note {
+  margin: 0;
+  max-width: 34em;
+  font-family: var(--font-interface);
+  font-size: var(--size-ui);
+  line-height: var(--lh-ui);
+  color: var(--ink-muted-color);
+}
+
+.home .idx + .idx,
+.feat + .idx {
+  margin-top: var(--space-9);
+
+  @media all and ($mobile) {
+    margin-top: var(--space-8);
+  }
+}
+
+// --- plates -----------------------------------------------------------------------
+// Each tone sets the plate's colours as local names, so the parts below read
+// one set of names on every tone.
+.plate {
+  --pl-ink: var(--ink-strong-color);
+  --pl-muted: var(--ink-muted-color);
+  --pl-rule: var(--line-color);
+  --pl-figure: var(--accent-color);
+  --pl-mark: var(--accent-color);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  border-radius: var(--radius-plate);
+  background: var(--pl-bg, var(--surface-subtle-color));
+  color: var(--pl-ink);
+  box-shadow: var(--plate-shadow);
+  overflow: hidden;
+
+  // The scale bar: a minor tick every 8px and a major one every 40px, inset
+  // from the rounded corners.
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: var(--radius-plate);
+    right: var(--radius-plate);
+    height: 10px;
+    background:
+      repeating-linear-gradient(90deg, var(--pl-rule) 0 1px, transparent 1px 40px) 0 0 / 100% 10px
+        no-repeat,
+      repeating-linear-gradient(90deg, var(--pl-rule) 0 1px, transparent 1px 8px) 0 0 / 100% 5px
+        no-repeat;
+    pointer-events: none;
+  }
+
+  @media all and ($mobile) {
+    padding: var(--space-5) var(--space-4) var(--space-4);
+    border-radius: 14px;
+  }
+}
+
+.plate--ink {
+  --pl-bg: var(--plate-ink);
+  --pl-ink: var(--on-ink);
+  --pl-muted: var(--on-ink-muted);
+  --pl-rule: var(--on-ink-rule);
+  --pl-figure: var(--signal);
+  --pl-mark: var(--signal);
+}
+
+.plate--vellum {
+  --pl-bg: var(--plate-vellum);
+  --pl-ink: var(--on-vellum);
+  --pl-muted: var(--on-vellum-muted);
+  --pl-rule: var(--on-vellum-rule);
+  --pl-figure: var(--on-vellum);
+  --pl-mark: var(--on-vellum);
+}
+
+.plate--clay {
+  --pl-bg: var(--plate-clay);
+  --pl-ink: var(--on-clay);
+  --pl-muted: var(--on-clay-muted);
+  --pl-rule: var(--on-clay-rule);
+  --pl-figure: var(--on-clay);
+  --pl-mark: var(--on-clay);
+}
+
+.plate--paper {
+  --pl-bg: var(--surface-subtle-color);
+  --pl-rule: var(--line-strong-color);
+  box-shadow: inset 0 0 0 1px var(--line-color);
+}
+
+.plate-label {
+  color: var(--pl-muted);
+}
+
+.plate-label--split {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.plate-sep {
+  opacity: 0.7;
+}
+
+// The spine on a plate takes the plate's own colours.
+.plate .spine {
+  i {
+    background: color-mix(in srgb, var(--pl-ink) 34%, transparent);
+  }
+
+  b {
+    background: var(--pl-mark);
+  }
+}
+
+.plate-foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-5);
+
+  .spine {
+    margin-top: 0;
+  }
+}
+
+.plate-facts {
+  @include label;
+  margin: 0;
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--pl-rule);
+  color: var(--pl-muted);
+
+  a {
+    @include plate-link;
+    color: var(--pl-ink);
+  }
+}
+
+.plate-facts--split {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.plate-go {
+  @include plate-link;
+  color: var(--pl-ink);
+  white-space: nowrap;
+}
+
+// --- Latest: the hero plate ----------------------------------------------------------
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  grid-template-areas:
+    "main claims"
+    "foot foot";
+  column-gap: var(--space-8);
+  padding: var(--space-7) var(--space-7) var(--space-5);
+
+  @media all and (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "main"
+      "claims"
+      "foot";
+    padding: var(--space-6) var(--space-6) var(--space-5);
+  }
+
+  @media all and ($mobile) {
+    padding: var(--space-5) var(--space-4) var(--space-4);
+  }
+
+  > .plate-foot {
+    grid-area: foot;
+    margin-top: var(--space-6);
+    padding-top: 0;
+  }
+}
+
+.hero-main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.hero-main > .plate-label {
+  color: var(--pl-mark);
+}
+
+.hero-title {
+  @include display(var(--size-hero-title), var(--lh-hero-title));
+  margin: var(--space-4) 0 0;
+  color: var(--pl-ink);
+  text-wrap: balance;
+  overflow-wrap: break-word;
+
+  a {
+    @include plate-link;
+  }
+}
+
+.hero-dek {
+  margin: var(--space-4) 0 0;
+  max-width: 34em;
+  font-family: var(--font-text);
+  font-size: var(--size-dek);
+  line-height: var(--lh-dek);
+  color: var(--pl-muted);
+}
+
+.hero-cta {
+  margin: var(--space-5) 0 0;
+}
+
+.cta {
+  @include label;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border-radius: 999px;
+  background: var(--pl-mark);
+  color: var(--pl-bg);
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform var(--dur-fade) ease-out;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--pl-mark);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+.hero-claims {
+  grid-area: claims;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @media all and (max-width: 1100px) {
+    margin-top: var(--space-6);
+  }
+}
+
+.claim {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  column-gap: var(--space-5);
+  align-items: baseline;
+  margin: 0;
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--pl-rule);
+
+  &:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  @media all and ($mobile) {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-2);
+  }
+}
+
+.claim-figure {
+  @include figure(var(--size-figure-hero));
+  margin: 0;
+  color: var(--pl-figure);
+  overflow-wrap: anywhere;
+}
+
+.fig-unit {
+  font-size: 0.55em;
+  letter-spacing: 0;
+  margin-left: 0.04em;
+}
+
+.claim-text {
+  margin: 0;
+  font-family: var(--font-interface);
+  font-size: var(--size-ui);
+  line-height: 1.5;
+  color: var(--pl-ink);
+}
+
+// A quote claim takes the whole row: the line set in the display face, with a
+// hanging mark in the signal colour.
+.claim--quote {
+  display: block;
+
+  q {
+    @include display(clamp(20px, 0.8vw + 14px, 26px), 1.2);
+    display: block;
+    quotes: none;
+    font-weight: 600;
+    color: var(--pl-ink);
+    text-wrap: pretty;
+
+    &::before {
+      content: "“";
+      display: inline-block;
+      width: 0.5em;
+      margin-left: -0.5em;
+      color: var(--pl-mark);
+    }
+  }
+
+  @media all and ($mobile) {
+    q::before {
+      width: auto;
+      margin-left: 0;
+    }
+  }
+}
+
+// --- Latest: the cards -----------------------------------------------------------------
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+
+  // Two cards, or one, share the row rather than leaving a gap.
+  &:has(> :nth-child(2):last-child) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &:has(> :only-child) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  @media all and (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+
+    &:has(> :nth-child(2):last-child) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}
+
+.card {
+  min-height: 360px;
+
+  @media all and (max-width: 1100px) {
+    min-height: 0;
+  }
+}
+
+.card-title {
+  @include display(var(--size-card-title), var(--lh-card-title));
+  margin: var(--space-4) 0 0;
+  color: var(--pl-ink);
+  text-wrap: balance;
+
+  a {
+    @include plate-link;
+  }
+}
+
+.card-body {
+  margin-top: var(--space-5);
+}
+
+.card-figure {
+  @include figure(var(--size-figure));
+  margin: 0;
+  color: var(--pl-figure);
+  overflow-wrap: anywhere;
+}
+
+.card-caption {
+  margin: var(--space-3) 0 0;
+  font-family: var(--font-interface);
+  font-size: var(--size-ui);
+  line-height: 1.5;
+  color: var(--pl-ink);
+}
+
+.card-quote {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+
+  p {
+    @include display(clamp(22px, 0.9vw + 15px, 28px), 1.16);
+    margin: 0;
+    font-weight: 650;
+    color: var(--pl-ink);
+    text-wrap: pretty;
+
+    &::before {
+      content: "“";
+      display: block;
+      margin-bottom: -0.2em;
+      font-size: 2.2em;
+      line-height: 1;
+      color: var(--pl-mark);
+    }
+  }
+}
+
+// --- work plates ------------------------------------------------------------------------
+.work-plates {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.work-plate {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  column-gap: var(--space-6);
+  align-items: center;
+
+  &:not(:has(> .work-plate-media)) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  @media all and (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-5);
+  }
+}
+
+.work-plate-media {
+  display: block;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--line-color);
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    margin: 0;
+  }
+}
+
+.work-plate-title {
+  @include display(clamp(26px, 1vw + 20px, 34px), 1.08);
+  margin: var(--space-3) 0 0;
+  color: var(--pl-ink);
+
+  a {
+    @include plate-link;
+  }
+}
+
+.work-plate-dek {
+  margin: var(--space-3) 0 0;
+  font-family: var(--font-text);
+  font-size: var(--size-body);
+  line-height: var(--lh-body);
+  color: var(--text-color);
+}
+
+.work-plate-links {
+  @include label;
+  margin: var(--space-4) 0 0;
+  color: var(--pl-muted);
+
+  a {
+    color: var(--ink-strong-color);
+    text-decoration-line: underline;
+    text-decoration-color: var(--line-strong-color);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.3em;
+
+    &:hover {
+      color: var(--accent-color);
+      text-decoration-color: currentColor;
+    }
+
+    @include ph.focus-ring;
+    @include ph.touch-target;
+  }
+}
+
+// --- the ledger -------------------------------------------------------------------------
+// One row per essay: the date in the margin, title, dek and spine in the
+// middle, the short facts on the right. Rows are ruled like a ledger.
+.ledger {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 1px solid var(--line-color);
+}
+
+.ledger-row {
+  display: grid;
+  grid-template-columns: 8.5em minmax(0, 1fr) 13.5em;
+  column-gap: var(--space-5);
+  align-items: baseline;
+  margin: 0;
+  padding: var(--space-5) 0;
+  border-top: 1px solid var(--line-color);
+  transition: background-color var(--dur-fade) ease-out;
+
+  &:first-child {
+    border-top: 0;
+    padding-top: var(--space-2);
+  }
+
+  @media all and ($mobile) {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-2);
+  }
+}
+
+// Under an essay the column is the reading measure, so the end matter's rows
+// fold the facts under the title instead of giving them a column.
+.end .ledger-row {
+  grid-template-columns: 8em minmax(0, 1fr);
+
+  .ledger-meta {
+    grid-column: 2;
+    text-align: left;
+  }
+
+  @media all and ($mobile) {
+    grid-template-columns: minmax(0, 1fr);
+
+    .ledger-meta {
+      grid-column: auto;
+    }
+  }
+}
+
+.ledger-date,
+.ledger-meta {
+  @include label;
+  margin: 0;
+  color: var(--ink-muted-color);
+}
+
+.ledger-meta {
+  text-align: right;
+
+  a {
+    @include ph.ui-link;
+    @include ph.focus-ring;
+    @include ph.touch-target;
+  }
+
+  @media all and ($mobile) {
+    text-align: left;
+  }
+}
+
+.ledger-title {
+  @include display(clamp(20px, 0.5vw + 17px, 24px), 1.18);
+  margin: 0;
+  color: var(--ink-strong-color);
+  overflow-wrap: break-word;
+
+  a {
+    @include ph.quiet-link;
+    @include ph.focus-ring;
+    @include ph.touch-target;
+  }
+}
+
+.ledger-dek {
+  margin: var(--space-2) 0 0;
+  max-width: 44em;
+  font-family: var(--font-text);
+  font-size: var(--size-row-dek);
+  line-height: var(--lh-row-dek);
+  color: var(--text-color);
+}
+
+.home--folder .idx-year {
+  @include label;
+  padding-bottom: var(--space-2);
+  border-bottom: 1.5px solid var(--ink-strong-color);
+  color: var(--ink-strong-color);
+}
+
+// --- Chinese pages -----------------------------------------------------------------------
+// Han at the label size is too small to read, and the tracking meant for
+// capitals spreads it apart; labels on Chinese pages take a larger size and
+// close up.
+body:lang(zh) {
+  .plate-label,
+  .home-label,
+  .ph-kicker,
+  .ph-meta,
+  .plate-facts,
+  .ledger-date,
+  .ledger-meta {
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+  }
+}

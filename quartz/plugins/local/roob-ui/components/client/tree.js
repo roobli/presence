@@ -383,6 +383,7 @@ function treeRowLabel(row) {
  */
 function titleTreeRows(explorer) {
   requestFullTitles()
+  countFolders(explorer)
   var rows = explorer.querySelectorAll(".folder-title, a.nav-file-title")
   for (var i = 0; i < rows.length; i += 1) {
     var row = rows[i]
@@ -396,6 +397,23 @@ function titleTreeRows(explorer) {
     } else if (row.title) {
       row.removeAttribute("title")
     }
+  }
+}
+
+/** Each folder row states how many entries it holds, as data-count, which the
+ *  stylesheet prints at the row's end; the label and its ellipsis are left as
+ *  they are. Counted from the rendered list, so it follows the explorer's own
+ *  filter. */
+function countFolders(explorer) {
+  var containers = explorer.querySelectorAll(".folder-container")
+  for (var i = 0; i < containers.length; i += 1) {
+    var container = containers[i]
+    var outer = container.nextElementSibling
+    var list = outer ? outer.querySelector(":scope > ul") : null
+    if (!list) continue
+    var n = list.querySelectorAll(":scope > li:not(.overflow-end)").length
+    var count = n < 10 ? "0" + n : String(n)
+    if (container.dataset.count !== count) container.dataset.count = count
   }
 }
 

@@ -11,8 +11,9 @@
 //   feed      included in RSS and llms.txt
 //   open      expanded in the sidebar tree on a first visit
 //
-// SCSS cannot import this file. _search.scss keeps a matching $sections map for
-// its result labels; change both together.
+// Two places cannot import this file and keep their own copy; change them with
+// it: the $sections map in _search.scss (result labels) and the explorer's
+// sortFn rank in quartz.config.yaml (top-level folder order in the sidebar).
 
 export const SECTIONS = [
   { id: "writing", kind: "essay", label: "writing", home: true, feed: true, open: true },

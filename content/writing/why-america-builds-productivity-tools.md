@@ -4,6 +4,13 @@ lang: en
 alt: /writing/why-america-builds-productivity-tools/zh
 description: "Not ‘America loves Todoist.’ English-speaking professional strata, expensive labor, and ARR capital built a symptom market: micro-control for sale, responsibility sunk onto the self."
 date: 2026-09-15
+claims:
+  - figure: "54%"
+    text: "of 2024 global software spend landed in the U.S., $368.5 billion."
+  - figure: "<0.5%"
+    text: "of DingTalk's 25 million organizations paid for software by end-2023."
+  - figure: "72.0%"
+    text: "of Japanese IT talent sits inside IT vendors, against 34.6% in the U.S."
 tags:
   - SaaS
   - productivity

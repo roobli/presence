@@ -1,12 +1,12 @@
 import { h } from "preact"
 import { langOf, t } from "../../presence-shared/locale.js"
+import { renderLedgerRow } from "../../presence-shared/plates.js"
 import {
   essaysForWork,
   hrefOf,
   listingSlugOf,
   relatedWork,
   renderWorkRow,
-  renderWritingRow,
   selectEssays,
 } from "../../presence-shared/rows.js"
 
@@ -30,7 +30,7 @@ export const EndMatter = () => {
     const lang = langOf(fileData)
     const ctx = { lang, allFiles }
     const essayList = (files) =>
-      h("ul", { class: "idx-list" }, files.map((file) => renderWritingRow(file, ctx)))
+      h("ul", { class: "ledger" }, files.map((file) => renderLedgerRow(file, ctx)))
     const blocks = []
     const shown = new Set([fileData.slug, fileData.i18n?.base])
 

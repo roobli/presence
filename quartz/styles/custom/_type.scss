@@ -1,0 +1,58 @@
+// ---------------------------------------------------------------------------
+// Type roles for the index faces: display (Bricolage Grotesque) for headlines,
+// figure for the large numbers, label (Martian Mono) for title-block lines.
+// Also the link style for text on a plate. Mixins only, no CSS of their own;
+// _page-header.scss and _plates.scss use them. Every instance reads its weight and stretch from _site-tokens.scss.
+// ---------------------------------------------------------------------------
+
+@mixin display($size, $lh) {
+  font-family: var(--font-display);
+  font-size: $size;
+  line-height: $lh;
+  font-weight: var(--display-weight);
+  font-stretch: var(--display-stretch);
+  letter-spacing: var(--tracking-display);
+  font-synthesis: none;
+}
+
+@mixin figure($size) {
+  font-family: var(--font-display);
+  font-size: $size;
+  line-height: var(--lh-figure);
+  font-weight: var(--figure-weight);
+  font-stretch: var(--figure-stretch);
+  letter-spacing: var(--tracking-figure);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-synthesis: none;
+}
+
+@mixin label {
+  font-family: var(--font-label);
+  font-size: var(--size-label);
+  line-height: var(--lh-label);
+  font-weight: var(--label-weight);
+  font-stretch: var(--label-stretch);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+// A link on a plate: the plate's own ink, underlined on hover, since the
+// accent would not hold contrast on every tone.
+@mixin plate-link {
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: none;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.14em;
+
+  &:hover {
+    text-decoration-line: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+}
