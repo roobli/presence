@@ -17,6 +17,7 @@ import { generateRedirects } from "./redirects.js"
  *   index.xml    RSS 2.0 of English entries in feed sections (sections.js), newest first
  *                by frontmatter date
  *   llms.txt     short English-primary map of the public site for generative engines
+ *   robots.txt   allows everything and points at sitemap.xml
  *   _redirects   a 301 from every page alias for Cloudflare Pages (redirects.js)
  *
  * URLs come from i18n-slug's pageUrl, so <loc> always equals the canonical link.
@@ -239,6 +240,14 @@ export function generateLlmsTxt(cfg, pages) {
   return lines.join("\n")
 }
 
+/**
+ * robots.txt: the whole site is public, and the Sitemap line is how crawlers
+ * that were never told about the sitemap find it.
+ */
+export function generateRobotsTxt(baseUrl) {
+  return ["User-agent: *", "Allow: /", "", `Sitemap: https://${baseUrl}/sitemap.xml`, ""].join("\n")
+}
+
 async function write(ctx, name, content) {
   const target = path.join(ctx.argv.output, name)
   await fs.mkdir(path.dirname(target), { recursive: true })
@@ -262,6 +271,7 @@ export function PresenceFeeds() {
       write(ctx, "sitemap.xml", generateSitemap(cfg.baseUrl, sitemapPages)),
       write(ctx, "index.xml", generateFeed(cfg, feedPages)),
       write(ctx, "llms.txt", generateLlmsTxt(cfg, pages)),
+      write(ctx, "robots.txt", generateRobotsTxt(cfg.baseUrl)),
       write(ctx, "_redirects", generateRedirects(pages)),
     ])
   }
