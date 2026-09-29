@@ -19,6 +19,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Full history: pages without a date in their frontmatter take their
+          # modified date from git, and in a one-commit clone every file's
+          # last commit is HEAD, so each deploy would restamp them in the sitemap.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4

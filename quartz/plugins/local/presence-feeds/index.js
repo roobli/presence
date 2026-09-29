@@ -75,13 +75,38 @@ function pageDescription(data) {
   return ""
 }
 
+// The pages a listing shows: every section entry for the homepage, everything
+// under the folder for a section's or a series' own page, none for a page.
+function listedBy(slug) {
+  if (slug === "index") return (other) => sectionOf(other.slug) !== null
+  if (!slug.endsWith("/index")) return null
+  const prefix = slug.slice(0, -"index".length)
+  return (other) => other.slug !== slug && other.slug.startsWith(prefix)
+}
+
+/**
+ * A page's lastmod. A listing changes when an entry in it does, not only when
+ * its own index.md does, so it takes the newest of its own date and theirs.
+ */
+export function lastModified(data, pages) {
+  let latest = toDate(data.dates?.modified)
+  const listed = listedBy(data.slug)
+  if (!listed) return latest
+  for (const other of pages) {
+    if (!listed(other)) continue
+    const date = toDate(other.dates?.modified)
+    if (date && (!latest || date > latest)) latest = date
+  }
+  return latest
+}
+
 function generateSitemap(baseUrl, pages) {
   const entries = pages
     .map((data) => ({ data, loc: pageUrl(baseUrl, data.slug) }))
     .sort((a, b) => (a.loc < b.loc ? -1 : a.loc > b.loc ? 1 : 0))
     .map(({ data, loc }) => {
       const lines = [`  <url>`, `    <loc>${escapeXml(loc)}</loc>`]
-      const lastmod = toDate(data.dates?.modified)
+      const lastmod = lastModified(data, pages)
       if (lastmod) lines.push(`    <lastmod>${lastmod.toISOString()}</lastmod>`)
       for (const version of languageVersions(data)) {
         const href = escapeXml(pageUrl(baseUrl, version.slug))
