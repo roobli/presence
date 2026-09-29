@@ -1,6 +1,6 @@
 import test, { describe } from "node:test"
 import assert from "node:assert"
-import { lastModified } from "./index.js"
+import { generateSitemap, lastModified } from "./index.js"
 
 const page = (slug, modified) => ({ slug, dates: modified ? { modified } : undefined })
 
@@ -42,5 +42,21 @@ describe("presence-feeds sitemap lastmod", () => {
 
   test("a listing with no dates anywhere has no lastmod", () => {
     assert.equal(lastModified(pages[8], [pages[8]]), undefined)
+  })
+
+  test("the file is plain sitemap XML: translations listed, no XHTML alternates", () => {
+    const xml = generateSitemap("www.roobli.org", [
+      page("essays/a", "2026-09-11"),
+      {
+        ...page("essays/a/zh", "2026-09-11"),
+        i18n: { lang: "zh-Hans", base: "essays/a", alternates: [{ lang: "en", slug: "essays/a" }] },
+      },
+    ])
+    assert.match(
+      xml,
+      /^<\?xml version="1.0" encoding="UTF-8"\?>\n<urlset xmlns="http:\/\/www.sitemaps.org\/schemas\/sitemap\/0.9">\n/,
+    )
+    assert.ok(!xml.includes("xhtml"))
+    assert.ok(xml.includes("<loc>https://www.roobli.org/essays/a/zh</loc>"))
   })
 })
