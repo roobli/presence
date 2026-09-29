@@ -1,6 +1,6 @@
 import fs from "node:fs/promises"
 import path from "node:path"
-import { languageVersions, pageUrl } from "../i18n-slug/index.js"
+import { pageUrl } from "../i18n-slug/index.js"
 import { t } from "../presence-shared/locale.js"
 import { indexSlugOf, SECTIONS, sectionOf } from "../presence-shared/sections.js"
 import { generateRedirects } from "./redirects.js"
@@ -12,8 +12,10 @@ import { generateRedirects } from "./redirects.js"
  * content-index skips unlisted pages, so its sitemap has no translations, and it
  * dates virtual folder and tag pages with the build time, so its newest-first feed
  * fills up with them. This emitter reads only real content files:
- *   sitemap.xml  every listed page plus translations, with xhtml:link alternates
- *                for each language pair (the same set as the hreflang head tags)
+ *   sitemap.xml  every listed page plus translations. Language pairs are declared
+ *                once, by i18n-slug's hreflang head tags on each page: xhtml:link
+ *                alternates here would say the same again, and their XHTML
+ *                namespace stops browsers showing the file as an XML tree.
  *   index.xml    RSS 2.0 of English entries in feed sections (sections.js), newest first
  *                by frontmatter date
  *   llms.txt     short English-primary map of the public site for generative engines
@@ -100,7 +102,7 @@ export function lastModified(data, pages) {
   return latest
 }
 
-function generateSitemap(baseUrl, pages) {
+export function generateSitemap(baseUrl, pages) {
   const entries = pages
     .map((data) => ({ data, loc: pageUrl(baseUrl, data.slug) }))
     .sort((a, b) => (a.loc < b.loc ? -1 : a.loc > b.loc ? 1 : 0))
@@ -108,17 +110,13 @@ function generateSitemap(baseUrl, pages) {
       const lines = [`  <url>`, `    <loc>${escapeXml(loc)}</loc>`]
       const lastmod = lastModified(data, pages)
       if (lastmod) lines.push(`    <lastmod>${lastmod.toISOString()}</lastmod>`)
-      for (const version of languageVersions(data)) {
-        const href = escapeXml(pageUrl(baseUrl, version.slug))
-        lines.push(`    <xhtml:link rel="alternate" hreflang="${version.lang}" href="${href}"/>`)
-      }
       lines.push(`  </url>`)
       return lines.join("\n")
     })
 
   return [
     `<?xml version="1.0" encoding="UTF-8"?>`,
-    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">`,
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`,
     ...entries,
     `</urlset>`,
     ``,
