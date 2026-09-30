@@ -1,4 +1,4 @@
-import { clockOf, instantOf, isoDate } from "./dates.js"
+import { isoDate } from "./dates.js"
 import { isZh } from "./locale.js"
 import {
   entryKind,
@@ -19,8 +19,8 @@ import {
 //            Every other page in the folder is an episode, ordered by part.
 //   project  content/projects/<slug>.md: status, figures, links, a log
 //   note     content/notes/<slug>.md, short and dated
-//   post     content/posts/<date>-<slug>.md, a dated fragment with a time and
-//            an optional title, read in the timeline at /posts/
+//   post     content/posts/<date>-<slug>.md, a dated fragment with an optional
+//            title, read in the timeline at /posts/
 //
 // Relations: a reading page names its project with `project:` (or links to
 // it); an episode without one inherits its series'. A project's log gathers
@@ -77,19 +77,16 @@ const KIND_RANK = { essay: 0, episode: 1, note: 2, project: 3, post: 4 }
 const kindRank = (file) => KIND_RANK[entryKind(file.slug)] ?? 9
 const partDesc = (file) => (Number.isInteger(file.frontmatter?.part) ? -file.frontmatter.part : 0)
 
-// Newest first, by day and then by time where the date carries one (posts);
-// then frontmatter order, kind, later part and title, so that entries
-// published on the same day always list the same way.
+// Newest first; then frontmatter order, kind, later part and title, so that
+// entries published on the same day always list the same way.
 function compareEntries(a, b) {
   const dateA = dateOf(a) ?? ""
   const dateB = dateOf(b) ?? ""
   if (dateA !== dateB) return dateA < dateB ? 1 : -1
-  // Only two dates that both carry a clock compare by time; a timed post and
-  // a date-only essay of the same day fall through to kind and order.
-  if (clockOf(a.frontmatter?.date) && clockOf(b.frontmatter?.date)) {
-    const atA = instantOf(a.frontmatter.date)
-    const atB = instantOf(b.frontmatter.date)
-    if (atA !== null && atB !== null && atA !== atB) return atB - atA
+  // Posts carry no time of day. Two of one day list by file name, newest
+  // (2026-09-30-2 before 2026-09-30-1) first.
+  if (entryKind(a.slug) === "post" && entryKind(b.slug) === "post" && a.slug !== b.slug) {
+    return a.slug < b.slug ? 1 : -1
   }
   if (orderOf(a) !== orderOf(b)) return orderOf(a) - orderOf(b)
   if (kindRank(a) !== kindRank(b)) return kindRank(a) - kindRank(b)

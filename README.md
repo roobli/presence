@@ -41,8 +41,10 @@ Former experiment: `roobli/roob-note-site` at `note.roobli.org` (notes export pi
 
 ## Brand assets
 
-- `quartz/static/icon.png` — favicon / mark (not Quartz default)
-- `quartz/static/og-image.png` — default Open Graph / Twitter `summary_large_image`
-- `quartz/static/apple-touch-icon.png` — home-screen icon
+- `quartz/static/icon.png`: favicon and mark, a 256px PNG
+- `quartz/static/og-image.jpg`: default Open Graph / Twitter `summary_large_image`, 1280x720
+- `quartz/static/apple-touch-icon.png`: home-screen icon, 180px
+
+Export these without metadata (EXIF, XMP or C2PA provenance). Everything in `quartz/static/` is published as is.
 
 After changing these, push `main` so CF Pages redeploys; then re-scrape cards (X Card Validator / opengraph.xyz) if a URL was cached.

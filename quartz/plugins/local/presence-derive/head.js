@@ -145,8 +145,9 @@ export function personNode() {
   return {
     "@type": "Person",
     "@id": PERSON_ID,
-    name: "Dylan",
-    alternateName: ["cicada", "RoobLi"],
+    // The site's byline, never a real name: the author publishes as RoobLi.
+    name: "RoobLi",
+    alternateName: ["cicada"],
     url: `${SITE_ORIGIN}/about`,
     sameAs: ["https://github.com/lr00rl", "https://github.com/roobli"],
   }
@@ -339,6 +340,8 @@ export function additionalHead(ctx) {
       crossorigin: "",
     }),
     h("script", { dangerouslySetInnerHTML: { __html: italicFaceScript } }),
+    // iOS looks for a home-screen icon at the root unless the page names one.
+    h("link", { rel: "apple-touch-icon", href: "/static/apple-touch-icon.png" }),
     (fileData) => {
       const tag = structuredDataHead(cfg, fileData)
       return tag ? h(Fragment, null, tag) : h(Fragment, null)

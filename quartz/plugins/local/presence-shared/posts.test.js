@@ -1,14 +1,13 @@
 import test, { describe } from "node:test"
 import assert from "node:assert"
 import { render } from "preact-render-to-string"
-import { clockOf, instantOf } from "./dates.js"
 import { selectPosts, writingForProject } from "./entries.js"
 import { renderPost } from "./views.js"
 import { PageHeader } from "../presence-header/components/index.js"
 import { HomeIndex } from "../presence-index/components/index.js"
 import { EndMatter } from "../presence-end/components/index.js"
 import { SectionTree } from "../presence-tree/components/index.js"
-import { excerptOf, summaryOf } from "../presence-derive/derive.js"
+import { dateOnly, excerptOf, summaryOf } from "../presence-derive/derive.js"
 import { postsFeedHead } from "../presence-derive/head.js"
 import { generateFeed } from "../presence-feeds/index.js"
 
@@ -34,17 +33,17 @@ const post = (
 })
 
 const morning = post(
-  "posts/2026-09-30-morning",
-  { title: "Morning", date: "2026-09-30T08:10-07:00", tags: ["gpu"] },
+  "posts/2026-09-30-1",
+  { title: "Morning", date: "2026-09-30", tags: ["gpu"] },
   { untitled: true },
 )
-const evening = post("posts/2026-09-30-evening", {
+const evening = post("posts/2026-09-30-2", {
   title: "Evening post",
-  date: "2026-09-30T21:40-07:00",
+  date: "2026-09-30",
 })
 const august = post(
   "posts/2026-08-02-long",
-  { title: "长的一条", date: "2026-08-02T09:00+08:00" },
+  { title: "长的一条", date: "2026-08-02" },
   { minutes: 3, lang: "zh-Hans", relation: "projects/course" },
 )
 const course = {
@@ -64,24 +63,24 @@ const cfg = { pageTitle: "RoobLi", baseUrl: "www.roobli.org" }
 const props = (fileData) => ({ fileData, allFiles, cfg })
 
 describe("post dates", () => {
-  test("the clock is read as written, not converted", () => {
-    assert.equal(clockOf("2026-09-30T21:40-07:00"), "21:40")
-    assert.equal(clockOf("2026-09-30 09:05"), "09:05")
-    assert.equal(clockOf("2026-09-30"), null)
-    assert.equal(clockOf("2026-09-30T25:00"), null)
+  test("a time written into a post's date is cut back to the day, dates included", () => {
+    const fm = { date: "2026-09-30T21:40-07:00" }
+    const file = { data: { relativePath: "posts/x.md", dates: { created: new Date(), modified: new Date() } } }
+    const warn = console.warn
+    console.warn = () => {}
+    try {
+      dateOnly(file, fm)
+    } finally {
+      console.warn = warn
+    }
+    assert.equal(fm.date, "2026-09-30")
+    assert.equal(file.data.dates.modified.toISOString(), "2026-09-30T00:00:00.000Z")
   })
 
-  test("instants order by UTC; a time without an offset is read as UTC", () => {
-    assert.equal(instantOf("2026-09-30T21:40+08:00"), Date.UTC(2026, 8, 30, 13, 40))
-    assert.equal(instantOf("2026-09-30 09:05"), Date.UTC(2026, 8, 30, 9, 5))
-    assert.equal(instantOf("2026-09-30"), Date.UTC(2026, 8, 30))
-    assert.equal(instantOf("soon"), null)
-  })
-
-  test("posts of one day list newest first by time", () => {
+  test("posts of one day list by file name, newest first", () => {
     assert.deepStrictEqual(
       selectPosts(allFiles).map((file) => file.slug),
-      ["posts/2026-09-30-evening", "posts/2026-09-30-morning", "posts/2026-08-02-long"],
+      ["posts/2026-09-30-2", "posts/2026-09-30-1", "posts/2026-08-02-long"],
     )
   })
 
@@ -107,15 +106,15 @@ describe("the timeline", () => {
     )
   })
 
-  test("a post's time is its permalink, and an untitled post shows no title", () => {
+  test("a post links its own page, and an untitled post shows no title", () => {
     assert.match(
       html,
-      /<a class="post-time" href="\/posts\/2026-09-30-morning"><time[^>]*>08:10<\/time>/,
+      /<a class="post-permalink" href="\/posts\/2026-09-30-1">Permalink<\/a>/,
     )
     assert.doesNotMatch(html, />Morning</)
     assert.match(
       html,
-      /<h3 class="post-title"><a href="\/posts\/2026-09-30-evening">Evening post<\/a>/,
+      /<h3 class="post-title"><a href="\/posts\/2026-09-30-2">Evening post<\/a>/,
     )
   })
 
@@ -132,9 +131,10 @@ describe("the timeline", () => {
 })
 
 describe("a post's page", () => {
-  test("the label line carries its day and time; an untitled post's h1 is hidden", () => {
+  test("the label line carries its day and no time; an untitled post's h1 is hidden", () => {
     const html = render(PageHeader()(props(morning)))
-    assert.match(html, /<span class="entry-clock">08:10<\/span>/)
+    assert.match(html, /<time datetime="2026-09-30">Sep 30, 2026<\/time>/)
+    assert.doesNotMatch(html, /\d{2}:\d{2}/)
     assert.match(html, /class="article-title ph-title ph-title--hidden"/)
     assert.doesNotMatch(html, /titleblock--spec/)
   })
@@ -142,8 +142,8 @@ describe("a post's page", () => {
   test("the end matter links the older and newer post and the way back", () => {
     const html = render(EndMatter()(props(morning)))
     assert.match(html, /pn-link--older" href="\/posts\/2026-08-02-long"/)
-    assert.match(html, /pn-link--newer" href="\/posts\/2026-09-30-evening"/)
-    assert.match(html, /href="\/posts\/#p-2026-09-30-morning"/)
+    assert.match(html, /pn-link--newer" href="\/posts\/2026-09-30-2"/)
+    assert.match(html, /href="\/posts\/#p-2026-09-30-1"/)
   })
 
   test("the sidebar lists posts by month and marks the open post's month", () => {
@@ -151,7 +151,7 @@ describe("a post's page", () => {
     assert.match(html, /data-folderpath="posts\/index" data-count="03"/)
     assert.match(html, /is-active" href="\/posts\/#m-2026-09"/)
     assert.match(html, /href="\/posts\/#m-2026-08"/)
-    assert.doesNotMatch(html, /href="\/posts\/2026-09-30-morning"/)
+    assert.doesNotMatch(html, /href="\/posts\/2026-09-30-1"/)
   })
 })
 
@@ -185,7 +185,7 @@ describe("the posts feed", () => {
     assert.match(xml, /<title>RoobLi Posts<\/title>/)
     assert.match(xml, /<link>https:\/\/www\.roobli\.org\/posts\/<\/link>/)
     assert.match(xml, /href="https:\/\/www\.roobli\.org\/posts\/index\.xml" rel="self"/)
-    assert.ok(xml.indexOf("2026-09-30-evening") < xml.indexOf("2026-09-30-morning"))
+    assert.ok(xml.indexOf("2026-09-30-2") < xml.indexOf("2026-09-30-1"))
   })
 })
 
@@ -220,14 +220,14 @@ describe("review fixes", () => {
     assert.doesNotMatch(html, /No date/)
   })
 
-  test("a timed post and a date-only essay of one day keep kind order, not UTC time", () => {
+  test("a post and an essay of one day keep kind order", () => {
     const essay = {
       slug: "essays/same-day",
       frontmatter: { title: "Same day", date: "2026-09-30" },
       i18n: { lang: "en", base: "essays/same-day", alternates: [] },
       presence: { kind: "essay", entry: "essay" },
     }
-    const late = post("posts/late", { title: "Late", date: "2026-09-30T23:50+08:00" })
+    const late = post("posts/late", { title: "Late", date: "2026-09-30" })
     const order = writingForProject(
       { slug: "projects/x", links: ["essays/same-day", "posts/late"] },
       [late, essay],
@@ -238,7 +238,7 @@ describe("review fixes", () => {
   test("the timeline drops ids, sends in-page links to the post, and leaves footnotes there", () => {
     const withNote = post("posts/2026-09-30-note", {
       title: "With a footnote",
-      date: "2026-09-30T10:00-07:00",
+      date: "2026-09-30",
     })
     withNote.htmlAst = {
       type: "root",
@@ -275,7 +275,7 @@ describe("review fixes", () => {
   test("a link that is not http(s) is not rendered", () => {
     const bad = post("posts/bad", {
       title: "Bad",
-      date: "2026-09-30T10:00-07:00",
+      date: "2026-09-30",
       link: "javascript:alert(1)",
     })
     assert.doesNotMatch(render(renderPost(bad, { lang: "en", allFiles: [bad] })), /javascript:/)

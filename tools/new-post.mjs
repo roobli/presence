@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /**
- * Start a post: write content/posts/<date>-<slug>.md dated now, with the local
- * offset, then open it in the editor.
+ * Start a post: write content/posts/<date>-<slug>.md dated today, then open it
+ * in the editor. The date is a day only: a time of day or an offset from UTC
+ * would publish where the author is.
  *
- *   npm run post                          content/posts/2026-09-30-2140.md
+ *   npm run post                          content/posts/2026-09-30-1.md (then -2, -3)
  *   npm run post -- warp-shuffle          content/posts/2026-09-30-warp-shuffle.md
  *   npm run post -- --zh --tag cuda --tag gpu --title "..." --link https://...
  *   npm run post -- --no-open             only write the file
@@ -45,16 +46,9 @@ function parseArgs(argv) {
 
 const two = (n) => String(n).padStart(2, "0")
 
-/** 2026-09-30T21:40-07:00: the author's clock and its offset from UTC. */
-function localStamp(now) {
-  const offset = -now.getTimezoneOffset()
-  const sign = offset >= 0 ? "+" : "-"
-  const abs = Math.abs(offset)
-  return (
-    `${now.getFullYear()}-${two(now.getMonth() + 1)}-${two(now.getDate())}` +
-    `T${two(now.getHours())}:${two(now.getMinutes())}` +
-    `${sign}${two(Math.floor(abs / 60))}:${two(abs % 60)}`
-  )
+/** 2026-09-30: today in the author's calendar, and nothing finer. */
+function localDay(now) {
+  return `${now.getFullYear()}-${two(now.getMonth() + 1)}-${two(now.getDate())}`
 }
 
 function slugify(text) {
@@ -67,8 +61,8 @@ function slugify(text) {
 // YAML needs quotes around a value with a colon, a hash or a leading quote.
 const yamlString = (value) => JSON.stringify(value)
 
-function frontmatter(options, stamp) {
-  const lines = ["---", `date: ${stamp}`]
+function frontmatter(options, day) {
+  const lines = ["---", `date: ${day}`]
   if (options.title) lines.push(`title: ${yamlString(options.title)}`)
   if (options.zh) lines.push("lang: zh")
   if (options.tags.length > 0) lines.push(`tags: [${options.tags.map(yamlString).join(", ")}]`)
@@ -97,21 +91,20 @@ function openInEditor(file) {
 
 function main() {
   const options = parseArgs(process.argv.slice(2))
-  const now = new Date()
-  const stamp = localStamp(now)
-  const day = stamp.slice(0, 10)
+  const day = localDay(new Date())
   const slug = slugify(options.slug ?? "")
   if (options.slug && !slug) {
-    console.warn(`new-post: "${options.slug}" has no a-z or 0-9, so the file is named by the time`)
+    console.warn(`new-post: "${options.slug}" has no a-z or 0-9, so the file is numbered`)
   }
-  const name = slug || `${two(now.getHours())}${two(now.getMinutes())}`
 
   fs.mkdirSync(postsDir, { recursive: true })
-  let file = path.join(postsDir, `${day}-${name}.md`)
-  for (let n = 2; fs.existsSync(file); n += 1) {
-    file = path.join(postsDir, `${day}-${name}-${n}.md`)
+  // Unnamed posts of one day are numbered in order, which is how the timeline
+  // orders a day's posts (the higher number is newer).
+  let file = slug ? path.join(postsDir, `${day}-${slug}.md`) : null
+  for (let n = slug ? 2 : 1; !file || fs.existsSync(file); n += 1) {
+    file = path.join(postsDir, slug ? `${day}-${slug}-${n}.md` : `${day}-${n}.md`)
   }
-  fs.writeFileSync(file, frontmatter(options, stamp))
+  fs.writeFileSync(file, frontmatter(options, day))
 
   const relative = path.relative(siteRoot, file)
   console.log(relative)

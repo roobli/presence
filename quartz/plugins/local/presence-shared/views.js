@@ -1,7 +1,7 @@
 import { toJsxRuntime } from "hast-util-to-jsx-runtime"
 import { h } from "preact"
 import { Fragment, jsx, jsxs } from "preact/jsx-runtime"
-import { clockOf, formatDate, isoDate } from "./dates.js"
+import { formatDate, isoDate } from "./dates.js"
 import { isZh, langOf, t, ZH } from "./locale.js"
 import {
   claimsOf,
@@ -727,23 +727,15 @@ export function postLink(file) {
   )
 }
 
-/** A post's time, which is also its permalink. */
-function postTime(file, lang) {
-  const fm = file.frontmatter ?? {}
-  const date = isoDate(fm.date)
-  const clock = clockOf(fm.date)
-  const label = clock ?? (date ? formatDate(date, lang) : "")
-  return h(
-    "a",
-    { class: "post-time", href: hrefOf(file.slug) },
-    h("time", { datetime: typeof fm.date === "string" ? fm.date.trim() : date }, label),
-  )
+/** A post's permalink. Posts publish no time of day: it says where the author is. */
+function postPermalink(file, lang) {
+  return h("a", { class: "post-permalink", href: hrefOf(file.slug) }, t(lang, "permalink"))
 }
 
 /**
  * One post in the timeline: its title if it has one, the body in full (or its
  * first block and Continue when it takes over a minute to read), then a line
- * with the time as the permalink, its tags and its project.
+ * with its permalink, its tags and its project.
  */
 export function renderPost(file, ctx) {
   const { lang, allFiles } = ctx
@@ -774,7 +766,7 @@ export function renderPost(file, ctx) {
       "p",
       { class: "post-meta", lang: langIfOther(lang, own) },
       joined([
-        postTime(file, lang),
+        postPermalink(file, lang),
         ...tagsOf(file, 3).map((tag) => h("span", { class: "post-tag" }, tag)),
         project ? h("a", { class: "post-project", href: hrefOf(project.slug) }, titleOf(project)) : null,
       ]),

@@ -1,23 +1,19 @@
 ---
 title: About
+description: "What RoobLi publishes: essays with sources, series written in parts, projects with a log, short notes and dated posts."
 enableToc: false
 ---
 
-RoobLi’s public homepage. Selected works and deep writing only.
+RoobLi publishes essays with sources, series written in parts, projects with a log of what changed, short notes and dated posts, on GPU programming, interface design and the tools people work with.
 
-Internal notes (RooB) are **not** published from this repository. Content here is written for the public web, desensitized, and meant to stand on its own.
+Everything here is written for the public web and stands on its own. Private notes are not published from this site.
 
 ## Language
 
-This site is **English-first** on purpose: public essays ship in English for X / Reddit first.
+The site is English-first. Some essays also have a Chinese version, linked from the top of the page, and posts are written in either language. Linked projects may have Chinese tracks of their own, such as the [CUDA C++ Course](https://lr00rl.github.io/cuda-cpp-course/zh/).
 
-- Some **linked demos** have their own Chinese tracks (example: [CUDA C++ Course `/zh/`](https://lr00rl.github.io/cuda-cpp-course/zh/)).
-- A Chinese draft may exist in private notes before (or without) a Chinese page here. If you need a `/zh` route for a specific essay, ask — it is not automatic.
-
-## Brand & social cards
-
-Favicon and default Open Graph image live in `quartz/static/` (`icon.png`, `og-image.png`) so link previews on X and similar platforms can render a card.
+## Elsewhere
 
 - User: [github.com/lr00rl](https://github.com/lr00rl)
 - Org: [github.com/roobli](https://github.com/roobli)
-- Site: [www.roobli.org](https://www.roobli.org)
+- Feeds: [RSS](/index.xml), [posts](/posts/index.xml)

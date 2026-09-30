@@ -1,5 +1,5 @@
 import { styleText } from "node:util"
-import { clockOf, formatDate, isoDate } from "../presence-shared/dates.js"
+import { formatDate, isoDate } from "../presence-shared/dates.js"
 import { entryKind, formerSlugs, layoutOf } from "../presence-shared/sections.js"
 
 /**
@@ -238,6 +238,10 @@ export function markdownPlugins(_ctx) {
       if (entry === "post" && (!fm.title || fm.title === file.stem)) {
         file.data.presence.untitled = true
       }
+      // A post is dated by day only. A time of day, and above all an offset
+      // from UTC, would publish where its author is; any written by hand is
+      // cut back to the date before a page, feed or sitemap sees it.
+      if (entry === "post") dateOnly(file, fm)
       const slug = file.data.slug
       if (typeof slug === "string") {
         const former = formerAliases(slug, file.data.aliases)
@@ -320,12 +324,26 @@ export function excerptOf(tree, lang) {
   return cut.replace(/[\s,.;:，。；：、]+$/, "") + "…"
 }
 
-/** "Sep 30, 2026, 21:40" for a post with no words to title it, or null. */
+/** "Sep 30, 2026" for a post with no words to title it, or null. */
 function stampTitle(date, lang) {
   const day = isoDate(date)
-  if (!day) return null
-  const clock = clockOf(date)
-  return clock ? `${formatDate(day, lang)}, ${clock}` : formatDate(day, lang)
+  return day ? formatDate(day, lang) : null
+}
+
+/** Cut a post's date, and the dates derived from it, back to the day. */
+export function dateOnly(file, fm) {
+  const day = isoDate(fm.date)
+  if (!day) return
+  if (typeof fm.date !== "string" || fm.date.trim() !== day) {
+    warn(`${file.data.relativePath ?? file.data.slug}: a post's date is a day only; the time in "${fm.date}" is not published`)
+    fm.date = day
+  }
+  const midnight = new Date(`${day}T00:00:00Z`)
+  if (file.data.dates) {
+    for (const key of ["created", "modified", "published"]) {
+      if (file.data.dates[key]) file.data.dates[key] = midnight
+    }
+  }
 }
 
 /**

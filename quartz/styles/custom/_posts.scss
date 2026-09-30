@@ -279,9 +279,9 @@
   }
 }
 
-// The time is the post's permalink, the only one on an untitled post, so it
-// reads as a link: strong ink and a hairline underline, the accent on hover.
-.post-meta .post-time {
+// The permalink is the only link to an untitled post's page, so it reads as
+// a link: strong ink and a hairline underline, the accent on hover.
+.post-meta .post-permalink {
   color: var(--ink-strong-color);
   text-decoration-line: underline;
   text-decoration-thickness: 1px;
@@ -353,9 +353,6 @@
   border: 0;
 }
 
-.entry-clock {
-  font-variant-numeric: tabular-nums;
-}
 
 // Under a post, the way back to the timeline leads its block, above Older and
 // Newer.

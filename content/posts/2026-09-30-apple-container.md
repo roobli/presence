@@ -1,6 +1,6 @@
 ---
 title: 苹果的 container：一个容器一台虚拟机
-date: 2026-09-30T01:50-07:00
+date: 2026-09-30
 lang: zh
 tags: [virtualization, macos]
 link: https://github.com/apple/container

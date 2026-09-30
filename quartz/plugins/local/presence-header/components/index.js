@@ -1,6 +1,5 @@
 import { readFileSync } from "fs"
 import { h } from "preact"
-import { clockOf } from "../../presence-shared/dates.js"
 import { langOf, t, ZH } from "../../presence-shared/locale.js"
 import {
   canonicalOf,
@@ -155,13 +154,10 @@ function kicker(fileData, allFiles, lang, siteTitle) {
     return h("p", { class: "ph-kicker" }, path(trail), facts.length ? [slash(), ...facts] : null)
   }
 
-  // A post names its day and time instead of a number.
+  // A post names its day instead of a number.
   if (section.kind === "post") {
-    const date = fileData.frontmatter?.date
-    const clock = clockOf(date)
     const facts = [
-      timeOf(date, lang),
-      clock ? h("span", { class: "entry-clock" }, clock) : null,
+      timeOf(fileData.frontmatter?.date, lang),
       ...tagsOf(original, 2).map((tag) => h("span", null, tag)),
     ].filter(Boolean)
     return h("p", { class: "ph-kicker" }, joined([sectionLink, ...facts], "ph-sep"))
