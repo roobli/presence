@@ -1,4 +1,5 @@
 import { styleText } from "node:util"
+import { clockOf, formatDate, isoDate } from "../presence-shared/dates.js"
 import { entryKind, formerSlugs, layoutOf } from "../presence-shared/sections.js"
 
 /**
@@ -233,6 +234,10 @@ export function markdownPlugins(_ctx) {
       file.data.presence = { kind, entry }
       const fm = (file.data.frontmatter ??= {})
       fm.essayFrame ??= kind === "essay"
+      // note-properties titles a page without one after its file name.
+      if (entry === "post" && (!fm.title || fm.title === file.stem)) {
+        file.data.presence.untitled = true
+      }
       const slug = file.data.slug
       if (typeof slug === "string") {
         const former = formerAliases(slug, file.data.aliases)
@@ -288,6 +293,72 @@ export function replaceTocMarkers(tree, toc, lang) {
   }
 }
 
+/**
+ * A title from a page's first paragraph: its first sentence when that fits in
+ * max (80 characters in English, 32 in Chinese), else its first words cut at a
+ * word (or, in Chinese, a character) with an ellipsis.
+ */
+export function excerptOf(tree, lang) {
+  const first = (tree.children ?? []).find(
+    (node) => node.type === "element" && node.tagName === "p" && textOf(node).trim(),
+  )
+  if (!first) return null
+  const text = textOf(first).replace(/\s+/g, " ").trim()
+  const zh = /^zh/i.test(lang)
+  const max = zh ? 32 : 80
+  // The first sentence end past a floor, so "e.g." or "Dr." is no sentence.
+  const floor = zh ? 6 : 20
+  const ends = [...text.matchAll(zh ? /[。！？]/g : /[.!?](?=\s|$)/g)]
+  const end = ends.find((match) => match.index + 1 >= floor)
+  if (end && end.index + 1 <= max) return text.slice(0, end.index + 1).replace(/[.。]$/, "")
+  if (text.length <= max) return text
+  let cut = text.slice(0, max)
+  if (!zh) {
+    const space = cut.lastIndexOf(" ")
+    if (space > max / 2) cut = cut.slice(0, space)
+  }
+  return cut.replace(/[\s,.;:，。；：、]+$/, "") + "…"
+}
+
+/** "Sep 30, 2026, 21:40" for a post with no words to title it, or null. */
+function stampTitle(date, lang) {
+  const day = isoDate(date)
+  if (!day) return null
+  const clock = clockOf(date)
+  return clock ? `${formatDate(day, lang)}, ${clock}` : formatDate(day, lang)
+}
+
+/**
+ * A post's text cut to what a search snippet shows: about 155 characters in
+ * English and 80 in Chinese, ending on a sentence when one ends in the second
+ * half, else on a word with an ellipsis. An untitled post skips the sentence
+ * that already titles it.
+ */
+export function summaryOf(tree, lang, title = null) {
+  const paragraphs = (tree.children ?? []).filter(
+    (node) => node.type === "element" && node.tagName === "p",
+  )
+  let text = paragraphs
+    .map((node) => textOf(node).replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .join(" ")
+  if (title && text.startsWith(title)) text = text.slice(title.length).replace(/^[.。!?！？\s]+/, "")
+  if (!text) return null
+  const zh = /^zh/i.test(lang)
+  const max = zh ? 80 : 155
+  if (text.length <= max) return text
+  const head = text.slice(0, max)
+  const ends = [...head.matchAll(zh ? /[。！？]/g : /[.!?](?=\s)/g)]
+  const last = ends.at(-1)
+  if (last && last.index >= max / 2) return head.slice(0, last.index + 1)
+  let cut = head
+  if (!zh) {
+    const space = cut.lastIndexOf(" ")
+    if (space > max / 2) cut = cut.slice(0, space)
+  }
+  return cut.replace(/[\s,.;:，。；：、]+$/, "") + "…"
+}
+
 // Runs after OFM's rehypeRaw (figure markup is elements), GFM's heading ids and
 // crawl-links (file.data.links), and before KaTeX renders math.
 export function htmlPlugins(ctx) {
@@ -298,6 +369,23 @@ export function htmlPlugins(ctx) {
       Object.assign(presence, derivePage(tree, lang), {
         relation: relationOf(ctx, file, presence.kind),
       })
+      // An untitled post is titled with its first words, for <title>, search,
+      // feeds and the sidebar; the page itself shows no visible title.
+      const fm = file.data.frontmatter
+      if (presence.entry === "post" && !isoDate(fm.date)) {
+        warn(`${file.data.relativePath ?? file.data.slug}: a post needs a date (2026-09-30T21:40-07:00); it is left off the timeline`)
+      }
+      if (presence.untitled) {
+        // An image-only post has no sentence to lend; it is titled by its day and time.
+        const title = excerptOf(tree, lang) ?? stampTitle(fm.date, lang)
+        if (title) fm.title = title
+      }
+      // A post has no description of its own; its text, cut to snippet
+      // length, is the one search results, cards and structured data show.
+      if (presence.entry === "post" && !fm.socialDescription && !fm.description) {
+        const summary = summaryOf(tree, lang, presence.untitled ? fm.title : null)
+        if (summary) fm.socialDescription = summary
+      }
       // After the counts, so a contents block never adds reading time.
       replaceTocMarkers(tree, file.data.toc, lang)
     },

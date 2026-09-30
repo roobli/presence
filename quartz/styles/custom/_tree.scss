@@ -258,6 +258,16 @@ $chevron: 18px;
     font-variant-numeric: tabular-nums;
   }
 
+  // A month row's count of posts: the date's size and ink, never the bold of
+  // the open row, so it stays quieter than its section's count.
+  .tree-count {
+    font-family: var(--font-label);
+    font-size: 10.5px;
+    font-weight: 400;
+    color: var(--ink-muted-color);
+    font-variant-numeric: tabular-nums;
+  }
+
   .tree-status {
     width: 6px;
     height: 6px;

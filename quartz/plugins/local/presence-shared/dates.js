@@ -29,3 +29,31 @@ export function formatDate(iso, lang) {
   const [year, month, day] = iso.split("-").map(Number)
   return isZh(lang) ? `${year}年${month}月${day}日` : `${MONTHS[month - 1]} ${day}, ${year}`
 }
+
+/**
+ * The HH:MM of a frontmatter date that carries a time, as written, or null.
+ * A post is dated 2026-09-30T21:40+08:00: the clock is the author's, so it is
+ * read from the string rather than converted to the build machine's zone.
+ */
+export function clockOf(value) {
+  if (typeof value !== "string") return null
+  const match = /^\d{4}-\d{2}-\d{2}[T ](\d{2}):(\d{2})/.exec(value.trim())
+  if (!match) return null
+  const hours = Number(match[1])
+  const minutes = Number(match[2])
+  return hours < 24 && minutes < 60 ? `${match[1]}:${match[2]}` : null
+}
+
+/**
+ * Milliseconds since the epoch for ordering entries of one day, or null. A
+ * value without an offset is read as UTC, date-only as midnight, so the order
+ * never depends on the build machine's zone.
+ */
+export function instantOf(value) {
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value.getTime()
+  if (typeof value !== "string" || !isoDate(value)) return null
+  let text = value.trim().replace(" ", "T")
+  if (/T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(text)) text += "Z"
+  const time = Date.parse(text)
+  return Number.isNaN(time) ? null : time
+}

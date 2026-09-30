@@ -26,6 +26,7 @@ import { generateRedirects } from "./redirects.js"
  */
 
 const EN = "en"
+const POSTS_FEED = "posts/index.xml"
 
 // An entry (not a section's own page) of a section that goes into the feeds.
 function isFeedEntry(slug) {
@@ -77,10 +78,11 @@ function pageDescription(data) {
   return ""
 }
 
-// The pages a listing shows: every section entry for the homepage, everything
-// under the folder for a section's or a series' own page, none for a page.
+// The pages a listing shows: the entries of the sections on the homepage (not
+// posts, which it leaves out), everything under the folder for a section's or a
+// series' own page, none for a page.
 function listedBy(slug) {
-  if (slug === "index") return (other) => sectionOf(other.slug) !== null
+  if (slug === "index") return (other) => sectionOf(other.slug)?.home === true
   if (!slug.endsWith("/index")) return null
   const prefix = slug.slice(0, -"index".length)
   return (other) => other.slug !== slug && other.slug.startsWith(prefix)
@@ -135,7 +137,12 @@ export function guidLine(fm, url) {
     : `      <guid isPermaLink="true">${url}</guid>`
 }
 
-export function generateFeed(cfg, pages) {
+/**
+ * RSS 2.0 of pages, newest first. channel names the feed; without it this is
+ * the site's main feed at /index.xml. Posts have their own at
+ * /posts/index.xml, so readers of the essays are not sent every fragment.
+ */
+export function generateFeed(cfg, pages, channel = {}) {
   const items = pages
     .map((data) => {
       const fm = data.frontmatter ?? {}
@@ -171,15 +178,23 @@ export function generateFeed(cfg, pages) {
     })
 
   const siteTitle = escapeXml(cfg.pageTitle ?? "")
+  const title = channel.title ? escapeXml(channel.title) : siteTitle
+  const link = pageUrl(cfg.baseUrl, channel.slug ?? "index")
+  const description = escapeXml(
+    channel.description ?? `Essays, series, projects and notes on ${cfg.pageTitle ?? ""}`,
+  )
+  const self = channel.path ?? "index.xml"
+  // A feed of mixed languages names none.
+  const language = channel.language === undefined ? EN : channel.language
   return [
     `<?xml version="1.0" encoding="UTF-8"?>`,
     `<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">`,
     `  <channel>`,
-    `    <title>${siteTitle}</title>`,
-    `    <link>${escapeXml(pageUrl(cfg.baseUrl, "index"))}</link>`,
-    `    <description>Essays, series, projects and notes on ${siteTitle}</description>`,
-    `    <language>${EN}</language>`,
-    `    <atom:link href="https://${escapeXml(cfg.baseUrl)}/index.xml" rel="self" type="application/rss+xml"/>`,
+    `    <title>${title}</title>`,
+    `    <link>${escapeXml(link)}</link>`,
+    `    <description>${description}</description>`,
+    ...(language ? [`    <language>${language}</language>`] : []),
+    `    <atom:link href="https://${escapeXml(cfg.baseUrl)}/${escapeXml(self)}" rel="self" type="application/rss+xml"/>`,
     ...items,
     `  </channel>`,
     `</rss>`,
@@ -239,6 +254,14 @@ export function generateLlmsTxt(cfg, pages) {
       (section) => `- ${t(EN, section.label)}: ${pageUrl(baseUrl, indexSlugOf(section))}`,
     ),
     `- RSS: https://${baseUrl}/index.xml`,
+    ...SECTIONS.filter(
+      (section) =>
+        section.kind === "post" &&
+        pages.some((data) => sectionOf(data.slug) === section && !data.slug.endsWith("/index")),
+    ).flatMap((section) => [
+      `- ${t(EN, section.label)}: ${pageUrl(baseUrl, indexSlugOf(section))} (short dated posts in English and Chinese, not listed here)`,
+      `- ${t(EN, section.label)} RSS: https://${baseUrl}/${POSTS_FEED}`,
+    ]),
     ``,
   ]
 
@@ -289,10 +312,32 @@ export function PresenceFeeds() {
     const feedPages = pages.filter(
       (data) => data.unlisted !== true && (data.i18n?.lang ?? EN) === EN && isFeedEntry(data.slug),
     )
+    // Posts in either language: a post has no translation to stand in for it.
+    const postPages = pages.filter(
+      (data) =>
+        data.unlisted !== true &&
+        sectionOf(data.slug)?.kind === "post" &&
+        !data.slug.endsWith("/index"),
+    )
 
     return Promise.all([
       write(ctx, "sitemap.xml", generateSitemap(cfg.baseUrl, sitemapPages)),
       write(ctx, "index.xml", generateFeed(cfg, feedPages)),
+      ...(postPages.length > 0
+        ? [
+            write(
+              ctx,
+              POSTS_FEED,
+              generateFeed(cfg, postPages, {
+                title: `${cfg.pageTitle ?? ""} Posts`,
+                slug: "posts/index",
+                description: `Short dated posts on ${cfg.pageTitle ?? ""}, newest first`,
+                path: POSTS_FEED,
+                language: null,
+              }),
+            ),
+          ]
+        : []),
       write(ctx, "llms.txt", generateLlmsTxt(cfg, pages)),
       write(ctx, "robots.txt", generateRobotsTxt(cfg.baseUrl)),
       write(ctx, "_redirects", generateRedirects(pages)),

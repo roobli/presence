@@ -1,5 +1,6 @@
 import { readFileSync } from "fs"
 import { h } from "preact"
+import { clockOf } from "../../presence-shared/dates.js"
 import { langOf, t, ZH } from "../../presence-shared/locale.js"
 import {
   canonicalOf,
@@ -20,6 +21,7 @@ import {
 } from "../../presence-shared/sections.js"
 import {
   joined,
+  postLink,
   projectLinks,
   projectShot,
   renderFigures,
@@ -153,6 +155,18 @@ function kicker(fileData, allFiles, lang, siteTitle) {
     return h("p", { class: "ph-kicker" }, path(trail), facts.length ? [slash(), ...facts] : null)
   }
 
+  // A post names its day and time instead of a number.
+  if (section.kind === "post") {
+    const date = fileData.frontmatter?.date
+    const clock = clockOf(date)
+    const facts = [
+      timeOf(date, lang),
+      clock ? h("span", { class: "entry-clock" }, clock) : null,
+      ...tagsOf(original, 2).map((tag) => h("span", null, tag)),
+    ].filter(Boolean)
+    return h("p", { class: "ph-kicker" }, joined([sectionLink, ...facts], "ph-sep"))
+  }
+
   const n = section.kind === "essay" ? entryNumber(fileData, allFiles) : null
   const facts = [
     n ? h("span", { class: "entry-no" }, t(lang, "no", { n })) : null,
@@ -182,10 +196,12 @@ export const PageHeader = () => {
     const lang = langOf(fileData)
     const siteTitle = cfg?.pageTitle ?? "Home"
 
+    const post = fileData.presence?.entry === "post"
     let spec = null
     let shot = null
     let figures = null
-    if (kind === "essay") {
+    // A post's facts are all in its label line.
+    if (kind === "essay" && !post) {
       spec = renderTitleBlock(readingCells(fileData, allFiles, lang), "titleblock--spec")
     } else if (kind === "project") {
       spec = renderTitleBlock(projectCells(fileData, lang), "titleblock--spec")
@@ -193,15 +209,20 @@ export const PageHeader = () => {
       shot = projectShot(fileData, { className: "ph-shot", lazy: false })
     }
     // A series' page takes its dek from its own frontmatter, like an entry.
-    const hasDek = kind === "essay" || kind === "project" || kind === "folder"
+    const hasDek = (kind === "essay" && !post) || kind === "project" || kind === "folder"
+    // An untitled post keeps its h1 (its first words) for screen readers only.
+    const titleClass = fileData.presence?.untitled
+      ? "article-title ph-title ph-title--hidden"
+      : "article-title ph-title"
 
     return h(
       "header",
       { class: "ph" },
       kicker(fileData, allFiles, lang, siteTitle),
       // article-title stays for scripts and styles that look for the page title.
-      h("h1", { class: "article-title ph-title" }, pageTitle(fileData, allFiles, lang)),
+      h("h1", { class: titleClass }, pageTitle(fileData, allFiles, lang)),
       hasDek && fm.description ? h("p", { class: "ph-dek" }, fm.description) : null,
+      post ? postLink(fileData) : null,
       spec,
       figures,
       shot ? h("figure", { class: "ph-figure" }, shot) : null,

@@ -1,5 +1,7 @@
+import { toJsxRuntime } from "hast-util-to-jsx-runtime"
 import { h } from "preact"
-import { formatDate, isoDate } from "./dates.js"
+import { Fragment, jsx, jsxs } from "preact/jsx-runtime"
+import { clockOf, formatDate, isoDate } from "./dates.js"
 import { isZh, langOf, t, ZH } from "./locale.js"
 import {
   claimsOf,
@@ -619,6 +621,190 @@ export function renderNoteRow(file, ctx) {
       { class: "note-body" },
       h("h3", { class: "note-title" }, h("a", { href: hrefOf(file.slug) }, titleOf(file))),
       fm.description ? h("p", { class: "note-dek" }, fm.description) : null,
+    ),
+  )
+}
+
+// --- posts --------------------------------------------------------------------------
+
+/**
+ * Posts that take longer than this to read show their first block in the
+ * timeline, then Continue. Minutes rather than words, so a Chinese post (400
+ * Han characters a minute) folds at the same length of reading as an English
+ * one (200 words a minute).
+ */
+export const POST_FOLD_MINUTES = 1
+
+const WEEKDAYS = {
+  en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  zh: ["周日", "周一", "周二", "周三", "周四", "周五", "周六"],
+}
+const SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+/** The id a post has in the timeline, so a link can land on it: p-2026-09-30-2140. */
+export function postAnchor(file) {
+  const slug = file.slug ?? ""
+  return "p-" + slug.slice(slug.lastIndexOf("/") + 1)
+}
+
+/** True for a post written without a title; presence-derive titles it with its first words. */
+export const isUntitled = (file) => file.presence?.untitled === true
+
+// The post's rendered body, from the tree OFM keeps on every page for embeds.
+// Tables get the same wrapper Quartz gives them; scripts and styles are dropped.
+const POST_COMPONENTS = {
+  table: (props) => h("div", { class: "table-container" }, h("table", props)),
+  script: () => null,
+  style: () => null,
+}
+
+// A post's tree as the timeline shows it, copied: ids dropped (another post on
+// the page may use the same ones), in-page links sent to the post's own page,
+// and its footnotes left there. state.dropped says something was left behind.
+function forTimeline(node, href, state) {
+  if (node.type !== "element" && node.type !== "root") return node
+  if (node.type === "element" && node.properties?.dataFootnotes != null) {
+    state.dropped = true
+    return null
+  }
+  let properties = node.properties
+  if (properties) {
+    properties = { ...properties }
+    delete properties.id
+    if (typeof properties.href === "string" && properties.href.startsWith("#")) {
+      properties.href = href + properties.href
+    }
+  }
+  const children = (node.children ?? [])
+    .map((child) => forTimeline(child, href, state))
+    .filter(Boolean)
+  return { ...node, properties, children }
+}
+
+function timelineTree(file) {
+  const tree = file.htmlAst
+  if (!tree || !Array.isArray(tree.children)) return { root: null, dropped: false }
+  const state = { dropped: false }
+  const root = forTimeline(tree, hrefOf(file.slug), state)
+  return { root, dropped: state.dropped }
+}
+
+function postBody(root, { fold }) {
+  if (!root) return null
+  if (fold) {
+    const first = root.children.find((node) => node.type === "element")
+    if (first) root = { type: "root", children: [first] }
+  }
+  return toJsxRuntime(root, {
+    Fragment,
+    jsx,
+    jsxs,
+    elementAttributeNameCase: "html",
+    components: POST_COMPONENTS,
+  })
+}
+
+function hostOf(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "")
+  } catch {
+    return null
+  }
+}
+
+/** A link post's link line: the page it points at, then its site. */
+export function postLink(file) {
+  const fm = file.frontmatter ?? {}
+  // Only web links; anything else (a javascript: URL) is not rendered.
+  if (typeof fm.link !== "string" || !/^https?:\/\//i.test(fm.link.trim())) return null
+  const host = hostOf(fm.link)
+  const label = typeof fm.link_title === "string" && fm.link_title.trim() ? fm.link_title : fm.link
+  return h(
+    "p",
+    { class: "post-link" },
+    h("a", { href: fm.link, rel: "noopener" }, label),
+    host && label !== fm.link ? h("span", { class: "post-host" }, host) : null,
+  )
+}
+
+/** A post's time, which is also its permalink. */
+function postTime(file, lang) {
+  const fm = file.frontmatter ?? {}
+  const date = isoDate(fm.date)
+  const clock = clockOf(fm.date)
+  const label = clock ?? (date ? formatDate(date, lang) : "")
+  return h(
+    "a",
+    { class: "post-time", href: hrefOf(file.slug) },
+    h("time", { datetime: typeof fm.date === "string" ? fm.date.trim() : date }, label),
+  )
+}
+
+/**
+ * One post in the timeline: its title if it has one, the body in full (or its
+ * first block and Continue when it takes over a minute to read), then a line
+ * with the time as the permalink, its tags and its project.
+ */
+export function renderPost(file, ctx) {
+  const { lang, allFiles } = ctx
+  const own = langOf(file)
+  const { root, dropped } = timelineTree(file)
+  // A post with footnotes folds too: they stay on its own page.
+  const fold = dropped || (file.presence?.readingMinutes ?? 0) > POST_FOLD_MINUTES
+  const project =
+    typeof file.presence?.relation === "string"
+      ? allFiles.find((other) => other.slug === file.presence.relation)
+      : null
+  return h(
+    "article",
+    { class: "post", id: postAnchor(file), lang: langIfOther(own, lang) },
+    isUntitled(file)
+      ? null
+      : h("h3", { class: "post-title" }, h("a", { href: hrefOf(file.slug) }, titleOf(file))),
+    postLink(file),
+    h("div", { class: "post-body" }, postBody(root, { fold })),
+    fold
+      ? h(
+          "p",
+          { class: "post-more" },
+          h("a", { href: hrefOf(file.slug) }, t(own, "continueReading")),
+        )
+      : null,
+    h(
+      "p",
+      { class: "post-meta", lang: langIfOther(lang, own) },
+      joined([
+        postTime(file, lang),
+        ...tagsOf(file, 3).map((tag) => h("span", { class: "post-tag" }, tag)),
+        project ? h("a", { class: "post-project", href: hrefOf(project.slug) }, titleOf(project)) : null,
+      ]),
+    ),
+  )
+}
+
+/** The date written once in the margin beside a day's posts: Sep 30 over Tue. */
+export function renderPostDay(date, files, ctx) {
+  const { lang } = ctx
+  const [year, month, day] = date.split("-").map(Number)
+  const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay()
+  const zh = isZh(lang)
+  return h(
+    "section",
+    { class: "pday" },
+    h(
+      "p",
+      { class: "pday-date" },
+      h(
+        "time",
+        { datetime: date },
+        h("span", { class: "pday-day" }, zh ? `${month}月${day}日` : `${SHORT_MONTHS[month - 1]} ${day}`),
+        h("span", { class: "pday-dow" }, WEEKDAYS[zh ? "zh" : "en"][weekday]),
+      ),
+    ),
+    h(
+      "ol",
+      { class: "pday-posts" },
+      files.map((file) => h("li", null, renderPost(file, ctx))),
     ),
   )
 }
