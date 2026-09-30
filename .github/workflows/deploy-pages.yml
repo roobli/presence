@@ -36,6 +36,10 @@ jobs:
       - name: Install
         run: npm ci
 
+      # A failing test stops the deploy; before this step it shipped anyway.
+      - name: Test
+        run: npm test
+
       - name: Link local Quartz plugins
         run: npm run install-plugins
 
