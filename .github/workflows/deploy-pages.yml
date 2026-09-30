@@ -11,14 +11,16 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moves to a new image on its own schedule, and the
+    # deploy is the one job that must not change under us without a commit.
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       deployments: write
     name: Build and deploy
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # Full history: pages without a date in their frontmatter take their
           # modified date from git, and in a one-commit clone every file's
@@ -26,7 +28,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: npm
@@ -51,7 +53,7 @@ jobs:
           echo "roob-ui script present"
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
