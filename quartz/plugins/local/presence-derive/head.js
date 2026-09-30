@@ -1,6 +1,11 @@
 import { Fragment, h } from "preact"
 import { pageUrl } from "../i18n-slug/index.js"
-import { isSeriesIndex, seriesIdOf, seriesIndexSlug } from "../presence-shared/sections.js"
+import {
+  isSeriesIndex,
+  sectionOf,
+  seriesIdOf,
+  seriesIndexSlug,
+} from "../presence-shared/sections.js"
 
 /**
  * Tags added to every page head through additionalHead.
@@ -21,7 +26,8 @@ import { isSeriesIndex, seriesIdOf, seriesIndexSlug } from "../presence-shared/s
  * later SPA navigations reuse it.
  *
  * JSON-LD is emitted per page from the same additionalHead hook: WebSite and
- * Person everywhere, Article for essays, episodes and notes, CreativeWork for
+ * Person everywhere, Article for essays, episodes and notes (BlogPosting for
+ * posts), CreativeWork for
  * projects, CollectionPage for section pages and CreativeWorkSeries for a
  * series. Person always uses PERSON_ID so About and every author resolve to one
  * entity, and an episode points at its series' #series node.
@@ -259,7 +265,8 @@ export function buildJsonLdGraph(cfg, fileData) {
     const dateModified = frontmatterDate(fm.updated) || datePublished
 
     const article = {
-      "@type": "Article",
+      // A post is a dated fragment of the site's own stream, a BlogPosting.
+      "@type": fileData.presence?.entry === "post" ? "BlogPosting" : "Article",
       "@id": `${url}#article`,
       headline: name,
       description,
@@ -307,6 +314,20 @@ export function structuredDataHead(cfg, fileData) {
   })
 }
 
+/**
+ * The timeline and every post name the posts feed beside the site's own, so a
+ * reader or crawler on a post finds the feed that carries it.
+ */
+export function postsFeedHead(cfg, fileData) {
+  if (sectionOf(fileData?.slug)?.kind !== "post") return null
+  return h("link", {
+    rel: "alternate",
+    type: "application/rss+xml",
+    title: `${cfg.pageTitle ?? ""} Posts`.trim(),
+    href: "/posts/index.xml",
+  })
+}
+
 export function additionalHead(ctx) {
   const cfg = ctx?.cfg?.configuration ?? {}
   return [
@@ -322,5 +343,6 @@ export function additionalHead(ctx) {
       const tag = structuredDataHead(cfg, fileData)
       return tag ? h(Fragment, null, tag) : h(Fragment, null)
     },
+    (fileData) => h(Fragment, null, postsFeedHead(cfg, fileData)),
   ]
 }

@@ -9,6 +9,7 @@ import {
   selectEntries,
   selectEssays,
   selectNotes,
+  selectPosts,
   selectProjects,
   selectSeries,
   selectWriting,
@@ -27,6 +28,7 @@ import {
   renderEpisodeList,
   renderLedger,
   renderNoteRow,
+  renderPostDay,
   renderProjectRow,
   renderSectionHead,
   renderSeriesRow,
@@ -49,7 +51,8 @@ import {
  *
  * Section pages open with the section's title block. Essays list as a ledger,
  * by year once they span years; series as rows with their tracks; projects as
- * rows; notes by month. A series' page has its facts, its track, its episodes
+ * rows; notes by month; posts as a timeline, by month and then by day with
+ * the day in the margin. A series' page has its facts, its track, its episodes
  * including planned ones, and what to read first.
  *
  * Folder pages hide FolderPage's stock list (_folder-listing.scss); the page
@@ -357,6 +360,54 @@ function notesPage(section, ctx) {
   ]
 }
 
+// The posts timeline: a month heading (the outline's stops), then each day
+// with its date in the margin and its posts in full beside it. Months carry
+// ids (m-2026-09) for the sidebar's month rows.
+function postsPage(section, ctx) {
+  const { lang, allFiles } = ctx
+  const posts = selectPosts(allFiles)
+  const first = posts.at(-1)
+  const months = [...new Set(posts.map(monthOf))]
+  return [
+    renderTitleBlock(
+      [
+        { label: t(lang, section.label), value: pad(posts.length) },
+        { label: t(lang, "fieldSince"), value: first ? timeOf(dateOf(first), lang) : null },
+        {
+          label: t(lang, "postsFeed"),
+          value: h("a", { href: "/posts/index.xml", type: "application/rss+xml" }, "posts/index.xml"),
+        },
+      ],
+      "titleblock--section",
+    ),
+    h(
+      "section",
+      { class: "idx idx--posts ptl" },
+      months.map((month) => {
+        const inMonth = posts.filter((post) => monthOf(post) === month)
+        const days = [...new Set(inMonth.map(dateOf))]
+        return h(
+          "section",
+          { class: "ptl-month", id: `m-${month}` },
+          h(
+            "h2",
+            { class: "idx-group-label ptl-month-label" },
+            month ? monthLabel(month, lang) : "",
+            h("span", { class: "ptl-count" }, t(lang, "postsInMonth", { n: inMonth.length })),
+          ),
+          days.map((day) =>
+            renderPostDay(
+              day,
+              inMonth.filter((post) => dateOf(post) === day),
+              ctx,
+            ),
+          ),
+        )
+      }),
+    ),
+  ]
+}
+
 // A series' own page: its facts, its track, its episodes, and what to read first.
 function seriesLanding(series, page, ctx) {
   const { lang, allFiles } = ctx
@@ -441,6 +492,7 @@ export const HomeIndex = () => {
     if (own.id === "series") body = seriesPage(ctx)
     else if (own.kind === "project") body = projectsPage(own, ctx)
     else if (own.kind === "note") body = notesPage(own, ctx)
+    else if (own.kind === "post") body = postsPage(own, ctx)
     else body = essaysPage(own, ctx)
     return h("section", { class: `home home--folder home--${own.id}` }, body)
   }

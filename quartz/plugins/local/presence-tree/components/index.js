@@ -25,6 +25,8 @@ import { indexSlugOf, SECTIONS } from "../../presence-shared/sections.js"
  *              episodes numbered and the planned ones in grey
  *   Projects   titles with a status dot
  *   Notes      titles with their dates
+ *   Posts      one row per month with its count, linking into the timeline;
+ *              a section too long to list one row per entry (months: true)
  *
  * then the pages outside any section (About). The open page is marked on the
  * server, a translation marking its original, and the folders on its path are
@@ -89,7 +91,8 @@ function chevron(open, label, controls) {
 function folder({ path, label, count, current, open, className, children, lang }) {
   const id = `tree-${path.replace(/[^a-z0-9]+/gi, "-")}`
   const onPath = children.some((child) => child.onPath)
-  const isOpen = open || onPath
+  // A folder is open on its own page too, so /posts/ shows the months it lists.
+  const isOpen = open || onPath || current === path
   const containerClass = [
     "folder-container nav-folder-title tree-item-self",
     current === path ? "is-current" : null,
@@ -209,8 +212,57 @@ function seriesChildren(allFiles, current, lang) {
   )
 }
 
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+]
+
+// A month of a long section: a link to its heading on the section's page, with
+// the month's count. The open page's month is marked as the open row.
+function monthChildren(section, allFiles, current, lang) {
+  const entries = selectEntries(allFiles, section)
+  const open = entries.find((file) => file.slug === current)
+  const currentMonth = open ? (dateOf(open) ?? "").slice(0, 7) : null
+  const months = [...new Set(entries.map((file) => (dateOf(file) ?? "").slice(0, 7)))]
+  return months.filter(Boolean).map((month) => {
+    const [year, m] = month.split("-").map(Number)
+    const label = isZh(lang) ? `${year}年${m}月` : `${MONTH_NAMES[m - 1]} ${year}`
+    const n = entries.filter((file) => (dateOf(file) ?? "").startsWith(month)).length
+    const active = month === currentMonth
+    return {
+      onPath: active,
+      node: h(
+        "li",
+        { class: "tree-month" },
+        h(
+          "a",
+          {
+            class: active
+              ? "nav-file-title tree-item-self active is-active"
+              : "nav-file-title tree-item-self",
+            href: `${hrefOf(indexSlugOf(section))}#m-${month}`,
+          },
+          h("span", { class: "tpl-tree-label" }, label),
+          h("span", { class: "tree-meta tree-count" }, String(n)),
+        ),
+      ),
+    }
+  })
+}
+
 function sectionChildren(section, allFiles, current, lang) {
   if (section.id === "series") return seriesChildren(allFiles, current, lang)
+  if (section.months) return monthChildren(section, allFiles, current, lang)
   return selectEntries(allFiles, section).map((file) => {
     if (section.kind === "note") {
       return row({ file, current, trail: shortDate(dateOf(file), lang) })
@@ -241,10 +293,12 @@ export const SectionTree = () => {
     const sections = SECTIONS.map((section) => {
       const children = sectionChildren(section, allFiles, current, lang)
       if (children.length === 0) return null
+      // A section listed by month counts its entries, not its months.
+      const count = section.months ? selectEntries(allFiles, section).length : children.length
       return folder({
         path: indexSlugOf(section),
         label: t(lang, section.label),
-        count: pad(children.length),
+        count: pad(count),
         current,
         open: section.open,
         className: `tree-section tree-section--${section.id}`,

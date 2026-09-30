@@ -9,12 +9,14 @@ import {
   projectOf,
   projectStatus,
   selectEssays,
+  selectPosts,
   seriesForProject,
   titleOf,
 } from "../../presence-shared/entries.js"
 import { indexSlugOf, sectionById } from "../../presence-shared/sections.js"
 import {
   joined,
+  postAnchor,
   renderLedger,
   renderLog,
   renderSeriesRow,
@@ -32,6 +34,12 @@ import {
  *   Part of          the project the page is about
  *   Linked from      the entries that link to this page
  *   More writing     up to three other essays
+ *
+ * Under a post:
+ *   Posts            the next older and newer post, and the way back to this
+ *                    one in the timeline
+ *   Part of          the project it is about
+ *   Linked from      the entries that link to it
  *
  * Under a project:
  *   Log              everything that happened to it, newest first: its own
@@ -180,6 +188,74 @@ function readingEnd(fileData, ctx) {
   return blocks
 }
 
+function postEnd(fileData, ctx) {
+  const { lang, allFiles } = ctx
+  const posts = selectPosts(allFiles)
+  const index = posts.findIndex((post) => post.slug === fileData.slug)
+  const shown = new Set([fileData.slug])
+  const blocks = []
+
+  const neighbour = (file, key) =>
+    file
+      ? h(
+          "a",
+          {
+            class: `pn-link pn-link--${key}`,
+            href: hrefOf(file.slug),
+            rel: key === "older" ? "prev" : "next",
+          },
+          h("span", { class: "pn-dir" }, t(lang, key)),
+          h("span", { class: "pn-title" }, titleOf(file)),
+        )
+      : h("span", { class: "pn-link pn-link--none", "aria-hidden": "true" })
+  const section = sectionById("posts")
+  blocks.push(
+    block(
+      "end-posts",
+      t(lang, "posts"),
+      // The way back leads, so it never sits under the empty slot of the
+      // oldest or newest post.
+      section
+        ? h(
+            "p",
+            { class: "end-all end-all--lead" },
+            h(
+              "a",
+              { href: `${hrefOf(indexSlugOf(section))}#${postAnchor(fileData)}` },
+              t(lang, "inTheTimeline"),
+            ),
+          )
+        : null,
+      index >= 0
+        ? h(
+            "nav",
+            { class: "pn", "aria-label": t(lang, "posts") },
+            neighbour(posts[index + 1], "older"),
+            neighbour(posts[index - 1], "newer"),
+          )
+        : null,
+    ),
+  )
+
+  const project = projectOf(fileData, allFiles)
+  if (project) {
+    shown.add(project.slug)
+    blocks.push(projectBlock(project, ctx))
+  }
+
+  const linking = backlinksOf(fileData, allFiles).filter((entry) => !shown.has(entry.slug))
+  if (linking.length > 0) {
+    blocks.push(
+      block(
+        "end-linked",
+        t(lang, "linkedFrom"),
+        renderLedger(linking, ctx, { head: false, compact: true }),
+      ),
+    )
+  }
+  return blocks
+}
+
 function projectEnd(fileData, ctx) {
   const { lang, allFiles } = ctx
   const original = canonicalOf(fileData, allFiles)
@@ -221,9 +297,9 @@ export const EndMatter = () => {
     const kind = fileData.presence?.kind
     if (kind !== "essay" && kind !== "project") return null
     const ctx = { lang: langOf(fileData), allFiles }
-    const blocks = (
-      kind === "project" ? projectEnd(fileData, ctx) : readingEnd(fileData, ctx)
-    ).filter(Boolean)
+    const end =
+      kind === "project" ? projectEnd : fileData.presence?.entry === "post" ? postEnd : readingEnd
+    const blocks = end(fileData, ctx).filter(Boolean)
     if (blocks.length === 0) return null
     return h("section", { class: "end", "aria-label": t(ctx.lang, "more") }, blocks)
   }

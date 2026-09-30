@@ -19,11 +19,20 @@ import { selectEntries } from "./entries.js"
 import { t } from "./locale.js"
 
 describe("sections", () => {
-  test("four sections, in homepage and sidebar order", () => {
+  test("five sections, in homepage and sidebar order", () => {
     assert.deepStrictEqual(
       SECTIONS.map((section) => `${section.id}:${section.kind}`),
-      ["essays:essay", "series:episode", "projects:project", "notes:note"],
+      ["essays:essay", "series:episode", "projects:project", "notes:note", "posts:post"],
     )
+  })
+
+  test("posts stay off the homepage and the main feed, and list by month", () => {
+    const posts = SECTIONS.find((section) => section.id === "posts")
+    assert.equal(posts.home, false)
+    assert.equal(posts.feed, false)
+    assert.equal(posts.months, true)
+    assert.equal(entryKind("posts/2026-09-30-2140"), "post")
+    assert.equal(pageKind("posts/2026-09-30-2140"), "essay")
   })
 
   test("entryKind is what a page is, pageKind the layout it is read in", () => {

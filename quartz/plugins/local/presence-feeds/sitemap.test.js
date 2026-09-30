@@ -40,6 +40,12 @@ describe("presence-feeds sitemap lastmod", () => {
     assert.equal(lastModified(pages[0], withoutB).toISOString().slice(0, 10), "2026-09-15")
   })
 
+  test("the homepage does not move with posts, which it leaves out; the timeline does", () => {
+    const withPost = [...pages, page("posts/index"), page("posts/2026-09-30-x", "2026-09-30")]
+    assert.equal(lastModified(pages[0], withPost).toISOString().slice(0, 10), "2026-09-28")
+    assert.equal(lastModified(withPost.at(-2), withPost).toISOString().slice(0, 10), "2026-09-30")
+  })
+
   test("a listing with no dates anywhere has no lastmod", () => {
     assert.equal(lastModified(pages[8], [pages[8]]), undefined)
   })

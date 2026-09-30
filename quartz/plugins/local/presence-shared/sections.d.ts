@@ -1,7 +1,7 @@
 // Types for sections.js, so TypeScript callers such as renderPage.tsx can
 // import it under strict mode.
 
-export type EntryKind = "essay" | "episode" | "project" | "note" | (string & {})
+export type EntryKind = "essay" | "episode" | "project" | "note" | "post" | (string & {})
 export type PageKind = "home" | "folder" | "essay" | "project" | "page" | (string & {})
 
 export interface Section {
@@ -11,6 +11,7 @@ export interface Section {
   home: boolean
   feed: boolean
   open: boolean
+  months?: boolean
   formerly: readonly string[]
 }
 

@@ -1,4 +1,4 @@
-import { isoDate } from "./dates.js"
+import { clockOf, instantOf, isoDate } from "./dates.js"
 import { isZh } from "./locale.js"
 import {
   entryKind,
@@ -19,6 +19,8 @@ import {
 //            Every other page in the folder is an episode, ordered by part.
 //   project  content/projects/<slug>.md: status, figures, links, a log
 //   note     content/notes/<slug>.md, short and dated
+//   post     content/posts/<date>-<slug>.md, a dated fragment with a time and
+//            an optional title, read in the timeline at /posts/
 //
 // Relations: a reading page names its project with `project:` (or links to
 // it); an episode without one inherits its series'. A project's log gathers
@@ -71,16 +73,24 @@ const orderOf = (file) =>
 
 // On one day, a standalone essay comes before an episode, and an episode
 // before a note or a project; within a series the later part comes first.
-const KIND_RANK = { essay: 0, episode: 1, note: 2, project: 3 }
+const KIND_RANK = { essay: 0, episode: 1, note: 2, project: 3, post: 4 }
 const kindRank = (file) => KIND_RANK[entryKind(file.slug)] ?? 9
 const partDesc = (file) => (Number.isInteger(file.frontmatter?.part) ? -file.frontmatter.part : 0)
 
-// Newest first; then frontmatter order, kind, later part and title, so that
-// entries published on the same day always list the same way.
+// Newest first, by day and then by time where the date carries one (posts);
+// then frontmatter order, kind, later part and title, so that entries
+// published on the same day always list the same way.
 function compareEntries(a, b) {
   const dateA = dateOf(a) ?? ""
   const dateB = dateOf(b) ?? ""
   if (dateA !== dateB) return dateA < dateB ? 1 : -1
+  // Only two dates that both carry a clock compare by time; a timed post and
+  // a date-only essay of the same day fall through to kind and order.
+  if (clockOf(a.frontmatter?.date) && clockOf(b.frontmatter?.date)) {
+    const atA = instantOf(a.frontmatter.date)
+    const atB = instantOf(b.frontmatter.date)
+    if (atA !== null && atB !== null && atA !== atB) return atB - atA
+  }
   if (orderOf(a) !== orderOf(b)) return orderOf(a) - orderOf(b)
   if (kindRank(a) !== kindRank(b)) return kindRank(a) - kindRank(b)
   if (partDesc(a) !== partDesc(b)) return partDesc(a) - partDesc(b)
@@ -102,6 +112,8 @@ export function selectKinds(allFiles, ...kinds) {
 export const selectEssays = (allFiles) => selectKinds(allFiles, "essay")
 export const selectProjects = (allFiles) => selectKinds(allFiles, "project")
 export const selectNotes = (allFiles) => selectKinds(allFiles, "note")
+/** Posts with a date, newest first; presence-derive warns about any without one. */
+export const selectPosts = (allFiles) => selectKinds(allFiles, "post").filter((file) => dateOf(file))
 /** The long-form writing: essays and series episodes, newest first. */
 export const selectWriting = (allFiles) => selectKinds(allFiles, "essay", "episode")
 
@@ -317,12 +329,12 @@ export function seriesForProject(project, allFiles) {
 }
 
 /**
- * Essays, episodes and notes about this project, newest first: those whose
- * relation is the project, and those the project page links to.
+ * Essays, episodes, notes and posts about this project, newest first: those
+ * whose relation is the project, and those the project page links to.
  */
 export function writingForProject(project, allFiles) {
   const linked = new Set(project.links ?? [])
-  return selectKinds(allFiles, "essay", "episode", "note").filter(
+  return selectKinds(allFiles, "essay", "episode", "note", "post").filter(
     (entry) => linked.has(entry.slug) || projectOf(entry, allFiles)?.slug === project.slug,
   )
 }

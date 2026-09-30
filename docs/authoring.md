@@ -11,6 +11,7 @@ A new page needs only markdown. Type, colour, spacing, the column and every elem
 | Episode | `content/series/<series>/<slug>.md` | `/series/<series>/<slug>` |
 | Project | `content/projects/<slug>.md` | `/projects/<slug>` |
 | Note | `content/notes/<slug>.md` | `/notes/<slug>` |
+| Post | `content/posts/<date>-<slug>.md` | `/posts/<date>-<slug>` |
 | About | `content/about.md` | `/about` |
 | Homepage intro | `content/index.md` | `/` |
 
@@ -82,6 +83,22 @@ log:                                # optional; the project's own entries in its
 A project's log also gathers, on its own, every essay, episode and note whose `project` is the project, and the start of each of its series.
 
 A note is short and dated: `title`, `description` and `date`, like an essay without the claims. Notes are listed by month.
+
+A post is a small dated thing: something noticed, a link worth keeping, a step on a project. `npm run post` writes `content/posts/<date>-<time>.md` dated now and opens it in `$EDITOR` (or Typora); `npm run post -- warp-shuffle` names it `<date>-warp-shuffle.md`, and `--zh`, `--tag <tag>`, `--title "<title>"`, `--link <url>` and `--no-open` fill in the rest. By hand:
+
+```yaml
+---
+date: 2026-09-30T21:40-07:00        # required; the time and your offset from UTC
+title: Optional                     # without one, the first sentence titles the page
+lang: zh                            # for a post written in Chinese; no translation needed
+tags: [cuda]                        # optional
+link: https://example.com/a         # optional; a link post shows it above the text
+link_title: The page it points at   # optional
+project: projects/cuda-cpp-course   # optional; the post goes into the project's log
+---
+```
+
+Posts are read as one timeline at `/posts/`: by month, each day written once in the margin, every post in full, and a post over a minute of reading folded to its first paragraph with Continue. The time under a post is its permalink. Posts stay off the homepage and the main feed; they have their own feed at `/posts/index.xml`. Keep them to paragraphs, lists, quotes, links, images and code: headings and footnotes inside a post would repeat their ids on the timeline. A post that grows into something worth finding by title becomes a note: move the file to `content/notes/` and add the post's old path to `aliases`.
 
 `draft: true` keeps a page out of the build. `unlisted: true` builds it but keeps it out of the lists, search and the sidebar.
 

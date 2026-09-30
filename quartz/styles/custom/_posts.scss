@@ -1,0 +1,364 @@
+@use "../variables" as *;
+@use "./page-header" as ph;
+@use "./type" as *;
+@use "./i18n" as i18n;
+
+// ---------------------------------------------------------------------------
+// Posts: the timeline at /posts/ and a post's own page
+// ---------------------------------------------------------------------------
+// The timeline borrows the project log's grammar: the day in a right-aligned
+// margin, a rail with a node for each day, and the day's posts beside it in
+// full, one hairline between them. It is the page's one visual move; the
+// posts themselves are plain text on the page, with no card around them.
+//
+// Below 560px of column the day moves above its posts and stays pinned under
+// the header while they scroll past, and the rail runs down the left edge.
+
+.ptl-month {
+  scroll-margin-top: var(--space-6);
+
+  & + & {
+    margin-top: var(--space-8);
+  }
+}
+
+.ptl-month-label {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+
+  // The month's rule runs to the column's edge, then its count.
+  &::after {
+    content: "";
+    order: 1;
+    flex: 1;
+    align-self: center;
+    border-top: 1px solid var(--rule-soft-color);
+  }
+}
+
+.ptl-count {
+  order: 2;
+  font-weight: var(--label-weight);
+  color: var(--ink-muted-color);
+}
+
+.pday {
+  // Space under a day's last post, which the month's rail stops short of.
+  --pday-end: 18px;
+  display: grid;
+  grid-template-columns: 7.5rem 14px minmax(0, 1fr);
+  gap: 0 16px;
+}
+
+.pday-date {
+  margin: 0;
+  padding-top: 18px;
+  text-align: right;
+
+  time {
+    display: grid;
+    gap: 1px;
+  }
+}
+
+.pday-day {
+  font-family: var(--font-label);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-strong-color);
+  font-variant-numeric: tabular-nums;
+}
+
+.pday-dow {
+  font-family: var(--font-label);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ink-muted-color);
+}
+
+// The rail: a line down the whole month and a node at each day's first post.
+.pday-posts {
+  grid-column: 2 / span 2;
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  gap: 0 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--line-strong-color);
+  }
+
+  > li {
+    grid-column: 2;
+    position: relative;
+    margin: 0;
+    padding: 16px 0 var(--pday-end);
+
+    & + li {
+      border-top: 1px solid var(--rule-soft-color);
+    }
+  }
+
+  > li:first-child::before {
+    content: "";
+    box-sizing: border-box;
+    position: absolute;
+    left: calc(-16px - 14px + 1.5px);
+    top: 23px;
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid var(--ink-strong-color);
+    border-radius: 50%;
+    background: var(--canvas-color);
+  }
+}
+
+// The first day of a month starts its line at its node, the last one ends it
+// at its last post's meta line.
+.ptl-month > .pday:first-of-type .pday-posts::before {
+  top: 24px;
+}
+
+.ptl-month > .pday:last-child .pday-posts::before {
+  bottom: var(--pday-end);
+}
+
+.post {
+  min-width: 0;
+  scroll-margin-top: var(--space-6);
+
+  // Landing on a post from its own page or a shared link marks it briefly.
+  &:target {
+    animation: post-arrive 1.6s ease-out 1;
+  }
+}
+
+@keyframes post-arrive {
+  from {
+    background: var(--highlight);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .post:target {
+    animation: none;
+  }
+}
+
+.post-title {
+  margin: 0 0 6px;
+  font-family: var(--font-text);
+  font-size: var(--size-row-title);
+  line-height: var(--lh-row-title);
+  font-weight: 600;
+  color: var(--ink-strong-color);
+  text-wrap: balance;
+
+  a {
+    @include ph.quiet-link;
+    @include ph.focus-ring;
+  }
+}
+
+.post-link {
+  margin: 0 0 6px;
+
+  .ph & {
+    margin-top: 12px;
+  }
+  font-family: var(--font-text);
+  font-size: var(--size-body);
+  line-height: var(--lh-body);
+
+  &::before {
+    content: "→ ";
+    color: var(--ink-muted-color);
+  }
+
+  a {
+    @include ph.focus-ring;
+    color: var(--accent-color);
+    text-underline-offset: 0.14em;
+  }
+}
+
+.post-host {
+  margin-left: 8px;
+  font-family: var(--font-label);
+  font-size: 12px;
+  color: var(--ink-muted-color);
+}
+
+// The body reads like the text of an essay: the same face, size and rhythm.
+.post-body {
+  font-family: var(--font-text);
+  font-size: var(--size-body);
+  line-height: var(--lh-body);
+  color: var(--ink-color);
+  overflow-wrap: break-word;
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  p,
+  ul,
+  ol,
+  blockquote,
+  pre,
+  .table-container {
+    margin: 0 0 var(--flow-block);
+  }
+
+  a {
+    @include ph.focus-ring;
+    color: var(--accent-color);
+    text-underline-offset: 0.14em;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: var(--flow-block) 0;
+  }
+
+  blockquote {
+    padding-left: 1em;
+    border-left: 3px solid var(--rule-soft-color);
+    color: var(--ink-muted-color);
+  }
+}
+
+.post-more {
+  margin: 8px 0 0;
+  font-family: var(--font-ui);
+  font-size: var(--size-ui);
+
+  a {
+    @include ph.focus-ring;
+    color: var(--accent-color);
+    text-decoration: none;
+
+    &::after {
+      content: " →";
+    }
+  }
+}
+
+.post-meta {
+  margin: 10px 0 0;
+  font-family: var(--font-label);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-muted-color);
+  font-variant-numeric: tabular-nums;
+
+  a {
+    @include ph.focus-ring;
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--accent-color);
+    }
+  }
+}
+
+// The time is the post's permalink, the only one on an untitled post, so it
+// reads as a link: strong ink and a hairline underline, the accent on hover.
+.post-meta .post-time {
+  color: var(--ink-strong-color);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--rule-hover-color);
+  text-underline-offset: 0.2em;
+
+  &:hover {
+    color: var(--accent-color);
+    text-decoration-color: currentColor;
+  }
+}
+
+// A post in the other language keeps its own face and rhythm on the timeline.
+.post:lang(zh) {
+  @include i18n.zh-text;
+}
+
+@container (max-width: 560px) {
+  // Each day is its own stretch of rail, from its node to its last post, so a
+  // pinned date never hangs over a stub of line from the day before.
+  .pday {
+    --pday-end: 6px;
+    grid-template-columns: 14px minmax(0, 1fr);
+
+    & + & {
+      margin-top: 14px;
+    }
+  }
+
+  .pday .pday-posts::before {
+    top: 24px;
+    bottom: var(--pday-end);
+  }
+
+  // The day sits above its posts and stays pinned while they pass.
+  .pday-date {
+    grid-column: 1 / -1;
+    position: sticky;
+    top: var(--mobile-header-height, 48px);
+    z-index: 1;
+    padding: 10px 0 4px 30px;
+    text-align: left;
+    background: var(--canvas-color);
+
+    time {
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+    }
+  }
+
+  .pday-posts {
+    grid-column: 1 / -1;
+  }
+}
+
+// --- a post's own page -------------------------------------------------------
+// An untitled post keeps its h1 (its first words) for screen readers only; the
+// label line with its day and time is the visible head.
+.ph-title--hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.entry-clock {
+  font-variant-numeric: tabular-nums;
+}
+
+// Under a post, the way back to the timeline leads its block, above Older and
+// Newer.
+.end-all--lead {
+  margin-bottom: 12px;
+}

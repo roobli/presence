@@ -11,6 +11,8 @@
 //   open      expanded in the sidebar tree on a first visit
 //   formerly  earlier names of the folder; every page keeps a redirect from
 //             the URL it had under each of them
+//   months    the sidebar lists the section by month instead of by entry, for
+//             a section too long to list one row per entry
 //
 // Series nest one level deeper: content/series/<series>/index.md describes a
 // series and every other page in that folder is one of its episodes.
@@ -47,11 +49,24 @@ export const SECTIONS = [
     formerly: ["works"],
   },
   { id: "notes", kind: "note", label: "notes", home: true, feed: true, open: true, formerly: [] },
+  // Short dated fragments, read as one timeline at /posts/. They keep out of
+  // the homepage and the main feed (they have their own, posts/index.xml).
+  {
+    id: "posts",
+    kind: "post",
+    label: "posts",
+    home: false,
+    feed: false,
+    open: false,
+    months: true,
+    formerly: [],
+  },
 ]
 
-// Essays, episodes and notes are all read the same way: the reading frame, the
-// outline, reading time and the spine. A project page is a different layout.
-const LAYOUTS = { essay: "essay", episode: "essay", note: "essay", project: "project" }
+// Essays, episodes, notes and posts are all read the same way: the reading
+// frame, the outline, reading time and the spine. A project page is a
+// different layout.
+const LAYOUTS = { essay: "essay", episode: "essay", note: "essay", post: "essay", project: "project" }
 
 /** The layout an entry kind is read in: episode -> essay. */
 export function layoutOf(kind) {
