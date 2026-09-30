@@ -335,7 +335,9 @@ export function dateOnly(file, fm) {
   const day = isoDate(fm.date)
   if (!day) return
   if (typeof fm.date !== "string" || fm.date.trim() !== day) {
-    warn(`${file.data.relativePath ?? file.data.slug}: a post's date is a day only; the time in "${fm.date}" is not published`)
+    warn(
+      `${file.data.relativePath ?? file.data.slug}: a post's date is a day only; the time in "${fm.date}" is not published`,
+    )
     fm.date = day
   }
   const midnight = new Date(`${day}T00:00:00Z`)
@@ -360,7 +362,8 @@ export function summaryOf(tree, lang, title = null) {
     .map((node) => textOf(node).replace(/\s+/g, " ").trim())
     .filter(Boolean)
     .join(" ")
-  if (title && text.startsWith(title)) text = text.slice(title.length).replace(/^[.。!?！？\s]+/, "")
+  if (title && text.startsWith(title))
+    text = text.slice(title.length).replace(/^[.。!?！？\s]+/, "")
   if (!text) return null
   const zh = /^zh/i.test(lang)
   const max = zh ? 80 : 155
@@ -391,7 +394,9 @@ export function htmlPlugins(ctx) {
       // feeds and the sidebar; the page itself shows no visible title.
       const fm = file.data.frontmatter
       if (presence.entry === "post" && !isoDate(fm.date)) {
-        warn(`${file.data.relativePath ?? file.data.slug}: a post needs a date (2026-09-30T21:40-07:00); it is left off the timeline`)
+        warn(
+          `${file.data.relativePath ?? file.data.slug}: a post needs a date (2026-09-30T21:40-07:00); it is left off the timeline`,
+        )
       }
       if (presence.untitled) {
         // An image-only post has no sentence to lend; it is titled by its day and time.

@@ -66,7 +66,13 @@ export const SECTIONS = [
 // Essays, episodes, notes and posts are all read the same way: the reading
 // frame, the outline, reading time and the spine. A project page is a
 // different layout.
-const LAYOUTS = { essay: "essay", episode: "essay", note: "essay", post: "essay", project: "project" }
+const LAYOUTS = {
+  essay: "essay",
+  episode: "essay",
+  note: "essay",
+  post: "essay",
+  project: "project",
+}
 
 /** The layout an entry kind is read in: episode -> essay. */
 export function layoutOf(kind) {

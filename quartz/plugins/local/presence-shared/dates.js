@@ -29,4 +29,3 @@ export function formatDate(iso, lang) {
   const [year, month, day] = iso.split("-").map(Number)
   return isZh(lang) ? `${year}年${month}月${day}日` : `${MONTHS[month - 1]} ${day}, ${year}`
 }
-

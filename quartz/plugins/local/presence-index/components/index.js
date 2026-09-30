@@ -375,7 +375,11 @@ function postsPage(section, ctx) {
         { label: t(lang, "fieldSince"), value: first ? timeOf(dateOf(first), lang) : null },
         {
           label: t(lang, "postsFeed"),
-          value: h("a", { href: "/posts/index.xml", type: "application/rss+xml" }, "posts/index.xml"),
+          value: h(
+            "a",
+            { href: "/posts/index.xml", type: "application/rss+xml" },
+            "posts/index.xml",
+          ),
         },
       ],
       "titleblock--section",

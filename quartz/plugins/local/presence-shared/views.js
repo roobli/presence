@@ -639,7 +639,20 @@ const WEEKDAYS = {
   en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
   zh: ["周日", "周一", "周二", "周三", "周四", "周五", "周六"],
 }
-const SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+const SHORT_MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+]
 
 /** The id a post has in the timeline, so a link can land on it: p-2026-09-30-2140. */
 export function postAnchor(file) {
@@ -768,7 +781,9 @@ export function renderPost(file, ctx) {
       joined([
         postPermalink(file, lang),
         ...tagsOf(file, 3).map((tag) => h("span", { class: "post-tag" }, tag)),
-        project ? h("a", { class: "post-project", href: hrefOf(project.slug) }, titleOf(project)) : null,
+        project
+          ? h("a", { class: "post-project", href: hrefOf(project.slug) }, titleOf(project))
+          : null,
       ]),
     ),
   )
@@ -789,7 +804,11 @@ export function renderPostDay(date, files, ctx) {
       h(
         "time",
         { datetime: date },
-        h("span", { class: "pday-day" }, zh ? `${month}月${day}日` : `${SHORT_MONTHS[month - 1]} ${day}`),
+        h(
+          "span",
+          { class: "pday-day" },
+          zh ? `${month}月${day}日` : `${SHORT_MONTHS[month - 1]} ${day}`,
+        ),
         h("span", { class: "pday-dow" }, WEEKDAYS[zh ? "zh" : "en"][weekday]),
       ),
     ),

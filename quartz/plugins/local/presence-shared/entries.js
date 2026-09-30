@@ -110,7 +110,8 @@ export const selectEssays = (allFiles) => selectKinds(allFiles, "essay")
 export const selectProjects = (allFiles) => selectKinds(allFiles, "project")
 export const selectNotes = (allFiles) => selectKinds(allFiles, "note")
 /** Posts with a date, newest first; presence-derive warns about any without one. */
-export const selectPosts = (allFiles) => selectKinds(allFiles, "post").filter((file) => dateOf(file))
+export const selectPosts = (allFiles) =>
+  selectKinds(allFiles, "post").filter((file) => dateOf(file))
 /** The long-form writing: essays and series episodes, newest first. */
 export const selectWriting = (allFiles) => selectKinds(allFiles, "essay", "episode")
 

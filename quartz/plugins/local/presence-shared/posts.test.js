@@ -65,7 +65,9 @@ const props = (fileData) => ({ fileData, allFiles, cfg })
 describe("post dates", () => {
   test("a time written into a post's date is cut back to the day, dates included", () => {
     const fm = { date: "2026-09-30T21:40-07:00" }
-    const file = { data: { relativePath: "posts/x.md", dates: { created: new Date(), modified: new Date() } } }
+    const file = {
+      data: { relativePath: "posts/x.md", dates: { created: new Date(), modified: new Date() } },
+    }
     const warn = console.warn
     console.warn = () => {}
     try {
@@ -107,15 +109,9 @@ describe("the timeline", () => {
   })
 
   test("a post links its own page, and an untitled post shows no title", () => {
-    assert.match(
-      html,
-      /<a class="post-permalink" href="\/posts\/2026-09-30-1">Permalink<\/a>/,
-    )
+    assert.match(html, /<a class="post-permalink" href="\/posts\/2026-09-30-1">Permalink<\/a>/)
     assert.doesNotMatch(html, />Morning</)
-    assert.match(
-      html,
-      /<h3 class="post-title"><a href="\/posts\/2026-09-30-2">Evening post<\/a>/,
-    )
+    assert.match(html, /<h3 class="post-title"><a href="\/posts\/2026-09-30-2">Evening post<\/a>/)
   })
 
   test("a post over a minute of reading folds to its first block", () => {
