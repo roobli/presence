@@ -217,7 +217,7 @@ describe("dates and strings", () => {
     assert.equal(t("zh", "minShort", { n: 8 }), "8 分钟")
     assert.equal(t("en", "epOf", { n: 2, total: 5 }), "Ep 02 of 05")
     assert.equal(t("zh-Hans", "epOf", { n: 2, total: 5 }), "第 2 集，共 5 集")
-    assert.equal(t("zh-Hans", "notes"), "随笔")
+    assert.equal(t("zh-Hans", "notes"), "短文")
   })
 })
 

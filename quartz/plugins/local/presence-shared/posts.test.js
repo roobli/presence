@@ -183,6 +183,50 @@ describe("the posts feed", () => {
     assert.match(xml, /href="https:\/\/www\.roobli\.org\/posts\/index\.xml" rel="self"/)
     assert.ok(xml.indexOf("2026-09-30-2") < xml.indexOf("2026-09-30-1"))
   })
+
+  test("the posts feed carries each body in full, with absolute links", () => {
+    const linked = {
+      ...morning,
+      htmlAst: {
+        type: "root",
+        children: [
+          {
+            type: "element",
+            tagName: "p",
+            properties: {},
+            children: [
+              { type: "text", value: "See " },
+              {
+                type: "element",
+                tagName: "a",
+                properties: { href: "../essays/why-x" },
+                children: [{ type: "text", value: "why ]]> breaks" }],
+              },
+            ],
+          },
+          {
+            type: "element",
+            tagName: "img",
+            properties: { src: "/static/a.png", alt: "" },
+            children: [],
+          },
+        ],
+      },
+    }
+    const xml = generateFeed(cfg, [linked], { path: "posts/index.xml", fullText: true })
+    assert.match(xml, /xmlns:content="http:\/\/purl\.org\/rss\/1\.0\/modules\/content\/"/)
+    assert.match(
+      xml,
+      /<content:encoded><!\[CDATA\[<p>See <a href="https:\/\/www\.roobli\.org\/essays\/why-x">/,
+    )
+    assert.match(xml, /src="https:\/\/www\.roobli\.org\/static\/a\.png"/)
+    assert.match(xml, /why \]\]\]\]><!\[CDATA\[> breaks/)
+  })
+
+  test("the main feed stays summaries only", () => {
+    const xml = generateFeed(cfg, [morning])
+    assert.doesNotMatch(xml, /content:encoded|xmlns:content/)
+  })
 })
 
 describe("post descriptions and head", () => {

@@ -1,5 +1,8 @@
 import fs from "node:fs/promises"
 import path from "node:path"
+import { toJsxRuntime } from "hast-util-to-jsx-runtime"
+import { Fragment, jsx, jsxs } from "preact/jsx-runtime"
+import { render } from "preact-render-to-string"
 import { pageUrl } from "../i18n-slug/index.js"
 import { t } from "../presence-shared/locale.js"
 import { indexSlugOf, SECTIONS, sectionOf } from "../presence-shared/sections.js"
@@ -137,10 +140,46 @@ export function guidLine(fm, url) {
     : `      <guid isPermaLink="true">${url}</guid>`
 }
 
+// Links in a page body are relative to the page; a feed reader shows the body
+// somewhere else, so every href and src is resolved against the page URL.
+function withAbsoluteLinks(node, base) {
+  if (node.type !== "element" && node.type !== "root") return node
+  let properties = node.properties
+  if (properties) {
+    properties = { ...properties }
+    for (const key of ["href", "src"]) {
+      const value = properties[key]
+      if (typeof value !== "string" || value === "") continue
+      try {
+        properties[key] = new URL(value, base).href
+      } catch {
+        // Leave anything URL cannot parse as it was.
+      }
+    }
+  }
+  const children = (node.children ?? []).map((child) => withAbsoluteLinks(child, base))
+  return { ...node, properties, children }
+}
+
+/** A page's rendered body as HTML with absolute links, or "" if it has none. */
+export function feedHtml(baseUrl, data) {
+  const tree = data.htmlAst
+  if (!tree || !Array.isArray(tree.children)) return ""
+  const body = withAbsoluteLinks(tree, pageUrl(baseUrl, data.slug))
+  return render(toJsxRuntime(body, { Fragment, jsx, jsxs, elementAttributeNameCase: "html" }))
+}
+
+// CDATA cannot contain its own terminator; split it across two sections.
+function cdata(value) {
+  return `<![CDATA[${value.replaceAll("]]>", "]]]]><![CDATA[>")}]]>`
+}
+
 /**
  * RSS 2.0 of pages, newest first. channel names the feed; without it this is
  * the site's main feed at /index.xml. Posts have their own at
  * /posts/index.xml, so readers of the essays are not sent every fragment.
+ * channel.fullText adds each body as content:encoded: a post is a few lines,
+ * and a summary of it would be most of it.
  */
 export function generateFeed(cfg, pages, channel = {}) {
   const items = pages
@@ -172,6 +211,10 @@ export function generateFeed(cfg, pages, channel = {}) {
         guidLine(fm, url),
       ]
       if (description) lines.push(`      <description>${escapeXml(description)}</description>`)
+      if (channel.fullText) {
+        const html = feedHtml(cfg.baseUrl, data)
+        if (html) lines.push(`      <content:encoded>${cdata(html)}</content:encoded>`)
+      }
       if (date) lines.push(`      <pubDate>${date.toUTCString()}</pubDate>`)
       lines.push(`    </item>`)
       return lines.join("\n")
@@ -188,7 +231,9 @@ export function generateFeed(cfg, pages, channel = {}) {
   const language = channel.language === undefined ? EN : channel.language
   return [
     `<?xml version="1.0" encoding="UTF-8"?>`,
-    `<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">`,
+    channel.fullText
+      ? `<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">`
+      : `<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">`,
     `  <channel>`,
     `    <title>${title}</title>`,
     `    <link>${escapeXml(link)}</link>`,
@@ -281,7 +326,7 @@ export function generateLlmsTxt(cfg, pages) {
   lines.push(``)
   lines.push(`Internal RooB notes are not published from this site.`)
   lines.push(``)
-  lines.push(`中文：文章、系列、项目与随笔；内部 RooB 笔记不在此发布。`)
+  lines.push(`中文：文章、系列、项目、短文与随记；内部 RooB 笔记不在此发布。`)
   lines.push(``)
   return lines.join("\n")
 }
@@ -334,6 +379,7 @@ export function PresenceFeeds() {
                 description: `Short dated posts on ${cfg.pageTitle ?? ""}, newest first`,
                 path: POSTS_FEED,
                 language: null,
+                fullText: true,
               }),
             ),
           ]
