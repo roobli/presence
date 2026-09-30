@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 /**
  * Start a post: write content/posts/<date>-<slug>.md dated today, then open it
- * in the editor. The date is a day only: a time of day or an offset from UTC
- * would publish where the author is.
+ * in the editor. The date is a day only.
  *
  *   npm run post                          content/posts/2026-09-30-1.md (then -2, -3)
  *   npm run post -- warp-shuffle          content/posts/2026-09-30-warp-shuffle.md

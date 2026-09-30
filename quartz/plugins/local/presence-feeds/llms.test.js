@@ -4,52 +4,49 @@ import { generateLlmsTxt, guidLine } from "./index.js"
 
 describe("presence-feeds llms.txt", () => {
   test("lists site map and English essays from page data", () => {
-    const txt = generateLlmsTxt(
-      { baseUrl: "www.roobli.org", pageTitle: "RoobLi" },
-      [
-        {
-          filePath: "content/index.md",
-          slug: "index",
-          frontmatter: { title: "RoobLi", description: "Fewer pages. Harder claims." },
+    const txt = generateLlmsTxt({ baseUrl: "www.roobli.org", pageTitle: "RoobLi" }, [
+      {
+        filePath: "content/index.md",
+        slug: "index",
+        frontmatter: { title: "RoobLi", description: "Fewer pages. Harder claims." },
+      },
+      {
+        filePath: "content/essays/keyboard-shortcut-systems.md",
+        slug: "essays/keyboard-shortcut-systems",
+        presence: { kind: "essay" },
+        frontmatter: {
+          title: "Keyboard shortcut systems",
+          description: "From Emacs prefixes to Cmd+K.",
+          date: "2026-09-11",
         },
-        {
-          filePath: "content/essays/keyboard-shortcut-systems.md",
-          slug: "essays/keyboard-shortcut-systems",
-          presence: { kind: "essay" },
-          frontmatter: {
-            title: "Keyboard shortcut systems",
-            description: "From Emacs prefixes to Cmd+K.",
-            date: "2026-09-11",
-          },
-          i18n: { lang: "en", base: "essays/keyboard-shortcut-systems", alternates: [] },
+        i18n: { lang: "en", base: "essays/keyboard-shortcut-systems", alternates: [] },
+      },
+      {
+        filePath: "content/essays/keyboard-shortcut-systems.zh.md",
+        slug: "essays/keyboard-shortcut-systems/zh",
+        presence: { kind: "essay" },
+        unlisted: true,
+        frontmatter: { title: "快捷键系统", description: "中文版" },
+        i18n: {
+          lang: "zh-Hans",
+          base: "essays/keyboard-shortcut-systems",
+          alternates: [{ lang: "en", slug: "essays/keyboard-shortcut-systems" }],
         },
-        {
-          filePath: "content/essays/keyboard-shortcut-systems.zh.md",
-          slug: "essays/keyboard-shortcut-systems/zh",
-          presence: { kind: "essay" },
-          unlisted: true,
-          frontmatter: { title: "快捷键系统", description: "中文版" },
-          i18n: {
-            lang: "zh-Hans",
-            base: "essays/keyboard-shortcut-systems",
-            alternates: [{ lang: "en", slug: "essays/keyboard-shortcut-systems" }],
-          },
-        },
-        {
-          filePath: "content/essays/index.md",
-          slug: "essays/index",
-          presence: { kind: "folder" },
-          frontmatter: { title: "Essays" },
-        },
-        {
-          filePath: "content/notes/reading-log.md",
-          slug: "notes/reading-log",
-          presence: { kind: "essay", entry: "note" },
-          frontmatter: { title: "Reading log", description: "Four books.", date: "2026-09-26" },
-          i18n: { lang: "en", base: "notes/reading-log", alternates: [] },
-        },
-      ],
-    )
+      },
+      {
+        filePath: "content/essays/index.md",
+        slug: "essays/index",
+        presence: { kind: "folder" },
+        frontmatter: { title: "Essays" },
+      },
+      {
+        filePath: "content/notes/reading-log.md",
+        slug: "notes/reading-log",
+        presence: { kind: "essay", entry: "note" },
+        frontmatter: { title: "Reading log", description: "Four books.", date: "2026-09-26" },
+        i18n: { lang: "en", base: "notes/reading-log", alternates: [] },
+      },
+    ])
 
     assert.match(txt, /^# RoobLi\n/)
     assert.ok(txt.includes("> Fewer pages. Harder claims."))
@@ -66,11 +63,14 @@ describe("presence-feeds llms.txt", () => {
     )
     assert.ok(!txt.includes("快捷键系统"), "zh translations stay out of the essay list")
     // A section with entries gets its own list; an empty one is left out.
-    assert.ok(txt.includes("## Notes\n\n- [Reading log](https://www.roobli.org/notes/reading-log) — Four books."))
+    assert.ok(
+      txt.includes(
+        "## Notes\n\n- [Reading log](https://www.roobli.org/notes/reading-log) — Four books.",
+      ),
+    )
     assert.ok(!txt.includes("## Series"))
     assert.ok(!txt.includes("## Projects"))
-    assert.ok(txt.includes("Internal RooB notes are not published"))
-    assert.ok(txt.includes("中文："))
+    assert.ok(!txt.includes("RooB"))
   })
 })
 

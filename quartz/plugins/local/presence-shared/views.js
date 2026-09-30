@@ -740,7 +740,7 @@ export function postLink(file) {
   )
 }
 
-/** A post's permalink. Posts publish no time of day: it says where the author is. */
+/** A post's permalink: the link under it in the timeline. */
 function postPermalink(file, lang) {
   return h("a", { class: "post-permalink", href: hrefOf(file.slug) }, t(lang, "permalink"))
 }

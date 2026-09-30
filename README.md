@@ -2,7 +2,7 @@
 
 RoobLi public site — **www.roobli.org**.
 
-Quartz 5 fork with the Typora Claude-Like visual system (ported from `roob-note-site`). This is the org homepage: essays, series, projects and short public notes — **not** a RooB notes mirror.
+Quartz 5 fork with the Typora Claude-Like visual system (ported from `roob-note-site`). It builds the site: essays, series, projects, notes and posts.
 
 ## Run
 
@@ -11,7 +11,7 @@ npm ci
 npx quartz build --serve --port 8080
 ```
 
-Content lives in `content/` inside this repo (curated, public). Do not symlink RooB here.
+Content lives in `content/` as plain files in this repo.
 
 How to write a page, from frontmatter and translations to math, diagrams and live figures: [docs/authoring.md](docs/authoring.md).
 
@@ -37,7 +37,7 @@ Secrets (repo Actions): `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`. Never c
 
 ## History
 
-Former experiment: `roobli/roob-note-site` at `note.roobli.org` (notes export pipeline). Decision: notes stay private; this repo keeps the **framework and craft**, hosts curated public pages, domain is `www.roobli.org`.
+The site started as `roobli/roob-note-site` at `note.roobli.org`. This repo kept its framework and serves the pages at `www.roobli.org`.
 
 ## Brand assets
 
@@ -45,6 +45,6 @@ Former experiment: `roobli/roob-note-site` at `note.roobli.org` (notes export pi
 - `quartz/static/og-image.jpg`: default Open Graph / Twitter `summary_large_image`, 1280x720
 - `quartz/static/apple-touch-icon.png`: home-screen icon, 180px
 
-Export these without metadata (EXIF, XMP or C2PA provenance). Everything in `quartz/static/` is published as is.
+Export them as plain web images. Everything in `quartz/static/` is published as is.
 
 After changing these, push `main` so CF Pages redeploys; then re-scrape cards (X Card Validator / opengraph.xyz) if a URL was cached.

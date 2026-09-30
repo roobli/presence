@@ -322,12 +322,6 @@ export function generateLlmsTxt(cfg, pages) {
     lines.push(``)
   }
 
-  lines.push(`## Private notes`)
-  lines.push(``)
-  lines.push(`Internal RooB notes are not published from this site.`)
-  lines.push(``)
-  lines.push(`中文：文章、系列、项目、短文与随记；内部 RooB 笔记不在此发布。`)
-  lines.push(``)
   return lines.join("\n")
 }
 

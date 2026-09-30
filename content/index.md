@@ -2,7 +2,7 @@
 title: RoobLi
 description: Fewer pages. Harder claims.
 socialDescription: "Essays with sources, series written in parts, projects with a log of what changed, and short dated notes: on GPU programming, interface design and the tools people work with."
-intro: "Public surface for selected works and deep writing. Private notes stay private — this site is not a vault mirror."
+intro: "Selected works and long-form writing, with short dated posts in between."
 links:
   - label: GitHub lr00rl
     href: https://github.com/lr00rl

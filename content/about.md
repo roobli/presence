@@ -6,7 +6,7 @@ enableToc: false
 
 RoobLi publishes essays with sources, series written in parts, projects with a log of what changed, short notes and dated posts, on GPU programming, interface design and the tools people work with.
 
-Everything here is written for the public web and stands on its own. Private notes are not published from this site.
+Each piece is written to stand on its own.
 
 ## Language
 
